@@ -1,0 +1,52 @@
+# MPC Party Only Example Configuration
+# Copy this file to terraform.tfvars and customize the values
+
+# AWS Configuration
+aws_region = "us-west-2"
+
+# MPC Party Configuration
+party_name  = "my-mpc-party"
+environment = "dev"
+
+# S3 Bucket Configuration
+bucket_prefix = "my-company-mpc-vault"
+
+# Kubernetes Configuration
+cluster_name         = "my-eks-cluster"
+namespace           = "mpc-party"
+service_account_name = "mpc-party-sa"
+create_namespace    = true
+
+# IRSA Configuration (recommended for production)
+create_irsa = true
+
+# Kubernetes Provider Configuration
+kubeconfig_path    = "~/.kube/config"
+kubeconfig_context = null  # Uses current context if null
+eks_cluster_name   = "my-eks-cluster"  # For automatic EKS token authentication
+
+# Tagging
+owner = "mpc-team"
+additional_tags = {
+  "Project"     = "mpc-infrastructure"
+  "Team"        = "security"
+  "Cost-Center" = "engineering"
+}
+
+# Example configurations for different scenarios:
+
+# Scenario 1: Development environment with IRSA
+# party_name  = "dev-party-alice"
+# environment = "dev"
+# create_irsa = true
+
+# Scenario 2: Production environment with custom naming
+# party_name    = "prod-party-bank-a"
+# environment   = "prod"
+# bucket_prefix = "company-secure-mpc"
+# create_irsa   = true
+
+# Scenario 3: Testing without IRSA (use manual AWS credentials)
+# party_name  = "test-party"
+# environment = "test"
+# create_irsa = false 
