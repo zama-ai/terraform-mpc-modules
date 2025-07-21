@@ -1,0 +1,41 @@
+.idea/
+kubeconfig_*
+*.xpkg
+.DS_Store
+
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform lockfile
+.terraform.lock.hcl
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+cluster-keys.json
+
+.vscode
+
+# Trash files
+trash
+
+# Recursively ignore all folders starting with an underscore
+_*/
+
+# Ignore lock files
+*.lock
+
+# Ignore tgz files of helm charts
+**/charts/*.tgz
+
+# Ignore helm outputs
+**/outputs/*
+
+# Ignore dev-cluster-config
+dev-cluster-config
+
+# Ignore files
+_*.go
+_*.yaml
