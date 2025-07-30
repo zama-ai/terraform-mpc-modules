@@ -122,13 +122,14 @@ variable "consumer_security_group_ids" {
 }
 
 # Partner Services Configuration (for consumer mode)
-variable "partner_services_config" {
+variable "party_services_config" {
   description = "Configuration for connecting to partner MPC services via VPC interface endpoints"
   type = object({
-    partner_services = list(object({
+    party_services = list(object({
       name                      = string
       region                    = string
       account_id                = optional(string, null)
+      partner_name              = optional(string, null)
       vpc_endpoint_service_name = string
       ports = list(object({
         name        = string
@@ -163,7 +164,7 @@ variable "partner_services_config" {
     dns_domain                = optional(string, "mpc-partners.local")
   })
   default = {
-    partner_services = []
+    party_services = []
   }
 }
 

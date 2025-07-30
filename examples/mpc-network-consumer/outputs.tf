@@ -17,14 +17,14 @@ output "namespace" {
 }
 
 # Partner Interface Endpoints Information
-output "partner_interface_endpoint_ids" {
+output "party_interface_endpoint_ids" {
   description = "IDs of the created VPC interface endpoints for partner connections"
-  value       = module.mpc_cluster_consumer.partner_interface_endpoint_ids
+  value       = module.mpc_cluster_consumer.party_interface_endpoint_ids
 }
 
-output "partner_interface_dns_names" {
+output "party_interface_dns_names" {
   description = "DNS names of the created VPC interface endpoints for partner connections"
-  value       = module.mpc_cluster_consumer.partner_interface_dns_names
+  value       = module.mpc_cluster_consumer.party_interface_dns_names
 }
 
 output "partner_service_details" {

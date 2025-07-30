@@ -45,7 +45,7 @@ Each MPC party in the network deploys both patterns to create bidirectional conn
 
 **🔌 Consumer Capability** (Root Module in Consumer Mode)
 - Connect to all other MPC party nodes via VPC interface endpoints
-- Configure `partner_services_config` for connections to each party in the network
+- Configure `party_services_config` for connections to each party in the network
 - Establish outgoing connections to participate in distributed threshold protocols
 - Automatic service discovery for seamless MPC protocol execution
 
@@ -251,8 +251,8 @@ module "mpc_cluster_consumer" {
   mpc_services = []
 
   # Partner services configuration
-  partner_services_config = {
-    partner_services = [
+  party_services_config = {
+    party_services = [
       {
         name                      = "mpc-party-node-1"
         region                    = "eu-west-1"
@@ -389,7 +389,7 @@ terraform init
 terraform apply
 ```
 
-### [partner-consumer](./examples/partner-consumer/)
+### [mpc-network-consumer](./examples/mpc-network-consumer/)
 Connect to external MPC party nodes for distributed threshold key management via VPC interface endpoints:
 - **Cross-region MPC party connectivity** via AWS PrivateLink for distributed threshold key management protocols
 - **Multiple MPC party nodes** with independent VPC endpoint configurations for secure key operations
@@ -400,26 +400,26 @@ Connect to external MPC party nodes for distributed threshold key management via
 
 Key characteristics:
 - Uses root module in `consumer` mode with `mpc_services = []`
-- Configures `partner_services_config` with VPC endpoint service names for threshold MPC party connections
+- Configures `party_services_config` with VPC endpoint service names for threshold MPC party connections
 - Supports multiple ports per MPC node (gRPC for key management protocols, peer communication, metrics)
 - Provides detailed connection guides for threshold cryptographic applications and cross-region MPC party summaries
 
 ```bash
-cd examples/partner-consumer
+cd examples/mpc-network-consumer
 cp terraform.tfvars.example terraform.tfvars
 # Edit terraform.tfvars with your partner service details
 terraform init
 terraform apply
 ```
 
-### [partner-provider](./examples/partner-provider/)
+### [mpc-network-provider](./examples/mpc-network-provider/)
 Provide threshold key management services to other MPC parties using the root module:
 - Network Load Balancers for threshold key management nodes
 - VPC endpoint services for secure MPC party access to distributed key operations
 - Complete threshold key management service provider setup
 
 ```bash
-cd examples/partner-provider
+cd examples/mpc-network-provider
 terraform init
 terraform apply
 ```
@@ -479,8 +479,8 @@ module "mpc_cluster_consumer" {
   consumer_cluster_name = "my-eks-cluster"
   mpc_services         = []
 
-  partner_services_config = {
-    partner_services = [
+  party_services_config = {
+    party_services = [
       {
         name                      = "partner-service"
         region                    = "us-east-1"
@@ -542,8 +542,8 @@ module "mpc_cluster_consumer" {
   consumer_cluster_name = "my-eks-cluster"
   mpc_services         = []        # Empty for consumer mode
 
-  partner_services_config = {
-    partner_services = [
+  party_services_config = {
+    party_services = [
       {
         name                      = "partner-service"
         region                    = "us-east-1"
@@ -576,8 +576,8 @@ module "mpc_cluster_consumer" {
 | Use Case | Recommended Approach | Modules Used |
 |----------|---------------------|--------------|
 | **MPC Party Storage** | `examples/mpc-party/` | `mpcparty` |
-| **Connect to MPC Parties** | `examples/partner-consumer/` | Root module (consumer mode) |
-| **Provide MPC Services** | `examples/partner-provider/` | Root module (provider mode) |
+| **Connect to MPC Parties** | `examples/mpc-network-consumer/` | Root module (consumer mode) |
+| **Provide MPC Services** | `examples/mpc-network-provider/` | Root module (provider mode) |
 | **Custom Solution** | Direct module composition | Mix of modules as needed |
 
 ## 🔒 Security Features

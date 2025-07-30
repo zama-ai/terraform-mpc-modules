@@ -1,43 +1,7 @@
 # Partner Consumer Example
 # This example demonstrates how to connect to existing MPC services from partners
 
-terraform {
-  required_version = ">= 1.0"
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.23"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.1"
-    }
-  }
-}
-
-# Configure providers
-provider "aws" {
-  region = var.aws_region_for_eks != null ? var.aws_region_for_eks : var.aws_region
-}
-
-provider "kubernetes" {
-  config_path    = var.kubeconfig_path
-  config_context = var.kubeconfig_context
-  
-  dynamic "exec" {
-    for_each = var.eks_cluster_name != null ? [1] : []
-    content {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", var.eks_cluster_name]
-      command     = "aws"
-    }
-  }
-}
 
 # Deploy MPC cluster in consumer mode to connect to partner services
 module "mpc_cluster_consumer" {
@@ -53,9 +17,9 @@ module "mpc_cluster_consumer" {
   mpc_services = []
 
   # Partner services configuration - now focused only on service details
-  partner_services_config = {
+  party_services_config = {
     # Partner services to connect to
-    partner_services = var.partner_services
+    party_services = var.party_services
 
     # VPC Interface Endpoint configuration
     private_dns_enabled = var.private_dns_enabled

@@ -4,54 +4,48 @@
 # - VPC endpoint services for exposing services to partners
 # - Custom tagging and configuration
 
-terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.23"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.1"
-    }
-  }
-  
-  backend "s3" {
-    bucket  = var.storage_backend_config.bucket
-    key     = var.storage_backend_config.key
-    region  = var.storage_backend_config.region
-    encrypt = true
-  }
-}
-
-# Configure providers
-provider "aws" {
-  region = var.aws_region_for_eks != null ? var.aws_region_for_eks : var.aws_region
-}
-
-provider "kubernetes" {
-  config_path    = var.kubeconfig_path
-  config_context = var.kubeconfig_context
-  
-  dynamic "exec" {
-    for_each = var.eks_cluster_name != null ? [1] : []
-    content {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", var.eks_cluster_name]
-      command     = "aws"
-    }
-  }
-}
+#terraform {
+#   required_version = ">= 1.0"
+# 
+#   required_providers {
+#     aws = {
+#       source  = "hashicorp/aws"
+#       version = ">= 5.0"
+#     }
+#     kubernetes = {
+#       source  = "hashicorp/kubernetes"
+#       version = ">= 2.23"
+#     }
+#     random = {
+#       source  = "hashicorp/random"
+#       version = ">= 3.1"
+#     }
+#   }
+#   backend "s3" {}
+# }
+# 
+# # Configure providers
+# provider "aws" {
+#   region = var.aws_region_for_eks != null ? var.aws_region_for_eks : var.aws_region
+# }
+# 
+# provider "kubernetes" {
+#   config_path    = var.kubeconfig_path
+#   config_context = var.kubeconfig_context
+#   
+#   dynamic "exec" {
+#     for_each = var.eks_cluster_name != null ? [1] : []
+#     content {
+#       api_version = "client.authentication.k8s.io/v1beta1"
+#       args        = ["eks", "get-token", "--cluster-name", var.eks_cluster_name]
+#       command     = "aws"
+#     }
+#   }
+# }
 
 locals {
   allowed_principals   = var.allowed_vpc_endpoint_principals
-  cluster_name        = var.eks_cluster_name != null ? var.eks_cluster_name : var.cluster_name
+  cluster_name        = var.cluster_name
   namespace           = var.namespace
   environment         = var.environment
   create_vpc_endpoints = var.create_vpc_endpoints
@@ -81,7 +75,6 @@ module "mpc_cluster" {
   common_tags = merge(var.common_tags, {
     "Environment" = var.environment
     "Owner"       = var.owner
-    "ConfigMethod" = var.eks_cluster_name != null ? "eks-token-auth" : "kubeconfig-auth"
   })
 
   # Optional: Enable MPC Party infrastructure (S3 buckets and IRSA)

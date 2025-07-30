@@ -9,7 +9,7 @@
 
 # Configuration validation notes:
 # - Provider mode: requires at least one mpc_service to be defined
-# - Consumer mode: requires at least one partner service in partner_services_config
+# - Consumer mode: requires at least one partner service in party_services_config
 
 # Data source to get current AWS region
 data "aws_region" "current" {}
@@ -23,6 +23,7 @@ module "nlb_service_provider" {
   create_namespace = var.create_namespace
   mpc_services     = var.mpc_services
   common_tags      = var.common_tags
+  aws_region       = data.aws_region.current.region
 
   service_create_timeout = var.service_create_timeout
 }
@@ -59,7 +60,7 @@ module "vpc_endpoint_consumer" {
   source = "./modules/vpc-endpoint-consumer"
 
   # Partner services configuration
-  partner_services = var.partner_services_config.partner_services
+  party_services = var.party_services_config.party_services
 
   # Network configuration - now passed from root-level consumer variables
   cluster_name       = var.consumer_cluster_name
@@ -68,27 +69,27 @@ module "vpc_endpoint_consumer" {
   security_group_ids = var.consumer_security_group_ids
 
   # VPC Interface Endpoint configuration
-  endpoint_policy     = var.partner_services_config.endpoint_policy
-  private_dns_enabled = var.partner_services_config.private_dns_enabled
-  route_table_ids     = var.partner_services_config.route_table_ids
+  endpoint_policy     = var.party_services_config.endpoint_policy
+  private_dns_enabled = var.party_services_config.private_dns_enabled
+  route_table_ids     = var.party_services_config.route_table_ids
 
   # Naming and tagging
-  name_prefix     = var.partner_services_config.name_prefix
+  name_prefix     = var.party_services_config.name_prefix
   common_tags     = var.common_tags
-  additional_tags = var.partner_services_config.additional_tags
+  additional_tags = var.party_services_config.additional_tags
 
   # Timeouts
-  endpoint_create_timeout = var.partner_services_config.endpoint_create_timeout
-  endpoint_delete_timeout = var.partner_services_config.endpoint_delete_timeout
+  endpoint_create_timeout = var.party_services_config.endpoint_create_timeout
+  endpoint_delete_timeout = var.party_services_config.endpoint_delete_timeout
 
   # Kubernetes configuration
-  namespace        = var.partner_services_config.namespace
-  create_namespace = var.partner_services_config.create_namespace
+  namespace        = var.party_services_config.namespace
+  create_namespace = var.party_services_config.create_namespace
 
   # Custom DNS (optional)
-  create_custom_dns_records = var.partner_services_config.create_custom_dns_records
-  private_zone_id           = var.partner_services_config.private_zone_id
-  dns_domain                = var.partner_services_config.dns_domain
+  create_custom_dns_records = var.party_services_config.create_custom_dns_records
+  private_zone_id           = var.party_services_config.private_zone_id
+  dns_domain                = var.party_services_config.dns_domain
 }
 
 # Local values for organizing outputs
@@ -125,6 +126,7 @@ locals {
       custom_dns_name         = endpoint_info.custom_dns_name
       partner_region          = endpoint_info.partner_region
       partner_account         = endpoint_info.partner_account
+      partner_name            = endpoint_info.partner_name
       ports                   = endpoint_info.ports
       connection_type         = "consumer"
     }

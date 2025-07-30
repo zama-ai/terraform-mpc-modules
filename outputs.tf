@@ -67,12 +67,12 @@ output "vpc_endpoint_service_details" {
 }
 
 # Partner Interface outputs (only in consumer mode)
-output "partner_interface_endpoint_ids" {
+output "party_interface_endpoint_ids" {
   description = "IDs of the created VPC interface endpoints for partner connections (empty if in provider mode)"
   value       = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].vpc_interface_endpoint_ids : []
 }
 
-output "partner_interface_dns_names" {
+output "party_interface_dns_names" {
   description = "DNS names of the created VPC interface endpoints for partner connections (empty if in provider mode)"
   value       = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].vpc_interface_endpoint_dns_names : []
 }
@@ -96,14 +96,14 @@ output "deployment_summary" {
     namespace = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].namespace_name : (
       var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].namespace_name : var.namespace
     )
-    total_services = var.deployment_mode == "provider" ? length(var.mpc_services) : length(var.partner_services_config.partner_services)
+    total_services = var.deployment_mode == "provider" ? length(var.mpc_services) : length(var.party_services_config.party_services)
     service_names = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].nlb_service_names : (
       var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].kubernetes_service_names : []
     )
     vpc_endpoints_created      = var.deployment_mode == "provider" ? var.create_vpc_endpoints : false
     vpc_endpoints_count        = var.deployment_mode == "provider" && var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? length(module.vpc_endpoint_bridge[0].vpc_endpoint_service_ids) : 0
-    partner_interfaces_created = var.deployment_mode == "consumer" ? length(var.partner_services_config.partner_services) : 0
-    partner_interfaces_count   = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? length(module.vpc_endpoint_consumer[0].vpc_interface_endpoint_ids) : 0
+    party_interfaces_created = var.deployment_mode == "consumer" ? length(var.party_services_config.party_services) : 0
+    party_interfaces_count   = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? length(module.vpc_endpoint_consumer[0].vpc_interface_endpoint_ids) : 0
     common_tags                = var.common_tags
   }
 }
@@ -122,7 +122,7 @@ output "cluster_summary" {
     namespace         = var.namespace
     total_endpoints   = length(local.cluster_endpoints)
     provider_services = var.deployment_mode == "provider" ? length(var.mpc_services) : 0
-    consumer_services = var.deployment_mode == "consumer" ? length(var.partner_services_config.partner_services) : 0
+    consumer_services = var.deployment_mode == "consumer" ? length(var.party_services_config.party_services) : 0
     vpc_endpoints_enabled = var.deployment_mode == "provider" ? var.create_vpc_endpoints : true
   }
 }

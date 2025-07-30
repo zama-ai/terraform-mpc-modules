@@ -97,12 +97,13 @@ variable "configuration_mode_validation" {
   }
 }
 
-variable "partner_services" {
+variable "party_services" {
   description = "List of partner MPC services to connect to via VPC interface endpoints"
   type = list(object({
     name                      = string # Name of the partner service
     region                    = string # AWS region where the partner service is located  
     account_id                = optional(string, null) # AWS account ID where the partner service is located (optional)
+    partner_name              = optional(string, null) # Name of the partner name (optional)
     vpc_endpoint_service_name = string # VPC endpoint service name (required - AWS-generated name)
     ports = list(object({
       name        = string
@@ -119,13 +120,13 @@ variable "partner_services" {
   }))
 
   validation {
-    condition     = length(var.partner_services) > 0
+    condition     = length(var.party_services) > 0
     error_message = "At least one partner service must be defined."
   }
 
   validation {
     condition = alltrue([
-      for service in var.partner_services : 
+      for service in var.party_services : 
       service.vpc_endpoint_service_name != null && service.vpc_endpoint_service_name != ""
     ])
     error_message = "vpc_endpoint_service_name is required for all partner services and must be the actual AWS-generated VPC endpoint service name (e.g., 'com.amazonaws.vpce.region.vpce-svc-xxxxx')."
@@ -141,7 +142,7 @@ variable "endpoint_policy" {
 variable "private_dns_enabled" {
   description = "Whether to enable private DNS for the VPC interface endpoints"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "route_table_ids" {

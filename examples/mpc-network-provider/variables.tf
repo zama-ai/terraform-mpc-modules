@@ -24,11 +24,7 @@ variable "kubeconfig_context" {
   default     = ""
 }
 
-variable "eks_cluster_name" {
-  description = "Name of the EKS cluster for token authentication"
-  type        = string
-  default     = null
-}
+
 
 # MPC Cluster Configuration
 variable "cluster_name" {

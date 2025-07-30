@@ -37,7 +37,7 @@ security_group_ids   = null
 
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
-partner_services = [
+party_services = [
   # Example partner service configuration
   # {
   #   name                      = "partner-mpc-node-1"

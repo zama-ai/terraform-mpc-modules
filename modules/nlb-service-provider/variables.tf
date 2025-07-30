@@ -10,6 +10,11 @@ variable "create_namespace" {
   default     = true
 }
 
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+}
+
 variable "mpc_services" {
   description = "List of MPC services to create with their configurations"
   type = list(object({
@@ -41,8 +46,6 @@ variable "service_create_timeout" {
   type        = string
   default     = "10m"
 }
-
-
 
 variable "common_tags" {
   description = "Common tags to apply to all resources"

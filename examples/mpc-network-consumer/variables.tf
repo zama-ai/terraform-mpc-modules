@@ -82,12 +82,13 @@ variable "security_group_ids" {
 }
 
 # Partner Services Configuration
-variable "partner_services" {
+variable "party_services" {
   description = "List of partner services to connect to"
   type = list(object({
     name                      = string
     region                    = string
     account_id                = optional(string)
+    partner_name              = optional(string)
     vpc_endpoint_service_name = string
     ports = list(object({
       name        = string

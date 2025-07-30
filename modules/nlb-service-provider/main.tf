@@ -1,5 +1,58 @@
 # Provider requirements are defined in versions.tf
 
+# Cleanup security group rules for NLBs made by the native aws load balancer controller
+# Remove when migrating to the aws load balancer controller v2
+resource "null_resource" "cleanup_sg_rules" {
+  # Force this resource to run on every apply/destroy of Terraform
+  triggers = {
+    nlb_names   = join(",", local.nlb_names)
+    always_run  = timestamp()
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    interpreter = ["/bin/bash", "-c"]
+    command = <<EOT
+      # Get all NLB names from the trigger (comma-separated)
+      NLB_NAMES_COMMA="${self.triggers.nlb_names}"
+      echo "NLB_NAMES_COMMA: $NLB_NAMES_COMMA"
+      NLB_NAMES=$(echo "$NLB_NAMES_COMMA" | tr ',' ' ')
+      echo "NLB_NAMES: $NLB_NAMES"
+      
+      # Process each NLB name
+      for nlb_name in $NLB_NAMES; do
+        echo "Looking for security group rules with descriptions containing: $nlb_name"
+        
+        # Get both rule IDs and group IDs for rules containing NLB name
+        RULES_DATA=$(aws ec2 describe-security-group-rules \
+          --query "SecurityGroupRules[?IsEgress==\`false\` && Description != null && contains(Description, '$nlb_name')].{RuleId:SecurityGroupRuleId,GroupId:GroupId}" \
+          --output text)
+        echo "RULES_DATA: $RULES_DATA"
+
+        if [ -n "$RULES_DATA" ]; then
+          # Process each rule (format: RuleId GroupId per line)
+          echo "$RULES_DATA" | tr '\t' ' ' | while read GROUP_ID RULE_ID; do
+            if [ -n "$RULE_ID" ] && [ -n "$GROUP_ID" ]; then
+              aws ec2 revoke-security-group-ingress --group-id "$GROUP_ID" --security-group-rule-ids "$RULE_ID" --no-cli-pager 
+              echo "Revoked rule $RULE_ID from group $GROUP_ID for $nlb_name"
+            fi
+          done
+        else
+          echo "No ingress rules found with description containing: $nlb_name"
+        fi
+      done
+    EOT
+  }
+
+  # (Optional) prevent Terraform from complaining that this resource has no actual
+  # create-time actions—you can also add a no-op create provisioner if you like.
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [kubernetes_service.mpc_nlb]
+}
+
 # Create namespace if it doesn't exist
 resource "kubernetes_namespace" "mpc_namespace" {
   count = var.create_namespace ? 1 : 0
@@ -23,12 +76,7 @@ resource "kubernetes_service" "mpc_nlb" {
       "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internal"
       "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
       "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
-      #"service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol"              = "tcp"
-      #"service.beta.kubernetes.io/aws-load-balancer-healthcheck-port"                  = "traffic-port"
-      #"service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval"              = "10"
-      #"service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout"               = "6"
-      #"service.beta.kubernetes.io/aws-load-balancer-healthy-threshold"                 = "2"
-      #"service.beta.kubernetes.io/aws-load-balancer-unhealthy-threshold"               = "2"
+      "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
     }, var.mpc_services[count.index].additional_annotations)
 
     labels = merge({
