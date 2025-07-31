@@ -24,7 +24,7 @@ remote_state {
 # Set environment variables for automatic AWS profile handling
 terraform {
   before_hook "set_aws_profile" {
-    commands = ["apply", "plan", "destroy", "refresh", "validate", "init"]
+    commands = ["apply", "plan", "destroy", "refresh", "validate", "init", "output"]
     execute  = ["bash", "-c", "export AWS_PROFILE=${local.common_vars.inputs.aws_profile}"]
   }
   

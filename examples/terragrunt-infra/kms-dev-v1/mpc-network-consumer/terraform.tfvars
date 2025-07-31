@@ -41,7 +41,7 @@ party_services = [
     name                      = "mpc-node-1"
     region                    = "eu-west-1"
     partner_name              = "zws-dev"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-0d1effbd7c08d0263"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-033fa9ccd32797ef2"
     ports = [
       {
         name        = "grpc"
@@ -78,7 +78,7 @@ party_services = [
     name                      = "mpc-node-2"
     region                    = "eu-west-1"
     account_id                = "715841358639"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-0ac6a83cd466fb70a"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-06b05df54d8c1f24c"
     ports = [
       {
         name        = "grpc"
@@ -115,7 +115,7 @@ party_services = [
     name                      = "mpc-node-3"
     region                    = "eu-west-1"
     account_id                = "715841358639"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-01ce560a838e2b7ef"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-0883ff03c50d3b55f"
     ports = [
       {
         name        = "grpc"
