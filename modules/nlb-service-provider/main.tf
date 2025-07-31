@@ -36,6 +36,7 @@ resource "kubernetes_service" "mpc_nlb" {
 
   spec {
     type                        = "LoadBalancer"
+    load_balancer_class         = "service.k8s.aws/nlb"
     session_affinity            = var.mpc_services[count.index].session_affinity
     external_traffic_policy     = var.mpc_services[count.index].external_traffic_policy
     internal_traffic_policy     = var.mpc_services[count.index].internal_traffic_policy

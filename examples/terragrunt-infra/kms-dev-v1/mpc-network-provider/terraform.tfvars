@@ -31,8 +31,8 @@ mpc_services = [
       },
       {
         name        = "metrics"
-        port        = 9090
-        target_port = 9090
+        port        = 9646
+        target_port = 9646
         protocol    = "TCP"
       }
     ]
