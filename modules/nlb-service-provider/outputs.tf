@@ -13,10 +13,12 @@ output "nlb_hostnames" {
   value       = [for i, service in kubernetes_service.mpc_nlb : service.status[0].load_balancer[0].ingress[0].hostname]
 }
 
+
 output "nlb_arns" {
   description = "ARNs of the provisioned Network Load Balancers (looked up from AWS)"
   value       = [for lb in data.aws_lb.kubernetes_nlbs : lb.arn]
 }
+
 
 output "service_details" {
   description = "Detailed information about the created services"

@@ -1,58 +1,5 @@
 # Provider requirements are defined in versions.tf
 
-# Cleanup security group rules for NLBs made by the native aws load balancer controller
-# Remove when migrating to the aws load balancer controller v2
-resource "null_resource" "cleanup_sg_rules" {
-  # Force this resource to run on every apply/destroy of Terraform
-  triggers = {
-    nlb_names   = join(",", local.nlb_names)
-    always_run  = timestamp()
-  }
-
-  provisioner "local-exec" {
-    when    = destroy
-    interpreter = ["/bin/bash", "-c"]
-    command = <<EOT
-      # Get all NLB names from the trigger (comma-separated)
-      NLB_NAMES_COMMA="${self.triggers.nlb_names}"
-      echo "NLB_NAMES_COMMA: $NLB_NAMES_COMMA"
-      NLB_NAMES=$(echo "$NLB_NAMES_COMMA" | tr ',' ' ')
-      echo "NLB_NAMES: $NLB_NAMES"
-      
-      # Process each NLB name
-      for nlb_name in $NLB_NAMES; do
-        echo "Looking for security group rules with descriptions containing: $nlb_name"
-        
-        # Get both rule IDs and group IDs for rules containing NLB name
-        RULES_DATA=$(aws ec2 describe-security-group-rules \
-          --query "SecurityGroupRules[?IsEgress==\`false\` && Description != null && contains(Description, '$nlb_name')].{RuleId:SecurityGroupRuleId,GroupId:GroupId}" \
-          --output text)
-        echo "RULES_DATA: $RULES_DATA"
-
-        if [ -n "$RULES_DATA" ]; then
-          # Process each rule (format: RuleId GroupId per line)
-          echo "$RULES_DATA" | tr '\t' ' ' | while read GROUP_ID RULE_ID; do
-            if [ -n "$RULE_ID" ] && [ -n "$GROUP_ID" ]; then
-              aws ec2 revoke-security-group-ingress --group-id "$GROUP_ID" --security-group-rule-ids "$RULE_ID" --no-cli-pager 
-              echo "Revoked rule $RULE_ID from group $GROUP_ID for $nlb_name"
-            fi
-          done
-        else
-          echo "No ingress rules found with description containing: $nlb_name"
-        fi
-      done
-    EOT
-  }
-
-  # (Optional) prevent Terraform from complaining that this resource has no actual
-  # create-time actions—you can also add a no-op create provisioner if you like.
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  depends_on = [kubernetes_service.mpc_nlb]
-}
-
 # Create namespace if it doesn't exist
 resource "kubernetes_namespace" "mpc_namespace" {
   count = var.create_namespace ? 1 : 0
@@ -115,10 +62,16 @@ resource "kubernetes_service" "mpc_nlb" {
 
 # Extract Load Balancer names from the Kubernetes service hostnames
 locals {
-  # Extract NLB names from the DNS hostnames
-  nlb_names = [
+  # First extract the hostname parts for each service
+  hostname_parts = [
     for service in kubernetes_service.mpc_nlb :
-    split("-", split(".", service.status[0].load_balancer[0].ingress[0].hostname)[0])[0]
+    split("-", split(".", service.status[0].load_balancer[0].ingress[0].hostname)[0])
+  ]
+  
+  # Extract NLB names by removing the last hyphen-separated segment (random suffix)
+  nlb_names = [
+    for parts in local.hostname_parts :
+    join("-", slice(parts, 0, length(parts) - 1))
   ]
 }
 
@@ -128,3 +81,57 @@ data "aws_lb" "kubernetes_nlbs" {
   name  = local.nlb_names[count.index]
   depends_on = [kubernetes_service.mpc_nlb]
 }
+
+# Cleanup security group rules for NLBs made by the native aws load balancer controller
+# Remove when migrating to the aws load balancer controller v2
+resource "null_resource" "cleanup_sg_rules" {
+  # Force this resource to run on every apply/destroy of Terraform
+  triggers = {
+    nlb_names   = join(",", local.nlb_names)
+    always_run  = timestamp()
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    interpreter = ["/bin/bash", "-c"]
+    command = <<EOT
+      # Get all NLB names from the trigger (comma-separated)
+      NLB_NAMES_COMMA="${self.triggers.nlb_names}"
+      echo "NLB_NAMES_COMMA: $NLB_NAMES_COMMA"
+      NLB_NAMES=$(echo "$NLB_NAMES_COMMA" | tr ',' ' ')
+      echo "NLB_NAMES: $NLB_NAMES"
+      
+      # Process each NLB name
+      for nlb_name in $NLB_NAMES; do
+        echo "Looking for security group rules with descriptions containing: $nlb_name"
+        
+        # Get both rule IDs and group IDs for rules containing NLB name
+        RULES_DATA=$(aws ec2 describe-security-group-rules \
+          --query "SecurityGroupRules[?IsEgress==\`false\` && Description != null && contains(Description, '$nlb_name')].{RuleId:SecurityGroupRuleId,GroupId:GroupId}" \
+          --output text)
+        echo "RULES_DATA: $RULES_DATA"
+
+        if [ -n "$RULES_DATA" ]; then
+          # Process each rule (format: RuleId GroupId per line)
+          echo "$RULES_DATA" | tr '\t' ' ' | while read GROUP_ID RULE_ID; do
+            if [ -n "$RULE_ID" ] && [ -n "$GROUP_ID" ]; then
+              aws ec2 revoke-security-group-ingress --group-id "$GROUP_ID" --security-group-rule-ids "$RULE_ID" --no-cli-pager 
+              echo "Revoked rule $RULE_ID from group $GROUP_ID for $nlb_name"
+            fi
+          done
+        else
+          echo "No ingress rules found with description containing: $nlb_name"
+        fi
+      done
+    EOT
+  }
+
+  # (Optional) prevent Terraform from complaining that this resource has no actual
+  # create-time actions—you can also add a no-op create provisioner if you like.
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on = [data.aws_lb.kubernetes_nlbs]
+}
+

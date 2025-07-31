@@ -201,6 +201,15 @@ graph TB
 - ✅ **Kubernetes Integration**: Automatic service discovery for threshold MPC nodes
 - ✅ **Flexible Network Config**: EKS lookup or direct VPC specification for MPC deployment
 
+## Requirements
+
+- Terraform 1.0+
+- AWS CLI
+- EKSctl
+- kubectl
+- aws-load-balancer-controller (v2 recommended)
+
+
 ## 🚀 Quick Start
 
 ### Pattern 1: MPC Party Storage (mpcparty Module)

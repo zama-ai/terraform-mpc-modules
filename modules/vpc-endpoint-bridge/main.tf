@@ -15,11 +15,10 @@ data "external" "wait_nlb" {
   count = length(data.aws_lb.nlb_lookup)
   program = ["bash", "-c", <<-EOF
     set -e
-    aws elbv2 wait load-balancer-available --load-balancer-arns ${data.aws_lb.nlb_lookup[count.index].arn}
+    aws elbv2 wait load-balancer-available --region ${data.aws_region.current.region} --load-balancer-arns ${data.aws_lb.nlb_lookup[count.index].arn}
     echo '{"ready": "true"}'
   EOF
   ]
-
   depends_on = [data.aws_lb.nlb_lookup]
 }
 
