@@ -210,10 +210,14 @@ resource "kubernetes_config_map" "mpc_party_config" {
     }
   }
   
-  data = merge({
+  data = {
     "KMS_CORE__PUBLIC_VAULT__STORAGE"  = "s3://${aws_s3_bucket.vault_public_bucket.id}"
     "KMS_CORE__PRIVATE_VAULT__STORAGE" = "s3://${aws_s3_bucket.vault_private_bucket.id}"
-  }, var.additional_config_data)
+    "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__BUCKET" = aws_s3_bucket.vault_private_bucket.id
+    "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__PREFIX" = ""
+    "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET" = aws_s3_bucket.vault_public_bucket.id
+    "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX" = ""
+  }
   
   depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]
 }
