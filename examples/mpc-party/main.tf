@@ -2,45 +2,6 @@
 # This example demonstrates how to deploy only the MPC party infrastructure
 # using the enhanced mpcparty module that handles all Kubernetes resources
 
-terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 5.0"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.23"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.1"
-    }
-  }
-}
-
-# Configure AWS provider
-provider "aws" {
-  region = var.aws_region
-}
-
-# Configure Kubernetes provider
-provider "kubernetes" {
-  config_path    = var.kubeconfig_path
-  config_context = var.kubeconfig_context
-  
-  # Optional: EKS cluster authentication via AWS CLI
-  dynamic "exec" {
-    for_each = var.eks_cluster_name != null ? [1] : []
-    content {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", var.eks_cluster_name, "--region", var.aws_region]
-      command     = "aws"
-    }
-  }
-}
 
 # Random suffix for bucket names to ensure uniqueness
 resource "random_id" "bucket_suffix" {
@@ -53,8 +14,8 @@ module "mpc_party" {
 
   # Party configuration
   party_name               = var.party_name
-  vault_private_bucket_name = "${var.bucket_prefix}-private-${var.party_name}-${var.environment}-${random_id.bucket_suffix.hex}"
-  vault_public_bucket_name  = "${var.bucket_prefix}-public-${var.party_name}-${var.environment}-${random_id.bucket_suffix.hex}"
+  vault_private_bucket_name = "${var.bucket_prefix}-private-${random_id.bucket_suffix.hex}"
+  vault_public_bucket_name  = "${var.bucket_prefix}-public-${random_id.bucket_suffix.hex}"
 
   # EKS Cluster configuration
   cluster_name = var.cluster_name
@@ -88,6 +49,7 @@ module "mpc_party" {
 
   # ConfigMap configuration
   create_config_map = true
+  config_map_name = var.config_map_name
   additional_config_data = {
     "PARTY_NAME"    = var.party_name
     "ENVIRONMENT"   = var.environment

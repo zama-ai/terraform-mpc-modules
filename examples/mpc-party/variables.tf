@@ -16,6 +16,12 @@ variable "party_name" {
   }
 }
 
+variable "config_map_name" {
+  description = "Name of the ConfigMap (defaults to 'mpc-party-config-{party_name}' if not provided)"
+  type        = string
+  default     = null
+}
+
 variable "environment" {
   description = "Environment name (e.g., dev, staging, prod)"
   type        = string

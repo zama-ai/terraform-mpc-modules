@@ -42,8 +42,8 @@ mpc_services = [
       }
     ]
     selector = {
-      party       = "party-1"
-      environment = "dev"
+      "app" = "kms-core"
+      "app.kubernetes.io/name" = "kms-threshold-1-core"
     }
     additional_annotations = {
       "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-1,environment=dev"
@@ -51,6 +51,8 @@ mpc_services = [
     labels = {
       "mpc-role"    = "compute-node"
       "environment" = "dev"
+      "app" = "kms-core"
+      "app.kubernetes.io/name" = "kms-threshold-1-core"
     }
   },
   {
@@ -76,8 +78,8 @@ mpc_services = [
       }
     ]
     selector = {
-      party       = "party-2"
-      environment = "dev"
+      "app" = "kms-core"
+      "app.kubernetes.io/name" = "kms-threshold-2-core"
     }
     additional_annotations = {
       "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-2,environment=dev"
@@ -85,6 +87,8 @@ mpc_services = [
     labels = {
       "mpc-role"    = "compute-node"
       "environment" = "dev"
+      "app" = "kms-core"
+      "app.kubernetes.io/name" = "kms-threshold-2-core"
     }
   },
   {
@@ -110,8 +114,8 @@ mpc_services = [
       }
     ]
     selector = {
-      party       = "party-3"
-      environment = "dev"
+      "app" = "kms-core"
+      "app.kubernetes.io/name" = "kms-threshold-3-core"
     }
     additional_annotations = {
       "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-3,environment=dev"
@@ -119,6 +123,8 @@ mpc_services = [
     labels = {
       "mpc-role"    = "compute-node"
       "environment" = "dev"
+      "app" = "kms-core"
+      "app.kubernetes.io/name" = "kms-threshold-3-core"
     }
   }
 ]

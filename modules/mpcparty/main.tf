@@ -51,6 +51,8 @@ resource "aws_s3_bucket_public_access_block" "vault_public_bucket" {
 
   block_public_policy     = false
   restrict_public_buckets = false
+  block_public_acls       = false
+  ignore_public_acls      = false
 }
 
 resource "aws_s3_bucket_cors_configuration" "vault_public_bucket_cors" {
@@ -179,10 +181,11 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
     annotations = merge({
       "terraform.io/module"   = "mpcparty"
       "mpc.io/party-name"     = var.party_name
+      "eks.amazonaws.com/role-arn" = module.irsa[0].iam_role_arn
     }, var.service_account_annotations)
   }
   
-  depends_on = [kubernetes_namespace.mpc_party_namespace]
+  depends_on = [kubernetes_namespace.mpc_party_namespace, module.irsa]
 }
 
 # Create ConfigMap with S3 bucket configuration
@@ -212,5 +215,5 @@ resource "kubernetes_config_map" "mpc_party_config" {
     "KMS_CORE__PRIVATE_VAULT__STORAGE" = "s3://${aws_s3_bucket.vault_private_bucket.id}"
   }, var.additional_config_data)
   
-  depends_on = [kubernetes_namespace.mpc_party_namespace]
+  depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]
 }
