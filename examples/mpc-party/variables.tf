@@ -107,3 +107,39 @@ variable "owner" {
   type        = string
   default     = "mpc-team"
 } 
+
+variable "create_nodegroup" {
+  description = "Whether to create a nodegroup for the MPC party"
+  type        = bool
+  default     = false
+}
+
+variable "nodegroup_instance_types" {
+  description = "Instance types for the nodegroup"
+  type        = list(string)
+  default     = ["t3.large"]
+}
+
+variable "nodegroup_min_size" {
+  description = "Minimum number of nodes in the nodegroup"
+  type        = number
+  default     = 1
+}
+
+variable "nodegroup_max_size" {
+  description = "Maximum number of nodes in the nodegroup"
+  type        = number
+  default     = 1
+}
+
+variable "nodegroup_desired_size" {
+  description = "Desired number of nodes in the nodegroup"
+  type        = number
+  default     = 1
+}
+
+variable "nodegroup_disk_size" {
+  description = "Disk size for the nodegroup"
+  type        = number
+  default     = 30
+}

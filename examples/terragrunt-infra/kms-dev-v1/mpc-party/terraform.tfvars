@@ -31,6 +31,14 @@ additional_tags = {
   "Cost-Center" = "engineering"
 }
 
+# Node Group Configuration
+create_nodegroup = true
+nodegroup_instance_types = ["t3.large"]
+nodegroup_min_size = 1
+nodegroup_max_size = 1
+nodegroup_desired_size = 1
+nodegroup_disk_size = 30
+
 # Example configurations for different scenarios:
 
 # Scenario 1: Development environment with IRSA
