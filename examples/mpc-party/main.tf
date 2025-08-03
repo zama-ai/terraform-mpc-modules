@@ -91,4 +91,7 @@ module "nodegroup" {
       effect = "NO_SCHEDULE"
     }
   }
+  labels = {
+    "nodepool" = "kms-decentralized"
+  }
 }

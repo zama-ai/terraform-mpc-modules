@@ -38,7 +38,7 @@ security_group_ids   = null
 party_services = [
   # Example partner service configuration
   {
-    name                      = "mpc-node-4"
+    name                      = "kms-threshold-4-core-4"
     region                    = "eu-west-3"
     partner_name              = "zws-dev"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0c8a37f02a896c7bc"

@@ -38,7 +38,7 @@ security_group_ids   = null
 party_services = [
   # Example partner service configuration
   {
-    name                      = "mpc-node-1"
+    name                      = "kms-threshold-1-core-1"
     region                    = "eu-west-1"
     partner_name              = "zws-dev"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-033fa9ccd32797ef2"
@@ -75,7 +75,7 @@ party_services = [
     }
   },
   {
-    name                      = "mpc-node-2"
+    name                      = "kms-threshold-2-core-2"
     region                    = "eu-west-1"
     account_id                = "715841358639"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-06b05df54d8c1f24c"
@@ -112,7 +112,7 @@ party_services = [
     }
   },
   {
-    name                      = "mpc-node-3"
+    name                      = "kms-threshold-3-core-3"
     region                    = "eu-west-1"
     account_id                = "715841358639"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-0883ff03c50d3b55f"

@@ -30,7 +30,7 @@ mpc_services = [
         protocol    = "TCP"
       },
       {
-        name        = "metrics"
+        name        = "metric"
         port        = 9646
         target_port = 9646
         protocol    = "TCP"

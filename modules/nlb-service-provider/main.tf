@@ -19,11 +19,13 @@ resource "kubernetes_service" "mpc_nlb" {
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
 
     annotations = merge({
-      "service.beta.kubernetes.io/aws-load-balancer-type"                              = "nlb"
+      "service.beta.kubernetes.io/aws-load-balancer-type"                              = "external"
       "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internal"
       "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
       "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
       "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                  = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-alpn-policy" = "HTTP2Preferred"
     }, var.mpc_services[count.index].additional_annotations)
 
     labels = merge({

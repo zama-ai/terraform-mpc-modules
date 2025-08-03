@@ -164,8 +164,7 @@ module "irsa" {
 
 # Create Kubernetes Service Account (only if not using IRSA)
 resource "kubernetes_service_account" "mpc_party_service_account" {
-  count = var.create_service_account && !var.create_irsa ? 1 : 0
-  
+  count = var.create_service_account ? 1 : 0
   metadata {
     name      = var.k8s_service_account_name
     namespace = var.k8s_namespace

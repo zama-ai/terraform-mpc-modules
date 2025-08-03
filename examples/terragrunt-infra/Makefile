@@ -1,7 +1,7 @@
 # Terragrunt Infrastructure Management
 # Makefile for easy environment management
 
-.PHONY: help plan-all apply-all destroy-all plan-zws apply-zws destroy-zws plan-kms apply-kms destroy-kms output-all output-zws output-kms cmd output run-on show-output validate plan apply env-info help-examples quick-outputs
+.PHONY: help plan-all apply-all destroy-all plan-zws apply-zws destroy-zws plan-kms apply-kms destroy-kms output-all output-zws output-kms cmd output run-on show-output validate plan apply env-info help-examples quick-outputs clean-cache clean-cache-env
 
 # Default target
 help:
@@ -23,12 +23,14 @@ help:
 	@echo ""
 	@echo "  make init-all      - Initialize all environments"
 	@echo "  make validate-all  - Validate all environments"
+	@echo "  make clean-cache   - Clean all Terraform/Terragrunt cache"
 	@echo ""
 	@echo "Dynamic commands:"
 	@echo "  make output ENV=zws-dev           - Get outputs from specific environment"
 	@echo "  make plan ENV=kms-dev-v1          - Plan specific environment"
 	@echo "  make apply ENV=zws-dev            - Apply specific environment"
 	@echo "  make validate ENV=kms-dev-v1      - Validate specific environment"
+	@echo "  make clean-cache-env ENV=zws-dev  - Clean cache for specific environment"
 	@echo ""
 	@echo "Module-specific commands:"
 	@echo "  make run-on ENV=zws-dev MODULE=mpc-network-provider CMD=output"
@@ -56,6 +58,24 @@ validate-all:
 
 output-all:
 	terragrunt run-all output
+
+# Clean cache commands
+clean-cache:
+	@echo "🧹 Cleaning all Terraform and Terragrunt cache directories..."
+	find . -type d -name ".terragrunt-cache" -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name ".terraform" -exec rm -rf {} + 2>/dev/null || true
+	find . -name ".terraform.lock.hcl" -delete 2>/dev/null || true
+	@echo "✅ Cache cleanup completed!"
+
+# Clean cache for specific environment
+# Usage: make clean-cache-env ENV=zws-dev
+clean-cache-env:
+	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make clean-cache-env ENV=zws-dev"; exit 1; fi
+	@echo "🧹 Cleaning Terraform and Terragrunt cache for $(ENV) environment..."
+	find $(ENV) -type d -name ".terragrunt-cache" -exec rm -rf {} + 2>/dev/null || true
+	find $(ENV) -type d -name ".terraform" -exec rm -rf {} + 2>/dev/null || true
+	find $(ENV) -name ".terraform.lock.hcl" -delete 2>/dev/null || true
+	@echo "✅ Cache cleanup completed for $(ENV) environment!"
 
 # plan all provider
 plan-all-provider:
@@ -191,6 +211,7 @@ env-info:
 	@echo "Available modules:"
 	@find $(ENV) -name "terragrunt.hcl" -not -path "*/.terragrunt-cache/*" -exec dirname {} \; | sed 's|$(ENV)/||' | sort
 
+
 # Show usage examples
 help-examples:
 	@echo "🚀 Terragrunt Dynamic Commands - Usage Examples"
@@ -217,6 +238,8 @@ help-examples:
 	@echo "  make validate-all                 # Validate all environments"
 	@echo "  make output-all-provider          # Get outputs from all provider modules"
 	@echo "  make output-all-consumer          # Get outputs from all consumer modules"
+	@echo "  make clean-cache                  # Clean all Terraform/Terragrunt cache"
+	@echo "  make clean-cache-env ENV=zws-dev  # Clean cache for specific environment"
 	@echo ""
 	@echo "✅ All commands automatically use the correct AWS profile based on environment!"
 
