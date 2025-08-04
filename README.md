@@ -222,170 +222,7 @@ Once the network and KMS integration are validated:
 - AWS CLI
 - EKSctl
 - kubectl
-- aws-load-balancer-controller (v2 recommended)
-
-
-## 🚀 Quick Start
-
-### Complete KubeIP Infrastructure Deployment
-
-Deploy the complete MPC partner infrastructure using the KubeIP strategy:
-
-```hcl
-module "mpc_kubeip_infrastructure" {
-  source = "path/to/terraform-mpc-modules"
-
-  # Basic configuration
-  cluster_name = "partner-mpc-cluster"
-  region      = "us-east-1"
-  
-  # Party identification
-  party_name = "alice-party"
-  
-  # Elastic IP configuration (pre-allocated)
-  elastic_ip_allocation_id = "eipalloc-12345678"  # Your pre-allocated EIP
-  kubeip_tag_key          = "KUBEIP"
-  kubeip_tag_value        = "reserved"
-  
-  # Enclave node group configuration
-  nodegroup_config = {
-    instance_types     = ["m5.large", "m5.xlarge"]
-    capacity_type      = "ON_DEMAND"
-    min_size          = 1
-    max_size          = 3
-    desired_size      = 1
-    
-    # Public subnet required for internet connectivity
-    subnet_ids = ["subnet-12345678"]  # Public subnet ID
-    
-    # Enclave-specific configuration
-    enable_nitro_enclaves = true
-    enclave_memory_mib   = 1024
-  }
-  
-  # Security configuration
-  security_config = {
-    allowed_mpc_ports = [50100, 50001, 9646]  # gRPC, peer, metrics
-    allowed_cidr_blocks = [
-      "203.0.113.0/32",  # Partner B EIP
-      "198.51.100.0/32", # Partner C EIP
-      # Add other partner EIPs here
-    ]
-  }
-  
-  # KMS configuration for attestation
-  kms_config = {
-    enable_pcr0_policy = true
-    pcr0_measurements = [
-      "1234567890abcdef...",  # Your enclave PCR0 measurement
-    ]
-    key_description = "MPC Partner Alice Attestation Key"
-  }
-  
-  # Storage configuration
-  storage_config = {
-    private_bucket_name = "mpc-alice-private-vault-${random_id.suffix.hex}"
-    public_bucket_name  = "mpc-alice-public-vault-${random_id.suffix.hex}"
-    enable_versioning   = true
-    enable_encryption   = true
-  }
-
-  common_tags = {
-    Environment = "production"
-    Project     = "mpc-kubeip"
-    Party       = "alice"
-  }
-}
-
-# Generate unique bucket suffix
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-```
-
-### Minimal Configuration (Storage Only)
-
-If you only need storage infrastructure without the full KubeIP setup:
-
-```hcl
-module "mpc_party_storage" {
-  source = "path/to/terraform-mpc-modules/modules/mpcparty"
-
-  # Party configuration
-  party_name               = "alice-party"
-  vault_private_bucket_name = "mpc-alice-private-vault-${random_id.suffix.hex}"
-  vault_public_bucket_name  = "mpc-alice-public-vault-${random_id.suffix.hex}"
-
-  # Kubernetes configuration
-  cluster_name             = "partner-mpc-cluster"
-  k8s_namespace            = "mpc-party"
-  k8s_service_account_name = "mpc-party-sa"
-
-  # Enable all components
-  create_namespace       = true
-  create_service_account = true
-  create_irsa           = true
-  create_config_map     = true
-
-  common_tags = {
-    Environment = "production"
-    Project     = "mpc-infrastructure"
-    Party       = "alice"
-  }
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-```
-
-### Partner Connection Configuration
-
-Configure your MPC application to connect to other partners using their public IPs:
-
-```hcl
-# Partner registry - to be shared among all MPC participants
-locals {
-  mpc_partners = {
-    "party-alice" = {
-      eip     = "203.0.113.10"
-      region  = "us-east-1"
-      ports = {
-        grpc    = 50100
-        peer    = 50001
-        metrics = 9646
-      }
-    }
-    "party-bob" = {
-      eip     = "198.51.100.20"
-      region  = "eu-west-1"
-      ports = {
-        grpc    = 50100
-        peer    = 50001
-        metrics = 9646
-      }
-    }
-  }
-}
-
-# Generate ConfigMap for your MPC application
-resource "kubernetes_config_map" "mpc_partners" {
-  metadata {
-    name      = "mpc-partner-registry"
-    namespace = "mpc-party"
-  }
-
-  data = {
-    for party_name, config in local.mpc_partners :
-    "${party_name}.yaml" => yamlencode({
-      name      = party_name
-      endpoint  = "${config.eip}:${config.ports.grpc}"
-      peer_addr = "${config.eip}:${config.ports.peer}"
-      region    = config.region
-    })
-  }
-}
-```
+- eks with public subnets configured (for KubeIP)
 
 ## 📁 Examples
 
@@ -418,11 +255,49 @@ Key characteristics:
 - Integrated PCR0 measurement injection for KMS attestation
 - Helm chart deployment examples for MPC services
 
+#### 🚀 Makefile Commands
+
+The terragrunt-infra example includes a comprehensive Makefile for easy environment management. Navigate to `examples/terragrunt-infra/` and use these commands:
+
+##### **🌍 Environment Commands**
 ```bash
-cd examples/terragrunt-infra/zws-dev/mpc-nodegroup-kubeip
-terragrunt plan
-terragrunt apply
+# All environments
+make plan-all      # Plan all environments
+make apply-all     # Apply all environments
+make destroy-all   # Destroy all environments
+make output-all    # Get outputs from all environments
+make init-all      # Initialize all environments
+make validate-all  # Validate all environments
 ```
+
+##### **⚡ Dynamic Commands**
+```bash
+# Environment-specific operations
+make output ENV=zws-dev           # Get outputs from specific environment
+make plan ENV=kms-dev-v1          # Plan specific environment
+make apply ENV=zws-dev            # Apply specific environment
+make validate ENV=kms-dev-v1      # Validate specific environment
+
+# Module-specific operations
+make run-on ENV=zws-dev MODULE=mpc-network-provider CMD=output
+make run-on ENV=kms-dev-v1 MODULE=mpc-network-consumer CMD=plan
+
+```
+
+##### **🧹 Cache Management**
+```bash
+make clean-cache              # Clean all Terraform/Terragrunt cache
+make clean-cache-env ENV=zws-dev  # Clean cache for specific environment
+```
+
+##### **📚 Help Commands**
+```bash
+make help              # Show all available commands
+make help-examples     # Show detailed usage examples
+make quick-outputs     # Quick outputs from all environments
+```
+
+✅ **All commands automatically use the correct AWS profile based on environment configuration!**
 
 ## 📋 Requirements
 
@@ -481,37 +356,6 @@ module "mpc_infrastructure" {
 - S3 bucket ARNs for encrypted storage
 - KMS key ARN for attestation
 
-### kubeip Module
-
-**Purpose**: Deploy KubeIP controller for automatic Elastic IP assignment.
-
-**Key Variables**:
-```hcl
-module "kubeip" {
-  source = "./modules/kubeip"
-
-  cluster_name      = "my-eks-cluster"
-  namespace         = "kube-system"
-  
-  # Filter configuration
-  filter_config = {
-    tag_key   = "KUBEIP"
-    tag_value = "reserved"
-  }
-  
-  # Node selector for targeting specific nodes
-  node_selector = {
-    "node.kubernetes.io/instance-type" = "m5.large"
-    "eks.amazonaws.com/nodegroup"      = "enclave-nodes"
-  }
-}
-```
-
-**Key Outputs**:
-- KubeIP deployment status
-- Controller configuration details
-- EIP filter settings
-
 ### mpcparty Module
 
 **Purpose**: Self-contained MPC party storage and authentication infrastructure.
@@ -553,32 +397,6 @@ module "mpc_party" {
 | **Production Deployment** | `examples/terragrunt-infra/` | Terragrunt + all modules |
 | **Custom Solution** | Direct module composition | Mix of modules as needed |
 
-## 🔒 Security Features
-
-### KubeIP Security
-- **Restricted EIP Assignment**: Only nodes with specific tags can claim Elastic IPs
-- **Public Subnet Isolation**: Enclave nodes isolated in dedicated public subnets
-- **Minimal Attack Surface**: Only MPC-related ports exposed to internet
-- **Automatic IP Management**: KubeIP prevents IP conflicts and unauthorized assignment
-
-### Enclave Security  
-- **AWS Nitro Enclaves**: Cryptographically isolated compute environments
-- **PCR0 Attestation**: Hardware-based verification of enclave code integrity
-- **KMS Integration**: Attestation-based key access with PCR0 measurements
-- **Secure Boot**: Verified boot process with cryptographic signatures
-
-### Storage Security
-- **Private Bucket**: Restricted access for encrypted key shares and private materials
-- **Public Bucket**: Read access for public parameters and verification data
-- **IRSA**: Secure, temporary AWS credentials without long-lived keys
-- **Least Privilege**: Scoped permissions for MPC operations only
-
-### Network Security
-- **Security Groups**: Restrictive firewall rules for specific partner EIPs only
-- **Cross-Account Isolation**: Each party operates in independent AWS accounts
-- **Regional Distribution**: Partners can deploy across different AWS regions
-- **Direct Connectivity**: No complex VPC networking or peering required
-
 ## 🤝 Contributing
 
 1. Each module should have a single, clear responsibility focused on the KubeIP strategy
@@ -597,9 +415,4 @@ For issues and questions:
 - Check the example configurations in `examples/`
 - Review individual module documentation in `modules/`
 - Consult the KubeIP documentation and AWS EKS best practices
-- See `README_KUBEIP_UPDATES.md` for migration details from previous architecture
 - Open an issue for bugs or feature requests
-
----
-
-> **🔄 Architecture Evolution**: This module collection has evolved from a complex AWS PrivateLink-based architecture to a simplified KubeIP strategy. The new approach eliminates VPC networking complexity while maintaining security through enclave attestation and restrictive security groups. See `README_KUBEIP_UPDATES.md` for detailed migration information.
