@@ -1,0 +1,142 @@
+kmsPeers:
+  # Number of replicas managed by each statefulset
+  count: 4
+
+kmsConnector:
+  enabled: false
+
+kmsCore:
+  replicas: 1
+  nameOverride:
+  addressOverride:
+  image:
+    name: ghcr.io/zama-ai/kms-service
+    tag: v0.11.0-rc15
+  thresholdMode:
+    initializationScript:
+      enabled: true
+    enabled: true
+    thresholdValue: 1
+    numSessionsPreproc: 4
+    peersList:
+      - id: 1
+        host: 54.217.182.97
+        port: 50001
+      - id: 2
+        host: 54.228.234.185
+        port: 50001
+      - id: 3
+        host: 99.81.27.249
+        port: 50001
+      - id: 4
+        host: 52.47.71.156
+        port: 50001
+
+  aws:
+    region: eu-west-1
+  publicVault:
+    s3:
+      enabled: true
+  privateVault:
+    s3:
+      enabled: true
+    awskms:
+      enabled: false
+  nitroEnclave:
+    enabled: false
+    eifSignKey: 00000000-0000-0000-0000-000000000000
+    cpuCount: 30
+    memoryGiB: 58
+  serviceMonitor:
+    enabled: true
+  resources:
+    requests:
+      memory: 1Gi
+      cpu: 1
+    limits:
+      memory: 7Gi
+      ephemeralStorage: 1Gi
+      grpcTimeout: 360
+      grpcMaxMessageSize: 104857600
+  nodeSelector:
+    kubeip: "true"
+    nodepool: mpc-enclave
+  tolerations:
+    - key: mpc.io/enclave
+      effect: NoSchedule
+      operator: Equal
+      value: "true"
+ 
+  affinity:
+    # Make sure that kms-core pods are not scheduled on the same node
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: "kubernetes.io/hostname"
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - kms-core
+
+#podSecurityContext:
+#  # To set when the image will support non root user
+#  runAsUser: 10003
+#  runAsGroup: 10002
+#  fsGroup: 10002
+#  runAsNonRoot: true
+
+#podSecurityContextForEnclave:
+#  runAsUser: 10003
+#  runAsGroup: 10002
+#  fsGroup: 1001
+#  supplementalGroups: [1001]
+#  runAsNonRoot: true
+#  allowPrivilegeEscalation: false
+#  readOnlyRootFilesystem: true
+#  privileged: false
+
+mtls:
+  enabled: false
+environment: dev
+
+redis:
+  enabled: false
+  host: "redis://redis-master.common.svc.cluster.local"
+
+tracing:
+  enabled: false
+  endpoint: "http://observability-zws-testnet-observability-alloy.observability.svc.cluster.local:4317"
+  metrics:
+    enabled: false
+    interval_sec: 20
+
+socat:
+  image:
+    name: alpine/socat
+    tag: latest
+
+rustLog: debug
+
+nodeSelector:
+  aws-nitro-enclaves-k8s-dp: "enabled"
+tolerations:
+  - key: app
+    effect: NoSchedule
+    operator: Equal
+    value: tkms-enclave-staging
+
+minio:
+  enabled: false
+
+kyverno:
+  enabled: false
+
+kmsCoreClient:
+  enabled: false
+
+kmsInit:
+  enabled: false
+
+kmsGenKeys:
+  enabled: false

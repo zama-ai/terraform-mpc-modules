@@ -1,0 +1,25 @@
+kmsPeers:
+  id: 1
+
+kmsCore:
+  serviceAccountName: kms-decentralized-1
+  envFrom:
+    configmap:
+      name: kms-threshold-1
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: nodepool
+              operator: In
+              values:
+                - mpc-enclave
+            - key: kubeip
+              operator: In
+              values:
+                - "true"
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - ip-172-31-49-89.eu-west-1.compute.internal

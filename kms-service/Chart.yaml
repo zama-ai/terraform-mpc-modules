@@ -1,0 +1,15 @@
+apiVersion: v2
+dependencies:
+- condition: minio.enabled
+  name: minio
+  repository: oci://registry-1.docker.io/bitnamicharts
+  tags:
+  - local
+  version: ~16.0.10
+description: A helm chart to distribute and deploy the Zama KMS application stack
+keywords:
+- kms-service
+- threshold
+- centralized
+name: kms-service
+version: 0.6.56

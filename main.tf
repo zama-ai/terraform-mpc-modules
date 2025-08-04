@@ -1,137 +1,186 @@
-# MPC Cluster Terraform Module
-# This root module orchestrates the deployment of an MPC cluster including:
-# 1. Kubernetes LoadBalancer services with NLB backend (mpc-nlb module)
-# 2. VPC endpoints for cross-VPC connectivity (vpc-endpoints module)
-# 3. Partner interface connections via VPC interface endpoints (mpc-partner-interface module)
-# Note: MPC party storage infrastructure is now handled by dedicated examples
+# MPC Infrastructure Root Module
+# Orchestrates nodegroup, firewall, and kubeip child modules to deploy
+# dedicated enclave node groups with automatic public IP assignment
 
-# Provider requirements are defined in versions.tf
-
-# Configuration validation notes:
-# - Provider mode: requires at least one mpc_service to be defined
-# - Consumer mode: requires at least one partner service in party_services_config
-
-# Data source to get current AWS region
 data "aws_region" "current" {}
 
-# Deploy MPC services with Network Load Balancers (only if deployment_mode is "provider")
-module "nlb_service_provider" {
-  count  = var.deployment_mode == "provider" ? 1 : 0
-  source = "./modules/nlb-service-provider"
+data "aws_caller_identity" "current" {}
 
-  namespace        = var.namespace
-  create_namespace = var.create_namespace
-  mpc_services     = var.mpc_services
-  common_tags      = var.common_tags
-  aws_region       = data.aws_region.current.region
 
-  service_create_timeout = var.service_create_timeout
+# Data sources
+data "aws_eks_cluster" "cluster" {
+  name = var.cluster_name
 }
 
-# Deploy VPC endpoints for the created NLBs (optional, only in provider mode)
-module "vpc_endpoint_bridge" {
-  count  = var.deployment_mode == "provider" && var.create_vpc_endpoints ? 1 : 0
-  source = "./modules/vpc-endpoint-bridge"
 
-  # Use the NLB service names from the nlb-service-provider module
-  service_details = [
-    for i, svc in module.nlb_service_provider[0].service_details : {
-      display_name = svc.name
-      lb_arn       = svc.lb_arn
-    }
+# Get details for all subnets used by the EKS cluster
+data "aws_subnet" "cluster_subnets" {
+  for_each = toset(data.aws_eks_cluster.cluster.vpc_config[0].subnet_ids)
+  id       = each.value
+}
+
+# Local values for computed data
+locals {
+  cluster_vpc_id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+  cluster_subnet_ids = data.aws_eks_cluster.cluster.vpc_config[0].subnet_ids
+  
+  # Use specified kubernetes_version or default to cluster version
+  kubernetes_version = var.kubernetes_version != null ? var.kubernetes_version : data.aws_eks_cluster.cluster.version
+
+  # Get public subnet IDs by filtering subnets that have a route to an internet gateway
+  public_subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
+    for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
+    if subnet.map_public_ip_on_launch == true
   ]
 
-  # VPC Endpoint Service configuration
-  acceptance_required = var.vpc_endpoints_config.acceptance_required
-  allowed_principals  = var.vpc_endpoints_config.allowed_principals
-  # Always ensure current region is included in supported_regions
-  supported_regions = length(var.vpc_endpoints_config.supported_regions) > 0 ? distinct(concat(var.vpc_endpoints_config.supported_regions, [data.aws_region.current.id])) : [data.aws_region.current.id]
-  tags               = var.common_tags
-
-  depends_on = [module.nlb_service_provider]
+  private_subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
+    for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
+    if subnet.map_public_ip_on_launch == false
+  ]
+  
+  # Common tags applied to all resources
+  common_tags = merge(var.tags, {
+    "Environment"   = var.environment
+    "Project"       = "mpc-infrastructure"
+    "ManagedBy"     = "terraform"
+    "ClusterName"   = var.cluster_name
+  })
+  
+  # Convert EIP filter tags map to KubeIP filter string format
+  # Example: { kubeip = "reserved", environment = "demo" } 
+  # Becomes: "Name=tag:kubeip,Values=reserved;Name=tag:environment,Values=demo"
+  kubeip_filter_string = join(";", [
+    for key, value in var.kubeip_eip_filter_tags : "Name=tag:${key},Values=${value}"
+  ])
 }
 
-# Deploy partner interface connections (only in consumer mode)
-# The vpc-endpoint-consumer module supports two configuration modes:
-# - EKS Cluster Lookup: Automatically retrieves network config from consumer_cluster_name
-# - Direct Specification: Uses manually provided consumer_vpc_id, consumer_subnet_ids, consumer_security_group_ids
-module "vpc_endpoint_consumer" {
-  count  = var.deployment_mode == "consumer" ? 1 : 0
-  source = "./modules/vpc-endpoint-consumer"
 
-  # Partner services configuration
-  party_services = var.party_services_config.party_services
 
-  # Network configuration - now passed from root-level consumer variables
-  cluster_name       = var.consumer_cluster_name
-  vpc_id             = var.consumer_vpc_id
-  subnet_ids         = var.consumer_subnet_ids
-  security_group_ids = var.consumer_security_group_ids
-
-  # VPC Interface Endpoint configuration
-  endpoint_policy     = var.party_services_config.endpoint_policy
-  private_dns_enabled = var.party_services_config.private_dns_enabled
-  route_table_ids     = var.party_services_config.route_table_ids
-
-  # Naming and tagging
-  name_prefix     = var.party_services_config.name_prefix
-  common_tags     = var.common_tags
-  additional_tags = var.party_services_config.additional_tags
-
-  # Timeouts
-  endpoint_create_timeout = var.party_services_config.endpoint_create_timeout
-  endpoint_delete_timeout = var.party_services_config.endpoint_delete_timeout
-
-  # Kubernetes configuration
-  namespace        = var.party_services_config.namespace
-  create_namespace = var.party_services_config.create_namespace
-
-  # Custom DNS (optional)
-  create_custom_dns_records = var.party_services_config.create_custom_dns_records
-  private_zone_id           = var.party_services_config.private_zone_id
-  dns_domain                = var.party_services_config.dns_domain
+# Create dedicated security group with MPC-specific rules
+module "firewall" {
+  source = "./modules/firewall"
+  
+  name                          = "${var.name_prefix}-firewall"
+  cluster_name                  = var.cluster_name
+  create_node_security_group    = true
+  node_security_group_name      = "${var.name_prefix}-enclave-sg"
+  node_security_group_description = "Security group for MPC enclave nodes with restricted P2P access"
+  
+  # P2P port configuration for MPC networking
+  p2p_ports = var.mpc_p2p_ports
+  
+  # Allowed peer access (other MPC participants)
+  allowed_peer_cidrs            = var.allowed_peer_cidrs
+  allowed_peer_security_groups  = var.allowed_peer_security_groups
+  
+  # Additional security rules for MPC requirements
+  additional_security_group_rules = var.additional_security_group_rules
+  
+  tags = merge(local.common_tags, {
+    "Component" = "firewall"
+    "Purpose"   = "mpc-enclave-security"
+  }, var.firewall_tags)
 }
 
-# Local values for organizing outputs
-locals {
-  # Provider mode: Combine NLB and VPC endpoint information
-  provider_cluster_endpoints = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? (
-    var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? [
-      for i, service_name in module.nlb_service_provider[0].nlb_service_names : {
-        service_name              = service_name
-        nlb_hostname              = module.nlb_service_provider[0].nlb_hostnames[i]
-        nlb_arn                   = module.nlb_service_provider[0].nlb_arns[i]
-        vpc_endpoint_service_id   = module.vpc_endpoint_bridge[0].vpc_endpoint_service_ids[i]
-        vpc_endpoint_service_name = module.vpc_endpoint_bridge[0].vpc_endpoint_service_names[i]
-        connection_type           = "provider"
-      }
-      ] : [
-      for i, service_name in module.nlb_service_provider[0].nlb_service_names : {
-        service_name              = service_name
-        nlb_hostname              = module.nlb_service_provider[0].nlb_hostnames[i]
-        nlb_arn                   = module.nlb_service_provider[0].nlb_arns[i]
-        vpc_endpoint_service_id   = null
-        vpc_endpoint_service_name = null
-        connection_type           = "provider"
-      }
-    ]
-  ) : []
+# Create dedicated node group for MPC enclaves
+module "nodegroup" {
+  source = "./modules/nodegroup"
+  
+  name                = var.name_prefix
+  cluster_name        = var.cluster_name
+  kubernetes_version  = local.kubernetes_version
+  
+  # Scaling configuration
+  min_size     = var.nodegroup_min_size
+  max_size     = var.nodegroup_max_size
+  desired_size = var.nodegroup_desired_size
+  
+  # Instance configuration
+  instance_types = var.nodegroup_instance_types
+  capacity_type  = var.nodegroup_capacity_type
+  ami_type       = var.nodegroup_ami_type
+  disk_size      = var.nodegroup_disk_size
 
-  # Consumer mode: Partner interface endpoints information
-  consumer_cluster_endpoints = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? [
-    for service_name, endpoint_info in module.vpc_endpoint_consumer[0].partner_connection_endpoints : {
-      service_name            = service_name
-      vpc_interface_dns_name  = endpoint_info.vpc_interface_dns
-      kubernetes_service_name = endpoint_info.kubernetes_service_name
-      custom_dns_name         = endpoint_info.custom_dns_name
-      partner_region          = endpoint_info.partner_region
-      partner_account         = endpoint_info.partner_account
-      partner_name            = endpoint_info.partner_name
-      ports                   = endpoint_info.ports
-      connection_type         = "consumer"
+  subnet_ids = var.nodegroup_enable_public_access ? local.public_subnet_ids : local.private_subnet_ids
+
+  cluster_primary_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
+  
+  # Security groups from firewall module
+  security_group_ids = var.enable_dedicated_security_group ? concat([module.firewall.node_security_group_id], var.nodegroup_additional_security_group_ids) : concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids)
+  
+  # Remote access configuration
+  enable_remote_access      = var.enable_remote_access
+  ec2_ssh_key              = var.ec2_ssh_key
+  source_security_group_ids = var.source_security_group_ids
+  
+  # Node labels and taints for MPC workloads
+  labels = merge({
+    "nodepool"           = "mpc-enclave"
+    "mpc.io/enclave"     = "true"
+    "kubeip"             = "true"  # Label for KubeIP targeting
+  }, var.nodegroup_labels)
+  
+  taints = merge({
+    # Dedicated taint to ensure only MPC workloads run on these nodes
+    "mpc-enclave" = {
+      key    = "mpc.io/enclave"
+      value  = "true"
+      effect = "NO_SCHEDULE"
     }
-  ] : []
+  }, var.nodegroup_taints)
+  
+  tags = merge(local.common_tags, {
+    "Component" = "nodegroup"
+    "Purpose"   = "mpc-enclave-compute"
+  }, var.nodegroup_tags)
+  
+  depends_on = [module.firewall]
+}
 
-  # Combined cluster endpoints based on deployment mode
-  cluster_endpoints = var.deployment_mode == "provider" ? local.provider_cluster_endpoints : local.consumer_cluster_endpoints
+# Deploy KubeIP for automatic Elastic IP assignment
+module "kubeip" {
+  source = "./modules/kubeip"
+  
+  name         = "${var.name_prefix}-kubeip"
+  cluster_name = var.cluster_name
+  namespace    = var.kubeip_namespace
+  
+  # KubeIP configuration
+  kubeip_version = var.kubeip_version
+  
+  # EIP filtering using AWS tags (converted from map to string)
+  eip_filter_tags = local.kubeip_filter_string
+  
+  # Target nodes with specific labels
+  target_node_labels = var.kubeip_target_node_labels
+  node_selector      = var.kubeip_node_selector
+  
+  # Logging configuration
+  log_level = var.kubeip_log_level
+  
+  # Service account and IRSA
+  create_service_account = true
+  service_account_name   = "${var.name_prefix}-kubeip-service-account"
+  enable_irsa           = true
+  
+  # Additional tolerations for MPC enclave nodes
+  additional_tolerations = concat([
+    {
+      key      = "mpc.io/enclave"
+      operator = "Equal"
+      value    = "true"
+      effect   = "NoSchedule"
+    }
+  ], var.kubeip_additional_tolerations)
+  
+  # Resource configuration
+  resource_requests = var.kubeip_resource_requests
+  resource_limits   = var.kubeip_resource_limits
+  
+  tags = merge(local.common_tags, {
+    "Component" = "kubeip"
+    "Purpose"   = "ip-assignment"
+  }, var.kubeip_tags)
+  
+  depends_on = [module.nodegroup]
 }

@@ -11,8 +11,18 @@ variable "cluster_name" {
 
 variable "kubernetes_version" {
   type        = string
-  description = "Kubernetes version for the node group. If not specified, the EKS cluster's Kubernetes version will be used"
-  default     = null
+  description = "Kubernetes version for the node group"
+}
+
+variable "subnet_ids" {
+  type        = list(string)
+  description = "List of subnet IDs where the node group will be placed"
+  default     = []
+}
+
+variable "cluster_primary_security_group_id" {
+  type        = string
+  description = "The ID of the EKS cluster primary security group"
 }
 
 # Network Configuration

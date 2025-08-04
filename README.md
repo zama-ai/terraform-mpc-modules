@@ -1,205 +1,220 @@
-# MPC Cluster Terraform Modules
+# Partner Infrastructure Onboarding – KubeIP Strategy
 
-A comprehensive collection of Terraform modules for deploying Zama Multi-Party Computation (MPC) infrastructure on AWS. These modules enable secure deployment of threshold MPC nodes that implement advanced multi-party cryptographic protocols for secure key management, replacing traditional Hardware Security Modules (HSMs) with distributed threshold security. The infrastructure supports FHE (Fully Homomorphic Encryption) operations including threshold key generation, distributed decryption, key switching, and secure multi-party computations on encrypted data.
+A comprehensive collection of Terraform modules for deploying Zama Multi-Party Computation (MPC) infrastructure on AWS using the **KubeIP strategy**. This approach enables decentralized, multi-party deployments in a secure and reproducible way, simplifying networking, avoiding CIDR conflicts, and requiring minimal coordination between parties.
+
+Since Crossplane is used as the internal control plane for SaaS environments (e.g., Zama's internal DevOps model), it is not suitable for partner-managed environments. Instead, we provide a self-contained Terraform module that each partner can use to set up their infrastructure independently.
+
+## ✅ Overview
+
+Each partner will:
+
+1. **Provide a public Elastic IP (EIP)** with a predefined tag for allocation
+2. **Run a standardized Terraform module** that:
+   - Deploys a dedicated enclave node group on EKS
+   - Installs the KubeIP controller
+   - Creates necessary security groups
+3. **Participate in a bidirectional network validation process**
+4. **Configure software-level policies** (e.g., PCR0 injection)
+5. **Deploy MPC-related services via Helm**
 
 ## 🏗️ Architecture Overview
 
-This module collection enables deployment of a **decentralized, full-mesh MPC network** where each party operates as both provider and consumer in a distributed threshold key management system. Similar to blockchain networks but operating over private AWS infrastructure, each MPC node connects to all other nodes in the network.
-
-### 🌐 **Decentralized Full-Mesh Network**
-
-Each MPC party operates independently on its own EKS cluster and AWS account, while maintaining secure private connections to all other parties in the network. This creates a resilient, distributed system where:
+This module collection enables deployment of a **decentralized, full-mesh MPC network** where each party operates independently using **public IP connectivity** rather than complex VPC networking. Each MPC node is directly reachable over the internet with dedicated Elastic IPs, creating a resilient, distributed system where:
 
 - **No Single Point of Failure**: Each node operates independently
-- **Threshold Security**: Cryptographic operations require cooperation from multiple parties
-- **Private Network**: All communication flows through AWS PrivateLink (no internet)
+- **Simplified Networking**: Direct public IP connectivity eliminates VPC complexity
+- **No CIDR Conflicts**: Each party uses their own AWS account and public IPs
 - **Cross-Region/Account**: Parties can be distributed across AWS regions and accounts
-- **Bidirectional Connectivity**: Each party can initiate or respond to MPC protocols
-
-The modules follow **clean separation of concerns** with focused, composable components:
+- **Minimal Coordination**: Only requires sharing public EIPs between parties
 
 ### Core Modules
 
-1. **🎯 Root Module**: Pure networking orchestration for threshold MPC infrastructure (NLBs + VPC endpoints)
-2. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication for threshold cryptography
-3. **🔧 nlb-service-provider Module** (`modules/nlb-service-provider`): Kubernetes LoadBalancer services with AWS NLB for MPC node exposure
-4. **🌉 vpc-endpoint-bridge Module** (`modules/vpc-endpoint-bridge`): VPC endpoint services for secure MPC party communication via AWS PrivateLink
-5. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
+1. **🎯 Root Module**: Complete MPC infrastructure orchestration (EKS + KubeIP + Security)
+2. **🔌 kubeip Module** (`modules/kubeip`): KubeIP controller deployment for automatic EIP assignment
+3. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication
+4. **🔒 firewall Module** (`modules/firewall`): Security groups for enclave communication
+5. **⚡ elastic-ip Module** (`modules/elastic-ip`): EIP provisioning with proper tagging
+6. **🔐 nodegroup Module** (`modules/nodegroup`): Dedicated enclave node group deployment
 
-### Examples
-
-6. **📋 mpc-party**: Deploy MPC node infrastructure for threshold key management
-7. **🔗 partner-consumer**: Connect to external MPC parties for distributed protocols (with optional storage)
-8. **🏭 partner-provider**: Provide MPC services to other parties in the threshold network
-
-### Deployment Patterns
-
-**🌐 Full-Mesh MPC Network** (Combined Provider + Consumer)
-Each MPC party in the network deploys both patterns to create bidirectional connectivity:
-
-**🏗️ Provider Capability** (Root Module)
-- Deploy your own threshold MPC nodes for secure key management with NLBs
-- Create VPC endpoint services to expose MPC nodes via AWS PrivateLink
-- Share VPC endpoint service names with other parties in the MPC network
-- Enable incoming connections from other MPC parties for distributed protocols
-
-**🔌 Consumer Capability** (Root Module in Consumer Mode)
-- Connect to all other MPC party nodes via VPC interface endpoints
-- Configure `party_services_config` for connections to each party in the network
-- Establish outgoing connections to participate in distributed threshold protocols
-- Automatic service discovery for seamless MPC protocol execution
-
-**📦 MPC Node Infrastructure** (mpcparty Module)
-- Deploy S3 buckets and IRSA for secure threshold key management operations
-- Self-contained storage for key shares, cryptographic materials, and computation data
-- Secure computation environment supporting AWS Nitro Enclaves (in progress)
-- Supports FHE key generation, key switching, and distributed decryption operations
-
-### 🕸️ **Network Topology**
+### 🌐 **Simplified Network Topology**
 ```
-Party A ←→ Party B
-   ↕   ✕     ↕
-Party C ←→ Party D
+Party A (EIP-A) ←→ Party B (EIP-B)
+     ↕                    ↕
+Party C (EIP-C) ←→ Party D (EIP-D)
 ```
-Each party maintains direct, private connections to every other party in the MPC network, creating a resilient mesh topology for distributed cryptographic protocols.
+Each party maintains direct, public IP connections to every other party in the MPC network, creating a resilient mesh topology accessible over the internet.
 
-## 🏗️ **Infrastructure Example: 2-Party MPC Network**
+## 🏗️ **Infrastructure Example: KubeIP-Based 2-Party MPC Network**
 
-Here's a simple example of how two MPC parties establish secure connectivity:
+Here's how two MPC parties establish secure connectivity using the KubeIP strategy:
 
 ```mermaid
 graph TB
     subgraph "Alice (us-east-1)"
         subgraph "Alice Infrastructure"
             subgraph "EKS Cluster (alice-mpc-cluster)"
-                A_MPC["🔐 MPC Node<br/>Kubernetes Pod"]
-                A_EXT_SVC["🔗 ExternalName Service<br/>bob-mpc-service<br/>DNS: bob-mpc-service.mpc-network.svc.cluster.local"]
-                A_K8S_SVC["⚖️ LoadBalancer Service<br/>alice-mpc-lb-service<br/>Type: LoadBalancer"]
-                
-                A_MPC --> A_K8S_SVC
-                A_MPC --> A_EXT_SVC
+                subgraph "Enclave Node Group (Public Subnet)"
+                    A_NODE["🔐 Enclave EC2 Instance<br/>EIP: 203.0.113.10<br/>Tag: KUBEIP=reserved"]
+                    A_MPC["🔐 MPC Node Pod<br/>Threshold Cryptography"]
+                    A_KUBEIP["⚡ KubeIP Controller<br/>Auto-assigns EIP"]
+                    
+                    A_KUBEIP --> A_NODE
+                    A_NODE --> A_MPC
+                end
             end
             
-            A_NLB["⚖️ Network LB<br/>(AWS Managed)"]
-            A_S3["🗄️ S3 Storage<br/>Key Materials"]
-            A_PROVIDER["🌉 VPC Endpoint Service<br/>(Expose to Bob)"]
-            A_CONSUMER["🔌 VPC Interface Endpoint<br/>(Connect to Bob)"]
+            A_S3["🗄️ S3 Storage<br/>Encrypted Key Materials"]
+            A_KMS["🔐 AWS KMS<br/>PCR0 Policy"]
+            A_SG["🔒 Security Group<br/>MPC Traffic Only"]
             
-            A_K8S_SVC --> A_NLB
-            A_NLB --> A_PROVIDER
-            A_EXT_SVC --> A_CONSUMER
             A_MPC -.-> A_S3
+            A_MPC -.-> A_KMS
+            A_NODE --- A_SG
         end
     end
     
     subgraph "Bob (eu-west-1)"
         subgraph "Bob Infrastructure"
             subgraph "EKS Cluster (bob-mpc-cluster)"
-                B_MPC["🔐 MPC Node<br/>Kubernetes Pod"]
-                B_EXT_SVC["🔗 ExternalName Service<br/>alice-mpc-service<br/>DNS: alice-mpc-service.mpc-network.svc.cluster.local"]
-                B_K8S_SVC["⚖️ LoadBalancer Service<br/>bob-mpc-lb-service<br/>Type: LoadBalancer"]
-                
-                B_MPC --> B_K8S_SVC
-                B_MPC --> B_EXT_SVC
+                subgraph "Enclave Node Group (Public Subnet)"
+                    B_NODE["🔐 Enclave EC2 Instance<br/>EIP: 198.51.100.20<br/>Tag: KUBEIP=reserved"]
+                    B_MPC["🔐 MPC Node Pod<br/>Threshold Cryptography"]
+                    B_KUBEIP["⚡ KubeIP Controller<br/>Auto-assigns EIP"]
+                    
+                    B_KUBEIP --> B_NODE
+                    B_NODE --> B_MPC
+                end
             end
             
-            B_NLB["⚖️ Network LB<br/>(AWS Managed)"]
-            B_S3["🗄️ S3 Storage<br/>Key Materials"]
-            B_PROVIDER["🌉 VPC Endpoint Service<br/>(Expose to Alice)"]
-            B_CONSUMER["🔌 VPC Interface Endpoint<br/>(Connect to Alice)"]
+            B_S3["🗄️ S3 Storage<br/>Encrypted Key Materials"]
+            B_KMS["🔐 AWS KMS<br/>PCR0 Policy"]
+            B_SG["🔒 Security Group<br/>MPC Traffic Only"]
             
-            B_K8S_SVC --> B_NLB
-            B_NLB --> B_PROVIDER
-            B_EXT_SVC --> B_CONSUMER
             B_MPC -.-> B_S3
+            B_MPC -.-> B_KMS
+            B_NODE --- B_SG
         end
     end
     
-    subgraph "AWS PrivateLink"
-        PL["🔒 Cross-Region<br/>Private Network"]
+    subgraph "Internet"
+        INET["🌐 Direct Public Connectivity<br/>Bidirectional MPC Communication"]
     end
     
     %% Bidirectional connections
-    A_PROVIDER -.-> PL
-    B_PROVIDER -.-> PL
-    PL -.-> A_CONSUMER
-    PL -.-> B_CONSUMER
-    
-
+    A_NODE -.-> INET
+    B_NODE -.-> INET
+    INET -.-> A_NODE
+    INET -.-> B_NODE
     
     %% Styling
     classDef alice fill:#e3f2fd,stroke:#000000,stroke-width:2px,color:#000000
     classDef bob fill:#f3e5f5,stroke:#000000,stroke-width:2px,color:#000000
     classDef network fill:#e8f5e8,stroke:#000000,stroke-width:2px,color:#000000
-    classDef benefit fill:#f5f5f5,stroke:#000000,stroke-width:2px,color:#000000
+    classDef security fill:#fff3e0,stroke:#000000,stroke-width:2px,color:#000000
     
-    class A_MPC,A_EXT_SVC,A_K8S_SVC,A_NLB,A_S3,A_PROVIDER,A_CONSUMER alice
-    class B_MPC,B_EXT_SVC,B_K8S_SVC,B_NLB,B_S3,B_PROVIDER,B_CONSUMER bob
-    class PL network
-    class BENEFIT1,BENEFIT2,BENEFIT3,BENEFIT4 benefit
+    class A_NODE,A_MPC,A_KUBEIP,A_S3,A_KMS,A_SG alice
+    class B_NODE,B_MPC,B_KUBEIP,B_S3,B_KMS,B_SG bob
+    class INET network
 ```
 
 **🔧 Core Infrastructure:**
-- **EKS Cluster**: Container orchestration platform hosting all Kubernetes resources
-  - **MPC Node Pod**: Threshold cryptography computation engine
-  - **LoadBalancer Service**: Kubernetes service that provisions AWS Network Load Balancer
-  - **ExternalName Service**: DNS resolution for connecting to other MPC parties
-- **Network Load Balancer**: AWS-managed load balancer created by Kubernetes service
-- **VPC Endpoint Service**: Exposes services to other MPC parties via AWS PrivateLink
-- **VPC Interface Endpoint**: Connects to other MPC parties' VPC Endpoint Services
+- **EKS Cluster**: Container orchestration platform in public subnets
+  - **Enclave Node Group**: Dedicated EC2 instances for secure computation
+  - **MPC Node Pod**: Threshold cryptography computation engine running in enclaves
+  - **KubeIP Controller**: Automatically assigns pre-provisioned EIPs to nodes
+- **Elastic IP (EIP)**: Pre-allocated public IP with `KUBEIP=reserved` tag
+- **Security Groups**: Restrictive firewall rules for enclave communication only
 - **S3 Buckets**: Stores encrypted key materials and configuration
-- **IRSA**: Secure AWS access without credentials
+- **AWS KMS**: Attestation-based access control with PCR0 measurements
 
-**🔗 Service Discovery & Connectivity Flow:**
+**🔗 Connectivity Flow:**
 
-**Outbound (Alice → Bob):**
-1. **MPC Node Pod** calls `bob-mpc-service.mpc-network.svc.cluster.local`
-2. **ExternalName Service** resolves to VPC Interface Endpoint DNS
-3. **VPC Interface Endpoint** routes traffic through AWS PrivateLink
-4. **VPC Endpoint Service** receives traffic in Bob's account
-5. **Network Load Balancer** forwards to Bob's LoadBalancer Service
-6. **LoadBalancer Service** routes to Bob's MPC Node Pod
-
-**Inbound (Expose Alice's services):**
-1. **MPC Node Pod** exposed via **LoadBalancer Service** (Type: LoadBalancer)
-2. **LoadBalancer Service** automatically provisions **AWS Network Load Balancer**
-3. **Network Load Balancer** connected to **VPC Endpoint Service**
-4. **VPC Endpoint Service** accepts connections from other MPC parties
+**Direct Public Communication:**
+1. **MPC Node Pod** communicates directly with other parties via public IPs
+2. **KubeIP Controller** ensures consistent EIP assignment to enclave nodes
+3. **Security Groups** restrict traffic to MPC protocols only
+4. **AWS KMS** validates enclave attestation (PCR0) before key access
 
 **🔒 Security Features:**
-- ✅ **Private Network**: AWS PrivateLink only (no internet)
+- ✅ **Public Subnet Required**: Enclave nodes must be internet-reachable
+- ✅ **Minimal Attack Surface**: Only MPC-related ports exposed
+- ✅ **Cryptographic Attestation**: PCR0-based KMS access control
 - ✅ **Cross-Account**: Independent AWS accounts per party
-- ✅ **Cross-Region**: Global distribution (us-east-1 ↔ eu-west-1)
-- ✅ **Encrypted Storage**: All key materials encrypted at rest
+- ✅ **Cross-Region**: Global distribution with direct connectivity
+
+## 🧩 Step-by-Step Onboarding
+
+### 🔹 Step 1: Allocate and Share a Public Elastic IP
+
+- Each partner provisions an Elastic IP (EIP) in their AWS account
+- The EIP must be tagged with a predefined key (e.g. `KUBEIP=reserved`) so that the KubeIP controller can detect and assign it
+- Partners share their EIP publicly so other MPC participants can route traffic directly to them
+
+### 🔹 Step 2: Run the Terraform Module
+
+Each partner must apply the provided Terraform module to deploy core infrastructure:
+
+**Module responsibilities:**
+
+- ✅ Create a dedicated **enclave node group** in a public subnet (mandatory)
+- ✅ Deploy **KubeIP** on the node group to automatically assign the pre-provisioned public IP to the EC2 instance
+- ✅ Configure **security groups** to:
+  - Isolate enclave traffic
+  - Allow only MPC-related public communication (strictly limited)
+
+> 💡 **Why public subnet?**
+> 
+> The enclave nodes must be reachable over the internet (with EIP) to support public MPC networking between partners. VPNs or peering are not used.
+
+### 🔹 Step 3: Validate Bidirectional Connectivity
+
+After infrastructure is deployed, each partner must confirm that:
+
+- Their enclave node is publicly reachable on its EIP
+- They can **send and receive traffic** from all other MPC participants
+
+A shared script or dashboard may be provided to automate this verification step.
+
+### 🔹 Step 4: Inject PCR0 for AWS KMS Policy
+
+To enable attestation-based KMS integration:
+
+- Each partner injects their **PCR0 measurement** via Terraform
+- This step is necessary to authorize enclave workloads with **AWS KMS** using cryptographic attestation
+
+> 🔐 This ensures that only verified, trusted enclave code can access sensitive KMS materials.
+
+### 🔹 Step 5: Deploy MPC Services via Helm
+
+Once the network and KMS integration are validated:
+
+- Partners deploy the **Helm chart** for MPC services (e.g., node runner, signer, or KMS enclave services)
+- Additional configuration (e.g., keys, RPC endpoints, metrics) may be specified per partner
 
 ## 🌟 Features
 
-### Enhanced Architecture Benefits
-- ✅ **Modular Design**: Use only what you need
-- ✅ **Clean Separation**: Networking vs Storage vs Examples
-- ✅ **Self-Contained Modules**: No external dependencies between modules
-- ✅ **Composable**: Mix and match modules for custom solutions
+### KubeIP Strategy Benefits
+- ✅ **Simplified Networking**: Direct public IP connectivity eliminates VPC complexity
+- ✅ **No CIDR Conflicts**: Each party manages their own AWS account and IP space
+- ✅ **Minimal Coordination**: Only requires sharing public EIPs between parties
+- ✅ **Partner Independence**: Each party controls their entire infrastructure stack
+- ✅ **Automatic IP Assignment**: KubeIP controller handles EIP assignment seamlessly
 
-### MPC Node Infrastructure (mpcparty Module)
-- ✅ **Complete S3 Setup**: Private and public buckets for threshold key shares and cryptographic materials
-- ✅ **IRSA Integration**: Secure AWS access for threshold MPC operations
-- ✅ **Namespace Management**: Automatic Kubernetes namespace creation for MPC nodes
-- ✅ **Service Account**: Smart creation logic for secure MPC node deployment
-- ✅ **ConfigMap**: Environment variables for MPC node applications
-- ✅ **Comprehensive Tagging**: AWS resource organization for MPC infrastructure
-- 🚧 **AWS Nitro Enclave Support**: Enhanced secure computation environment (in progress)
+### Infrastructure Components
+- ✅ **Dedicated Enclave Nodes**: Secure EC2 instances in public subnets for internet reachability
+- ✅ **KubeIP Controller**: Automatic Elastic IP assignment to enclave nodes
+- ✅ **Security Groups**: Restrictive firewall rules for MPC communication only
+- ✅ **EIP Management**: Pre-provisioned and tagged Elastic IPs for deterministic assignment
+- ✅ **Cross-Region Support**: Partners can deploy in any AWS region
+- ✅ **PCR0 Integration**: AWS KMS policies based on enclave attestation
 
-### Networking Infrastructure (Root Module)
-- ✅ **Multiple MPC Nodes**: Deploy threshold key management nodes with individual NLBs
-- ✅ **Cross-Zone Load Balancing**: High availability for distributed threshold protocols
-- ✅ **VPC Endpoint Services**: Secure cross-VPC connectivity for threshold MPC party communication
-- ✅ **Dual Deployment Modes**: Provider and consumer patterns for distributed key management topologies
-
-### MPC Party Integration (Direct Modules)
-- ✅ **Cross-Region Support**: Connect to threshold MPC parties in different AWS regions
-- ✅ **Cross-Account Support**: Secure multi-account distributed key management networks
-- ✅ **Kubernetes Integration**: Automatic service discovery for threshold MPC nodes
-- ✅ **Flexible Network Config**: EKS lookup or direct VPC specification for MPC deployment
+### MPC Node Infrastructure
+- ✅ **Complete S3 Setup**: Private and public buckets for encrypted key materials
+- ✅ **IRSA Integration**: Secure AWS access for MPC operations without credentials
+- ✅ **Namespace Management**: Automatic Kubernetes namespace creation
+- ✅ **Service Account**: Secure pod execution with proper RBAC
+- ✅ **ConfigMap**: Environment variables for MPC applications
+- ✅ **AWS Nitro Enclaves**: Enhanced secure computation environment
 
 ## Requirements
 
@@ -212,173 +227,162 @@ graph TB
 
 ## 🚀 Quick Start
 
-### Pattern 1: MPC Party Storage (mpcparty Module)
+### Complete KubeIP Infrastructure Deployment
 
-Perfect for threshold FHE parties that need secure storage for cryptographic materials:
+Deploy the complete MPC partner infrastructure using the KubeIP strategy:
 
 ```hcl
-module "mpc_party" {
+module "mpc_kubeip_infrastructure" {
+  source = "path/to/terraform-mpc-modules"
+
+  # Basic configuration
+  cluster_name = "partner-mpc-cluster"
+  region      = "us-east-1"
+  
+  # Party identification
+  party_name = "alice-party"
+  
+  # Elastic IP configuration (pre-allocated)
+  elastic_ip_allocation_id = "eipalloc-12345678"  # Your pre-allocated EIP
+  kubeip_tag_key          = "KUBEIP"
+  kubeip_tag_value        = "reserved"
+  
+  # Enclave node group configuration
+  nodegroup_config = {
+    instance_types     = ["m5.large", "m5.xlarge"]
+    capacity_type      = "ON_DEMAND"
+    min_size          = 1
+    max_size          = 3
+    desired_size      = 1
+    
+    # Public subnet required for internet connectivity
+    subnet_ids = ["subnet-12345678"]  # Public subnet ID
+    
+    # Enclave-specific configuration
+    enable_nitro_enclaves = true
+    enclave_memory_mib   = 1024
+  }
+  
+  # Security configuration
+  security_config = {
+    allowed_mpc_ports = [50100, 50001, 9646]  # gRPC, peer, metrics
+    allowed_cidr_blocks = [
+      "203.0.113.0/32",  # Partner B EIP
+      "198.51.100.0/32", # Partner C EIP
+      # Add other partner EIPs here
+    ]
+  }
+  
+  # KMS configuration for attestation
+  kms_config = {
+    enable_pcr0_policy = true
+    pcr0_measurements = [
+      "1234567890abcdef...",  # Your enclave PCR0 measurement
+    ]
+    key_description = "MPC Partner Alice Attestation Key"
+  }
+  
+  # Storage configuration
+  storage_config = {
+    private_bucket_name = "mpc-alice-private-vault-${random_id.suffix.hex}"
+    public_bucket_name  = "mpc-alice-public-vault-${random_id.suffix.hex}"
+    enable_versioning   = true
+    enable_encryption   = true
+  }
+
+  common_tags = {
+    Environment = "production"
+    Project     = "mpc-kubeip"
+    Party       = "alice"
+  }
+}
+
+# Generate unique bucket suffix
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+```
+
+### Minimal Configuration (Storage Only)
+
+If you only need storage infrastructure without the full KubeIP setup:
+
+```hcl
+module "mpc_party_storage" {
   source = "path/to/terraform-mpc-modules/modules/mpcparty"
 
   # Party configuration
   party_name               = "alice-party"
-  vault_private_bucket_name = "mpc-alice-private-vault-prod-a1b2c3d4"
-  vault_public_bucket_name  = "mpc-alice-public-vault-prod-a1b2c3d4"
+  vault_private_bucket_name = "mpc-alice-private-vault-${random_id.suffix.hex}"
+  vault_public_bucket_name  = "mpc-alice-public-vault-${random_id.suffix.hex}"
 
   # Kubernetes configuration
-  cluster_name             = "my-eks-cluster"
+  cluster_name             = "partner-mpc-cluster"
   k8s_namespace            = "mpc-party"
   k8s_service_account_name = "mpc-party-sa"
 
-  # Module handles namespace and service account creation
+  # Enable all components
   create_namespace       = true
   create_service_account = true
   create_irsa           = true
+  create_config_map     = true
 
   common_tags = {
     Environment = "production"
     Project     = "mpc-infrastructure"
+    Party       = "alice"
   }
+}
+
+resource "random_id" "suffix" {
+  byte_length = 4
 }
 ```
 
-### Pattern 2: MPC Party Consumer (Root Module in Consumer Mode)
+### Partner Connection Configuration
 
-Connect to external MPC party nodes for distributed threshold key management protocols using the root module:
+Configure your MPC application to connect to other partners using their public IPs:
 
 ```hcl
-module "mpc_cluster_consumer" {
-  source = "path/to/terraform-mpc-modules"
-
-  # Set deployment mode to consumer
-  deployment_mode = "consumer"
-  
-  # Cluster configuration
-  consumer_cluster_name = "my-eks-cluster"
-  
-  # No MPC services needed in consumer mode
-  mpc_services = []
-
-  # Partner services configuration
-  party_services_config = {
-    party_services = [
-      {
-        name                      = "mpc-party-node-1"
-        region                    = "eu-west-1"
-        account_id                = "123456789012"  # Optional: for governance/tracking
-        vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-0123456789abcdef0"
-        
-        ports = [
-          {
-            name        = "grpc"
-            port        = 50100
-            target_port = 50100
-            protocol    = "TCP"
-          },
-          {
-            name        = "peer"
-            port        = 50001
-            target_port = 50001
-            protocol    = "TCP"
-          },
-          {
-            name        = "metrics"
-            port        = 9646
-            target_port = 9646
-            protocol    = "TCP"
-          }
-        ]
-
-        create_kube_service = true
-        kube_service_config = {
-          additional_annotations = {
-            "mpc.io/party-tier" = "tier-1"
-            "mpc.io/protocol" = "threshold-fhe"
-          }
-          labels = {
-            "mpc-party-name" = "party-alice"
-            "environment"    = "dev"
-          }
-          session_affinity = "None"
-        }
+# Partner registry - to be shared among all MPC participants
+locals {
+  mpc_partners = {
+    "party-alice" = {
+      eip     = "203.0.113.10"
+      region  = "us-east-1"
+      ports = {
+        grpc    = 50100
+        peer    = 50001
+        metrics = 9646
       }
-    ]
-
-    # VPC Interface Endpoint configuration
-    private_dns_enabled = false
-    name_prefix         = "mpc-partner"
-    namespace           = "mpc-partners"
-    create_namespace    = false
-
-    # Custom DNS (optional)
-    create_custom_dns_records = false
-    
-    # Timeouts
-    endpoint_create_timeout = "15m"
-    endpoint_delete_timeout = "10m"
-    
-    additional_tags = {
-      "Purpose" = "threshold-fhe-party-connectivity"
-      "Mode"    = "consumer"
     }
-  }
-
-  common_tags = {
-    "Environment" = "dev"
-    "Project"     = "mpc-cluster"
-    "Example"     = "partner-consumer"
-    "Mode"        = "consumer"
+    "party-bob" = {
+      eip     = "198.51.100.20"
+      region  = "eu-west-1"
+      ports = {
+        grpc    = 50100
+        peer    = 50001
+        metrics = 9646
+      }
+    }
   }
 }
-```
 
-### Pattern 3: MPC Party Provider (Root Module)
-
-Provide threshold key management services to other MPC parties in the distributed network:
-
-```hcl
-module "mpc_cluster" {
-  source = "path/to/terraform-mpc-modules"
-
-  deployment_mode = "provider"
-  cluster_name    = "my-mpc-cluster"
-  namespace       = "mpc-production"
-
-  mpc_services = [
-    {
-      name = "threshold-mpc-node-1"
-      ports = [
-        {
-          name        = "grpc"
-          port        = 50100
-          target_port = 50100
-          protocol    = "TCP"
-        },
-        {
-          name        = "peer"
-          port        = 50001
-          target_port = 50001
-          protocol    = "TCP"
-        }
-      ]
-      selector = {
-        app      = "threshold-mpc"
-        node-id  = "node-1"
-        party    = "alice"
-      }
-    }
-  ]
-
-  # Enable VPC endpoints for other MPC parties
-  create_vpc_endpoints = true
-  vpc_endpoints_config = {
-    acceptance_required = true
-    allowed_principals  = ["arn:aws:iam::MPC-PARTY-ACCOUNT:root"]
+# Generate ConfigMap for your MPC application
+resource "kubernetes_config_map" "mpc_partners" {
+  metadata {
+    name      = "mpc-partner-registry"
+    namespace = "mpc-party"
   }
 
-  common_tags = {
-    Environment = "production"
-    Project     = "mpc-cluster"
+  data = {
+    for party_name, config in local.mpc_partners :
+    "${party_name}.yaml" => yamlencode({
+      name      = party_name
+      endpoint  = "${config.eip}:${config.ports.grpc}"
+      peer_addr = "${config.eip}:${config.ports.peer}"
+      region    = config.region
+    })
   }
 }
 ```
@@ -386,51 +390,38 @@ module "mpc_cluster" {
 ## 📁 Examples
 
 ### [mpc-party](./examples/mpc-party/)
-Deploy only storage infrastructure using the enhanced mpcparty module:
-- S3 buckets (private + public) with proper policies
-- IRSA role for secure AWS access
-- Kubernetes namespace and service account
-- ConfigMap with environment variables
+Deploy MPC party infrastructure with KubeIP strategy:
+- Complete enclave node group with KubeIP controller
+- Dedicated Elastic IP assignment
+- Security groups for MPC communication
+- S3 buckets for encrypted storage
+- IRSA role with KMS integration
+- PCR0-based attestation policies
 
 ```bash
-cd examples/mpc-party-only
+cd examples/mpc-party
 terraform init
 terraform apply
 ```
 
-### [mpc-network-consumer](./examples/mpc-network-consumer/)
-Connect to external MPC party nodes for distributed threshold key management via VPC interface endpoints:
-- **Cross-region MPC party connectivity** via AWS PrivateLink for distributed threshold key management protocols
-- **Multiple MPC party nodes** with independent VPC endpoint configurations for secure key operations
-- **Kubernetes service integration** with automatic service discovery for threshold key management
-- **Flexible network configuration** (EKS cluster lookup or direct VPC specification)
-- **Comprehensive connection outputs** for threshold cryptographic application integration
-- **Optional MPC party storage** for key shares, cryptographic materials and secure computation data
+### [terragrunt-infra](./examples/terragrunt-infra/)
+Production-ready infrastructure using Terragrunt for environment management:
+- **Multi-environment support** (kms-dev-v1, zws-dev) with environment-specific configurations
+- **KubeIP node groups** with dedicated Elastic IP assignments per environment
+- **Elastic IP management** with proper tagging for KubeIP controller discovery
+- **Network security** with restrictive security groups for enclave communication
+- **MPC party infrastructure** for decentralized deployments
 
 Key characteristics:
-- Uses root module in `consumer` mode with `mpc_services = []`
-- Configures `party_services_config` with VPC endpoint service names for threshold MPC party connections
-- Supports multiple ports per MPC node (gRPC for key management protocols, peer communication, metrics)
-- Provides detailed connection guides for threshold cryptographic applications and cross-region MPC party summaries
+- Uses Terragrunt for DRY infrastructure-as-code
+- Environment-specific EIP allocations and node group configurations
+- Integrated PCR0 measurement injection for KMS attestation
+- Helm chart deployment examples for MPC services
 
 ```bash
-cd examples/mpc-network-consumer
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your partner service details
-terraform init
-terraform apply
-```
-
-### [mpc-network-provider](./examples/mpc-network-provider/)
-Provide threshold key management services to other MPC parties using the root module:
-- Network Load Balancers for threshold key management nodes
-- VPC endpoint services for secure MPC party access to distributed key operations
-- Complete threshold key management service provider setup
-
-```bash
-cd examples/mpc-network-provider
-terraform init
-terraform apply
+cd examples/terragrunt-infra/zws-dev/mpc-nodegroup-kubeip
+terragrunt plan
+terragrunt apply
 ```
 
 ## 📋 Requirements
@@ -444,6 +435,83 @@ terraform apply
 
 ## 🔧 Module Usage
 
+### Root Module (KubeIP Strategy)
+
+**Purpose**: Complete MPC infrastructure deployment using KubeIP for public IP assignment.
+
+**Key Variables**:
+```hcl
+module "mpc_infrastructure" {
+  source = "./terraform-mpc-modules"
+
+  # Basic configuration
+  cluster_name = "partner-mpc-cluster"
+  party_name   = "alice-party"
+  
+  # Elastic IP configuration
+  elastic_ip_allocation_id = "eipalloc-12345678"
+  kubeip_tag_key          = "KUBEIP"
+  kubeip_tag_value        = "reserved"
+  
+  # Node group configuration
+  nodegroup_config = {
+    instance_types   = ["m5.large"]
+    min_size        = 1
+    max_size        = 3
+    desired_size    = 1
+    subnet_ids      = ["subnet-12345678"]  # Public subnet
+  }
+  
+  # Security configuration
+  security_config = {
+    allowed_mpc_ports   = [50100, 50001, 9646]
+    allowed_cidr_blocks = ["203.0.113.0/32"]  # Partner EIPs
+  }
+  
+  # KMS and storage
+  enable_kms_integration = true
+  pcr0_measurements     = ["1234567890abcdef..."]
+}
+```
+
+**Key Outputs**:
+- Elastic IP address assigned to enclave node
+- KubeIP controller status and configuration
+- Security group IDs for MPC communication
+- S3 bucket ARNs for encrypted storage
+- KMS key ARN for attestation
+
+### kubeip Module
+
+**Purpose**: Deploy KubeIP controller for automatic Elastic IP assignment.
+
+**Key Variables**:
+```hcl
+module "kubeip" {
+  source = "./modules/kubeip"
+
+  cluster_name      = "my-eks-cluster"
+  namespace         = "kube-system"
+  
+  # Filter configuration
+  filter_config = {
+    tag_key   = "KUBEIP"
+    tag_value = "reserved"
+  }
+  
+  # Node selector for targeting specific nodes
+  node_selector = {
+    "node.kubernetes.io/instance-type" = "m5.large"
+    "eks.amazonaws.com/nodegroup"      = "enclave-nodes"
+  }
+}
+```
+
+**Key Outputs**:
+- KubeIP deployment status
+- Controller configuration details
+- EIP filter settings
+
 ### mpcparty Module
 
 **Purpose**: Self-contained MPC party storage and authentication infrastructure.
@@ -454,16 +522,16 @@ module "mpc_party" {
   source = "./modules/mpcparty"
 
   # Required
-  party_name               = "my-party"
-  vault_private_bucket_name = "bucket-private-name"
-  vault_public_bucket_name  = "bucket-public-name"
-  cluster_name             = "my-eks-cluster"
+  party_name               = "alice-party"
+  vault_private_bucket_name = "mpc-alice-private-vault-abc123"
+  vault_public_bucket_name  = "mpc-alice-public-vault-abc123"
+  cluster_name             = "partner-mpc-cluster"
   k8s_namespace            = "mpc-party"
   k8s_service_account_name = "mpc-party-sa"
 
   # Optional (with smart defaults)
   create_namespace       = true    # Creates namespace with proper labels
-  create_service_account = true    # Creates SA when not using IRSA
+  create_service_account = true    # Creates SA with RBAC
   create_irsa           = true     # Enables secure AWS access
   create_config_map     = true     # Environment variables for apps
 }
@@ -471,144 +539,53 @@ module "mpc_party" {
 
 **Key Outputs**:
 - S3 bucket names and ARNs
-- IRSA role ARN (if enabled)
-- Kubernetes configuration details
-- Environment variables for applications
-
-### Root Module (Consumer Mode)
-
-**Purpose**: Connect to external partner MPC services via VPC interface endpoints.
-
-**Key Variables**:
-```hcl
-module "mpc_cluster_consumer" {
-  source = "./terraform-mpc-modules"
-
-  deployment_mode       = "consumer"
-  consumer_cluster_name = "my-eks-cluster"
-  mpc_services         = []
-
-  party_services_config = {
-    party_services = [
-      {
-        name                      = "partner-service"
-        region                    = "us-east-1"
-        account_id                = "123456789012"  # Optional
-        vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-..."
-        ports = [...]
-        create_kube_service = true
-        kube_service_config = {
-          additional_annotations = {...}
-          labels = {...}
-          session_affinity = "None"
-        }
-      }
-    ]
-    private_dns_enabled = false
-    name_prefix         = "partner"
-    namespace           = "mpc-partners"
-  }
-}
-```
-
-**Key Outputs**:
-- **Partner Interface Endpoints**: VPC endpoint IDs and DNS names
-- **Application Connection Guide**: Multiple connection methods per service
-  - Kubernetes service DNS (recommended for in-cluster apps)
-  - VPC interface endpoint DNS (direct VPC access)
-  - Custom DNS names (if configured)
-- **Cross-Region Partner Summary**: Services grouped by region and account
-- **Connection Examples**: Ready-to-use connection strings for different scenarios
-
-
-
-### Root Module (Networking)
-
-**Purpose**: Networking orchestration for both service providers and consumers.
-
-**Key Variables**:
-
-**Provider Mode**:
-```hcl
-module "mpc_cluster" {
-  source = "./terraform-mpc-modules"
-
-  deployment_mode = "provider"
-  cluster_name    = "my-cluster"
-
-  # Provider mode
-  mpc_services         = [...]     # Your MPC services
-  create_vpc_endpoints = true      # Enable partner access
-}
-```
-
-**Consumer Mode**:
-```hcl
-module "mpc_cluster_consumer" {
-  source = "./terraform-mpc-modules"
-
-  deployment_mode       = "consumer"
-  consumer_cluster_name = "my-eks-cluster"
-  mpc_services         = []        # Empty for consumer mode
-
-  party_services_config = {
-    party_services = [
-      {
-        name                      = "partner-service"
-        region                    = "us-east-1"
-        vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-..."
-        ports = [...]
-        create_kube_service = true
-        kube_service_config = {
-          additional_annotations = {...}
-          labels = {...}
-          session_affinity = "None"
-        }
-      }
-    ]
-    
-    # Network configuration
-    private_dns_enabled = false
-    name_prefix         = "partner"
-    namespace           = "mpc-partners"
-    
-    # Custom DNS and timeouts
-    create_custom_dns_records = false
-    endpoint_create_timeout   = "15m"
-    endpoint_delete_timeout   = "10m"
-  }
-}
-```
+- IRSA role ARN for secure AWS access
+- Kubernetes namespace and service account details
+- ConfigMap with environment variables
 
 ## 🎯 Use Cases
 
 | Use Case | Recommended Approach | Modules Used |
 |----------|---------------------|--------------|
-| **MPC Party Storage** | `examples/mpc-party/` | `mpcparty` |
-| **Connect to MPC Parties** | `examples/mpc-network-consumer/` | Root module (consumer mode) |
-| **Provide MPC Services** | `examples/mpc-network-provider/` | Root module (provider mode) |
+| **Complete Partner Infrastructure** | Root module | All modules integrated |
+| **MPC Party Storage Only** | `examples/mpc-party/` | `mpcparty` |
+| **KubeIP Controller Only** | `modules/kubeip/` | `kubeip` |
+| **Production Deployment** | `examples/terragrunt-infra/` | Terragrunt + all modules |
 | **Custom Solution** | Direct module composition | Mix of modules as needed |
 
 ## 🔒 Security Features
 
+### KubeIP Security
+- **Restricted EIP Assignment**: Only nodes with specific tags can claim Elastic IPs
+- **Public Subnet Isolation**: Enclave nodes isolated in dedicated public subnets
+- **Minimal Attack Surface**: Only MPC-related ports exposed to internet
+- **Automatic IP Management**: KubeIP prevents IP conflicts and unauthorized assignment
+
+### Enclave Security  
+- **AWS Nitro Enclaves**: Cryptographically isolated compute environments
+- **PCR0 Attestation**: Hardware-based verification of enclave code integrity
+- **KMS Integration**: Attestation-based key access with PCR0 measurements
+- **Secure Boot**: Verified boot process with cryptographic signatures
+
 ### Storage Security
-- **Private Bucket**: Restricted access for threshold key shares and private cryptographic materials
-- **Public Bucket**: Read access for public key parameters and verification data
-- **IRSA**: Secure, temporary AWS credentials for threshold MPC node operations
-- **Least Privilege**: Scoped permissions for secure distributed key management operations only
+- **Private Bucket**: Restricted access for encrypted key shares and private materials
+- **Public Bucket**: Read access for public parameters and verification data
+- **IRSA**: Secure, temporary AWS credentials without long-lived keys
+- **Least Privilege**: Scoped permissions for MPC operations only
 
 ### Network Security
-- **VPC Interface Endpoints**: Private connectivity for threshold MPC party communication, no internet routing
-- **Security Groups**: Configurable access control for distributed key management protocols
-- **Cross-Account IAM**: Proper principal-based access control between threshold MPC parties
-- **Regional Isolation**: MPC nodes isolated by AWS region for distributed key management compliance
+- **Security Groups**: Restrictive firewall rules for specific partner EIPs only
+- **Cross-Account Isolation**: Each party operates in independent AWS accounts
+- **Regional Distribution**: Partners can deploy across different AWS regions
+- **Direct Connectivity**: No complex VPC networking or peering required
 
 ## 🤝 Contributing
 
-1. Each module should have a single, clear responsibility
-2. Examples should demonstrate real-world usage patterns
-3. All modules should be self-contained with no external dependencies
+1. Each module should have a single, clear responsibility focused on the KubeIP strategy
+2. Examples should demonstrate real-world partner onboarding scenarios
+3. All modules should be self-contained with minimal external dependencies
 4. Follow the established patterns for variables, outputs, and documentation
+5. Prioritize simplicity and partner independence over complex networking
 
 ## 📝 License
 
@@ -619,5 +596,10 @@ This project is licensed under the MIT License.
 For issues and questions:
 - Check the example configurations in `examples/`
 - Review individual module documentation in `modules/`
-- Consult AWS EKS and S3 best practices
+- Consult the KubeIP documentation and AWS EKS best practices
+- See `README_KUBEIP_UPDATES.md` for migration details from previous architecture
 - Open an issue for bugs or feature requests
+
+---
+
+> **🔄 Architecture Evolution**: This module collection has evolved from a complex AWS PrivateLink-based architecture to a simplified KubeIP strategy. The new approach eliminates VPC networking complexity while maintaining security through enclave attestation and restrictive security groups. See `README_KUBEIP_UPDATES.md` for detailed migration information.

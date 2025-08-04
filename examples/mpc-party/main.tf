@@ -73,25 +73,25 @@ data "aws_eks_cluster" "cluster" {
 }
 
 # Create Node Group for MPC Party
-module "nodegroup" {
-  count = var.create_nodegroup ? 1 : 0
-  source = "../../modules/nodegroup"
-  name = "mpc-${substr(var.party_name, 0, 8)}-ng"
-  cluster_name = var.cluster_name
-  instance_types = var.nodegroup_instance_types
-  min_size = var.nodegroup_min_size
-  max_size = var.nodegroup_max_size
-  desired_size = var.nodegroup_desired_size
-  ami_type = "AL2_x86_64"
-  disk_size = var.nodegroup_disk_size
-  taints = {
-    dedicated = {
-      key = "kms-decentralized"
-      value = "true"
-      effect = "NO_SCHEDULE"
-    }
-  }
-  labels = {
-    "nodepool" = "kms-decentralized"
-  }
-}
+//module "nodegroup" {
+//  count = var.create_nodegroup ? 1 : 0
+//  source = "../../modules/nodegroup"
+//  name = "mpc-${substr(var.party_name, 0, 8)}-ng"
+//  cluster_name = var.cluster_name
+//  instance_types = var.nodegroup_instance_types
+//  min_size = var.nodegroup_min_size
+//  max_size = var.nodegroup_max_size
+//  desired_size = var.nodegroup_desired_size
+//  ami_type = "AL2_x86_64"
+//  disk_size = var.nodegroup_disk_size
+//  taints = {
+//    dedicated = {
+//      key = "kms-decentralized"
+//      value = "true"
+//      effect = "NO_SCHEDULE"
+//    }
+//  }
+//  labels = {
+//    "nodepool" = "kms-decentralized"
+//  }
+//}

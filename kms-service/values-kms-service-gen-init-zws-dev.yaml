@@ -1,0 +1,38 @@
+kmsConnector:
+  enabled: false
+
+kmsCore:
+  enabled: false
+
+kmsCoreClient:
+  enabled: false
+  image:
+    name: ghcr.io/zama-ai/kms-core-client
+    tag: v0.11.0-rc15
+  decryption_mode: NoiseFloodSmall
+  fhe_parameter: Default
+  envFrom:
+    configmap:
+      name: kms-threshold-1
+
+kmsInit:
+  enabled: false
+
+kmsGenKeys:
+  enabled: true
+  keyGenArgs: "insecure-key-gen"
+  crsGenArgs: "insecure-crs-gen --max-num-bits 2048"
+  configmap:
+    name: kms-keys
+    annotations:
+      reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+      reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: "gateway-blockchain,ethereum-blockchain,coprocessor,console"
+      reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+      reflector.v1.k8s.emberstack.com/reflection-auto-namespaces: "gateway-blockchain,ethereum-blockchain,coprocessor,console"
+  nodeSelector:
+    karpenter.sh/nodepool: kms-pool
+  tolerations:
+    - key: karpenter.sh/nodepool
+      effect: NoSchedule
+      operator: Equal
+      value: kms-pool 

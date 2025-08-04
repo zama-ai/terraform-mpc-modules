@@ -10,12 +10,12 @@ module "eks_managed_node_group" {
 
   name         = var.name
   cluster_name = var.cluster_name
-  kubernetes_version = data.aws_eks_cluster.cluster.version
+  kubernetes_version = var.kubernetes_version
 
-  subnet_ids = data.aws_eks_cluster.cluster.vpc_config[0].subnet_ids
+  subnet_ids = var.subnet_ids
 
-  cluster_primary_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
-  vpc_security_group_ids            = data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids
+  cluster_primary_security_group_id = var.cluster_primary_security_group_id
+  vpc_security_group_ids            = var.security_group_ids
 
   # Scaling Configuration
   min_size     = var.min_size

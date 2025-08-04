@@ -1,0 +1,8 @@
+kmsPeers:
+  id: 4
+
+kmsCore:
+  serviceAccountName: kms-threshold-4
+  envFrom:
+    configmap:
+      name: kms-threshold-4

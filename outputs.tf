@@ -1,128 +1,165 @@
-# MPC Cluster Outputs
-
-# High-level cluster information
+# Cluster Information
 output "cluster_name" {
-  description = "Name of the deployed MPC cluster"
+  description = "Name of the EKS cluster"
   value       = var.cluster_name
 }
 
-output "deployment_mode" {
-  description = "Deployment mode of the MPC cluster (provider or consumer)"
-  value       = var.deployment_mode
+output "cluster_vpc_id" {
+  description = "VPC ID of the EKS cluster"
+  value       = local.cluster_vpc_id
 }
 
-output "namespace" {
-  description = "Kubernetes namespace where MPC services are deployed"
-  value = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].namespace_name : (
-    var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].namespace_name : var.namespace
-  )
+output "cluster_subnet_ids" {
+  description = "Subnet IDs used by the EKS cluster"
+  value       = local.cluster_subnet_ids
 }
 
-# Combined cluster endpoints information
-output "cluster_endpoints" {
-  description = "Comprehensive information about all MPC cluster endpoints including NLBs and VPC endpoints"
-  value       = local.cluster_endpoints
+output "kubernetes_version" {
+  description = "Kubernetes version used for the node group"
+  value       = local.kubernetes_version
 }
 
-# NLB-specific outputs (from nlb-service-provider module, only in provider mode)
-output "nlb_service_names" {
-  description = "Names of the created Kubernetes LoadBalancer services (empty if in consumer mode)"
-  value       = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].nlb_service_names : []
+
+
+# Node Group Outputs
+output "nodegroup_name" {
+  description = "Name of the enclave node group"
+  value       = module.nodegroup.node_group_id
 }
 
-output "nlb_hostnames" {
-  description = "Hostnames of the provisioned Network Load Balancers (empty if in consumer mode)"
-  value       = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].nlb_hostnames : []
+output "nodegroup_arn" {
+  description = "ARN of the enclave node group"
+  value       = module.nodegroup.node_group_arn
 }
 
-output "nlb_arns" {
-  description = "ARNs of the provisioned Network Load Balancers (empty if in consumer mode)"
-  value       = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].nlb_arns : []
+output "nodegroup_status" {
+  description = "Status of the enclave node group"
+  value       = module.nodegroup.node_group_status
 }
 
-output "nlb_service_details" {
-  description = "Detailed information about the created NLB services (empty if in consumer mode)"
-  value       = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].service_details : []
+output "nodegroup_capacity_type" {
+  description = "Capacity type of the enclave node group"
+  value       = var.nodegroup_capacity_type
 }
 
-# VPC Endpoints outputs (conditional - only when VPC endpoints are created in provider mode)
-output "vpc_endpoint_service_ids" {
-  description = "IDs of the created VPC endpoint services (empty if VPC endpoints not created or in consumer mode)"
-  value       = var.deployment_mode == "provider" && var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? module.vpc_endpoint_bridge[0].vpc_endpoint_service_ids : []
+output "nodegroup_instance_types" {
+  description = "Instance types of the enclave node group"
+  value       = var.nodegroup_instance_types
 }
 
-output "vpc_endpoint_service_arns" {
-  description = "ARNs of the created VPC endpoint services (empty if VPC endpoints not created or in consumer mode)"
-  value       = var.deployment_mode == "provider" && var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? module.vpc_endpoint_bridge[0].vpc_endpoint_service_arns : []
+output "nodegroup_launch_template_id" {
+  description = "Launch template ID used by the enclave node group"
+  value       = module.nodegroup.launch_template_id
 }
 
-output "vpc_endpoint_service_names" {
-  description = "Service names that consumers use to connect to your services (empty if VPC endpoints not created or in consumer mode)"
-  value       = var.deployment_mode == "provider" && var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? module.vpc_endpoint_bridge[0].vpc_endpoint_service_names : []
+output "nodegroup_asg_name" {
+  description = "Auto Scaling Group name of the enclave node group"
+  value       = module.nodegroup.asg_name
 }
 
-output "vpc_endpoint_service_details" {
-  description = "Detailed information about the created VPC endpoint services (empty if VPC endpoints not created or in consumer mode)"
-  value       = var.deployment_mode == "provider" && var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? module.vpc_endpoint_bridge[0].service_details : []
+output "nodegroup_labels" {
+  description = "Kubernetes labels applied to the enclave nodes"
+  value = merge({
+    "nodepool"           = "mpc-enclave"
+    "mpc.io/enclave"     = "true"
+    "kubeip"             = "true"
+  }, var.nodegroup_labels)
 }
 
-# Partner Interface outputs (only in consumer mode)
-output "party_interface_endpoint_ids" {
-  description = "IDs of the created VPC interface endpoints for partner connections (empty if in provider mode)"
-  value       = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].vpc_interface_endpoint_ids : []
+output "nodegroup_taints" {
+  description = "Kubernetes taints applied to the enclave nodes"
+  value = merge({
+    "mpc-enclave" = {
+      key    = "mpc.io/enclave"
+      value  = "true"
+      effect = "NO_SCHEDULE"
+    }
+  }, var.nodegroup_taints)
 }
 
-output "party_interface_dns_names" {
-  description = "DNS names of the created VPC interface endpoints for partner connections (empty if in provider mode)"
-  value       = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].vpc_interface_endpoint_dns_names : []
+# Firewall Outputs
+output "node_security_group_id" {
+  description = "ID of the dedicated security group for enclave nodes"
+  value       = var.enable_dedicated_security_group ? module.firewall.node_security_group_id : null
 }
 
-output "partner_service_details" {
-  description = "Detailed information about partner services and their connections (empty if in provider mode)"
-  value       = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].partner_service_details : []
+output "node_security_group_arn" {
+  description = "ARN of the dedicated security group for enclave nodes"
+  value       = var.enable_dedicated_security_group ? module.firewall.node_security_group_arn : null
 }
 
-output "partner_connection_endpoints" {
-  description = "Connection endpoints for applications to use when connecting to partner services (empty if in provider mode)"
-  value       = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].partner_connection_endpoints : {}
+output "node_security_group_name" {
+  description = "Name of the dedicated security group for enclave nodes"
+  value       = var.enable_dedicated_security_group ? module.firewall.node_security_group_name : null
 }
 
-# Deployment configuration summary
-output "deployment_summary" {
-  description = "Summary of the MPC cluster deployment configuration"
+output "p2p_security_group_rules" {
+  description = "List of P2P security group rules applied"
+  value       = var.enable_dedicated_security_group ? module.firewall.p2p_security_group_rules : {}
+}
+
+# KubeIP Outputs
+output "kubeip_service_account_name" {
+  description = "Name of the KubeIP service account"
+  value       = module.kubeip.service_account_name
+}
+
+output "kubeip_iam_role_arn" {
+  description = "ARN of the IAM role for KubeIP"
+  value       = module.kubeip.iam_role_arn
+}
+
+output "kubeip_daemonset_name" {
+  description = "Name of the KubeIP DaemonSet"
+  value       = module.kubeip.daemonset_name
+}
+
+output "kubeip_configuration" {
+  description = "Summary of KubeIP configuration"
+  value       = module.kubeip.kubeip_configuration
+}
+
+# Infrastructure Summary
+output "mpc_infrastructure_summary" {
+  description = "Summary of deployed MPC infrastructure"
   value = {
-    cluster_name    = var.cluster_name
-    deployment_mode = var.deployment_mode
-    namespace = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].namespace_name : (
-      var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].namespace_name : var.namespace
-    )
-    total_services = var.deployment_mode == "provider" ? length(var.mpc_services) : length(var.party_services_config.party_services)
-    service_names = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].nlb_service_names : (
-      var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? module.vpc_endpoint_consumer[0].kubernetes_service_names : []
-    )
-    vpc_endpoints_created      = var.deployment_mode == "provider" ? var.create_vpc_endpoints : false
-    vpc_endpoints_count        = var.deployment_mode == "provider" && var.create_vpc_endpoints && length(module.vpc_endpoint_bridge) > 0 ? length(module.vpc_endpoint_bridge[0].vpc_endpoint_service_ids) : 0
-    party_interfaces_created = var.deployment_mode == "consumer" ? length(var.party_services_config.party_services) : 0
-    party_interfaces_count   = var.deployment_mode == "consumer" && length(module.vpc_endpoint_consumer) > 0 ? length(module.vpc_endpoint_consumer[0].vpc_interface_endpoint_ids) : 0
-    common_tags                = var.common_tags
+    cluster_name              = var.cluster_name
+    environment              = var.environment
+    name_prefix              = var.name_prefix
+    
+    # Node Group Information
+    nodegroup_name           = module.nodegroup.node_group_id
+    nodegroup_capacity       = {
+      min     = var.nodegroup_min_size
+      max     = var.nodegroup_max_size
+      desired = var.nodegroup_desired_size
+    }
+    nodegroup_instance_types = var.nodegroup_instance_types
+    
+    # Networking Information
+    security_group_id        = var.enable_dedicated_security_group ? module.firewall.node_security_group_id : null
+    
+    # P2P Configuration
+    p2p_ports               = var.mpc_p2p_ports
+    allowed_peer_cidrs      = var.allowed_peer_cidrs
+    
+    # KubeIP Configuration
+    kubeip_enabled          = true
+    kubeip_namespace        = var.kubeip_namespace
+    kubeip_version          = var.kubeip_version
   }
+  
+  sensitive = false
 }
 
-# For users who want to create VPC endpoints in separate Terraform runs (provider mode only)
-output "nlb_names_for_vpc_endpoints" {
-  description = "NLB service names that can be used as input for the vpc-endpoint-bridge module in separate Terraform runs (empty if in consumer mode)"
-  value       = var.deployment_mode == "provider" && length(module.nlb_service_provider) > 0 ? module.nlb_service_provider[0].nlb_service_names : []
-}
-
-output "cluster_summary" {
-  description = "Summary of the MPC cluster deployment"
+# Connection Information for Other MPC Participants
+output "mpc_connection_info" {
+  description = "Information needed by other MPC participants to connect"
   value = {
-    deployment_mode    = var.deployment_mode
-    cluster_name       = var.cluster_name
-    namespace         = var.namespace
-    total_endpoints   = length(local.cluster_endpoints)
-    provider_services = var.deployment_mode == "provider" ? length(var.mpc_services) : 0
-    consumer_services = var.deployment_mode == "consumer" ? length(var.party_services_config.party_services) : 0
-    vpc_endpoints_enabled = var.deployment_mode == "provider" ? var.create_vpc_endpoints : true
+    p2p_ports           = [for port in var.mpc_p2p_ports : "${port.protocol}:${port.from_port}-${port.to_port}"]
+    cluster_region      = data.aws_region.current.name
+    security_group_id   = var.enable_dedicated_security_group ? module.firewall.node_security_group_id : null
   }
+  
+  sensitive = false
 }
