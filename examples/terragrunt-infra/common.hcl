@@ -10,13 +10,13 @@ locals {
   # Update these profile names to match your actual AWS profiles
   aws_profiles = {
     "kms-dev-v1" = {
-      profile             = "ghislain-zama"        # Replace with your actual profile name
+      profile             = "token-kms-dev"        # Replace with your actual profile name
       region              = "eu-west-3"
       account_id          = "767398008331"
       terraform_state_bucket = "zama-terraform-kms-dev-v1-mpc-modules-tfstate"  # Custom bucket for kms-dev-v1
     }
     "zws-dev" = {
-      profile             = "enix-tmp"        # Replace with your actual profile name  
+      profile             = "token-zws-dev"        # Replace with your actual profile name
       region              = "eu-west-1"
       account_id          = "715841358639"           # Replace with your actual account ID
       terraform_state_bucket = "zama-terraform-mpc-modules-tfstate"  # Default bucket for zws-dev
