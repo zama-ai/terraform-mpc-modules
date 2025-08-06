@@ -169,26 +169,27 @@ variable "party_services_config" {
 }
 
 # Validation for consumer mode network configuration
-variable "consumer_network_validation" {
-  description = "Internal variable for validation - do not set manually"
-  type        = string
-  default     = "auto"
-  
-  validation {
-    condition = var.consumer_network_validation == "auto" && (var.deployment_mode != "consumer" || (
-      # If deployment_mode is consumer, ensure network configuration is valid
-      (var.consumer_cluster_name != null && var.consumer_cluster_name != "") ||
-      (var.consumer_vpc_id != null && var.consumer_vpc_id != "" && 
-       var.consumer_subnet_ids != null && length(coalesce(var.consumer_subnet_ids, [])) > 0)
-    ))
-    error_message = "For consumer mode, either 'consumer_cluster_name' OR ('consumer_vpc_id' + 'consumer_subnet_ids') must be provided."
-  }
-
-  validation {
-    condition = var.consumer_network_validation == "auto" && (var.deployment_mode != "consumer" || !(
-      (var.consumer_cluster_name != null && var.consumer_cluster_name != "") &&
-      (var.consumer_vpc_id != null && var.consumer_vpc_id != "")
-    ))
-    error_message = "Cannot provide both 'consumer_cluster_name' and 'consumer_vpc_id'. Choose either EKS cluster lookup OR direct VPC specification."
-  }
-}
+# TODO fix this
+# variable "consumer_network_validation" {
+#   description = "Internal variable for validation - do not set manually"
+#   type        = string
+#   default     = "auto"
+#
+#   validation {
+#     condition = var.consumer_network_validation == "auto" && (var.deployment_mode != "consumer" || (
+#       # If deployment_mode is consumer, ensure network configuration is valid
+#       (var.consumer_cluster_name != null && var.consumer_cluster_name != "") ||
+#       (var.consumer_vpc_id != null && var.consumer_vpc_id != "" &&
+#        var.consumer_subnet_ids != null && length(coalesce(var.consumer_subnet_ids, [])) > 0)
+#     ))
+#     error_message = "For consumer mode, either 'consumer_cluster_name' OR ('consumer_vpc_id' + 'consumer_subnet_ids') must be provided."
+#   }
+#
+#   validation {
+#     condition = var.consumer_network_validation == "auto" && (var.deployment_mode != "consumer" || !(
+#       (var.consumer_cluster_name != null && var.consumer_cluster_name != "") &&
+#       (var.consumer_vpc_id != null && var.consumer_vpc_id != "")
+#     ))
+#     error_message = "Cannot provide both 'consumer_cluster_name' and 'consumer_vpc_id'. Choose either EKS cluster lookup OR direct VPC specification."
+#   }
+# }

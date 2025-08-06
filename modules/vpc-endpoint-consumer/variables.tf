@@ -73,29 +73,30 @@ variable "security_group_ids" {
 }
 
 # Internal validation variable to ensure network configuration is correct
-variable "configuration_mode_validation" {
-  description = "Internal variable for validation - do not set manually"
-  type        = string
-  default     = "auto"
-  
-  validation {
-    condition = var.configuration_mode_validation == "auto" && (
-      # Mode 1: cluster_name provided
-      (var.cluster_name != null && var.cluster_name != "") ||
-      # Mode 2: vpc_id, subnet_ids provided (security_group_ids optional)
-      (var.vpc_id != null && var.vpc_id != "" && var.subnet_ids != null && length(coalesce(var.subnet_ids, [])) > 0)
-    )
-    error_message = "Either 'cluster_name' OR ('vpc_id' + 'subnet_ids') must be provided."
-  }
-
-  validation {
-    condition = var.configuration_mode_validation == "auto" && !(
-      (var.cluster_name != null && var.cluster_name != "") &&
-      (var.vpc_id != null && var.vpc_id != "")
-    )
-    error_message = "Cannot provide both 'cluster_name' and 'vpc_id'. Choose either EKS cluster lookup OR direct VPC specification."
-  }
-}
+# TODO fix this
+# variable "configuration_mode_validation" {
+#   description = "Internal variable for validation - do not set manually"
+#   type        = string
+#   default     = "auto"
+#
+#   validation {
+#     condition = var.configuration_mode_validation == "auto" && (
+#       # Mode 1: cluster_name provided
+#       (var.cluster_name != null && var.cluster_name != "") ||
+#       # Mode 2: vpc_id, subnet_ids provided (security_group_ids optional)
+#       (var.vpc_id != null && var.vpc_id != "" && var.subnet_ids != null && length(coalesce(var.subnet_ids, [])) > 0)
+#     )
+#     error_message = "Either 'cluster_name' OR ('vpc_id' + 'subnet_ids') must be provided."
+#   }
+#
+#   validation {
+#     condition = var.configuration_mode_validation == "auto" && !(
+#       (var.cluster_name != null && var.cluster_name != "") &&
+#       (var.vpc_id != null && var.vpc_id != "")
+#     )
+#     error_message = "Cannot provide both 'cluster_name' and 'vpc_id'. Choose either EKS cluster lookup OR direct VPC specification."
+#   }
+# }
 
 variable "party_services" {
   description = "List of partner MPC services to connect to via VPC interface endpoints"

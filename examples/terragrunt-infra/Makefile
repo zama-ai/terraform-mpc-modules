@@ -51,7 +51,7 @@ destroy-all:
 	terragrunt run-all destroy
 
 init-all:
-	terragrunt run-all init
+	terragrunt run-all init -reconfigure
 
 validate-all:
 	terragrunt run-all validate
