@@ -2,17 +2,17 @@
 aws_region = "eu-west-3"
 
 # MPC Party Configuration
-party_name  = "kms-threshold-4"
+party_name  = "mpc-party-4"
 environment = "dev"
 
 # S3 Bucket Configuration
 bucket_prefix = "zama-kms-decentralized-threshold-4"
-config_map_name = "kms-threshold-4"
+config_map_name = "mpc-party-4"
 
 # Kubernetes Configuration
 cluster_name         = "kms-development-v1"
 namespace           = "kms-decentralized"
-service_account_name = "kms-threshold-4"
+service_account_name = "mpc-party-4"
 create_namespace    = false
 
 # IRSA Configuration (recommended for production)
