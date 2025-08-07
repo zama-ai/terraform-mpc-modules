@@ -38,7 +38,7 @@ security_group_ids   = null
 party_services = [
   # Example partner service configuration
   {
-    name                      = "kms-threshold-4-core-4"
+    name                      = "mpc-party-4"
     region                    = "eu-west-3"
     partner_name              = "zws-dev"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0c8a37f02a896c7bc"
@@ -68,7 +68,7 @@ party_services = [
         "mpc.io/partner-tier" = "tier-1"
       }
       labels = {
-        "partner-name" = "partner-1"
+        "partner-name" = "partner-4"
         "environment"  = "dev"
       }
       session_affinity = "None"
