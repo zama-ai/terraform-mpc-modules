@@ -41,7 +41,7 @@ security_group_ids   = ["sg-087debb93352a906a"]
 party_services = [
   # Example partner service configuration
   {
-    name                      = "mpc-party-4"
+    name                      = "mpc-node-4"
     region                    = "eu-west-3"
     account_id                = "767398008331"
     partner_name              = "party-4"
@@ -92,17 +92,6 @@ endpoint_delete_timeout = "10m"
 create_custom_dns_records = false
 private_zone_id           = ""
 dns_domain                = ""
-
-# Optional: Enable MPC Party Storage
-enable_mpc_party_storage = false
-# If enabling MPC party storage, configure these:
-# enable_mpc_party_storage       = true
-# mpc_party_name                 = "consumer-party-dev"
-# bucket_prefix                  = "mpc-consumer-vault"
-# mpc_party_namespace            = "mpc-storage"
-# mpc_party_service_account_name = "mpc-consumer-sa"
-# create_mpc_party_namespace     = true
-# create_irsa                    = true
 
 # Tagging
 common_tags = {

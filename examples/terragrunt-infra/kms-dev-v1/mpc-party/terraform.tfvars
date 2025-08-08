@@ -33,7 +33,7 @@ additional_tags = {
 
 # Node Group Configuration
 create_nodegroup = true
-nodegroup_instance_types = ["t3.large"]
+nodegroup_instance_types = ["m5.2xlarge"]
 nodegroup_min_size = 1
 nodegroup_max_size = 1
 nodegroup_desired_size = 1
