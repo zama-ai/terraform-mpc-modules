@@ -46,6 +46,7 @@ party_services = [
     account_id                = "767398008331"
     partner_name              = "party-4"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0432e3f717883982d"
+    // TODO put in module
     ports = [
       {
         name        = "grpc"
@@ -67,6 +68,7 @@ party_services = [
       },
     ]
     create_kube_service = true
+    // TODO put in module
     kube_service_config = {
       additional_annotations = {
         "mpc.io/partner-tier" = "tier-1"

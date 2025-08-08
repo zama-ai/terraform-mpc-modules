@@ -21,6 +21,7 @@ kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
 mpc_services = [
   {
     name = "mpc-node-1"
+    // TODO put in module
     ports = [
       {
         name        = "grpc"
@@ -36,8 +37,8 @@ mpc_services = [
       },
       {
         name        = "metrics"
-        port        = 9090
-        target_port = 9090
+        port        = 9646
+        target_port = 9646
         protocol    = "TCP"
       }
     ]
