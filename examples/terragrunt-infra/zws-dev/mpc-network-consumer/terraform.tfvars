@@ -21,17 +21,20 @@ namespace        = "kms-decentralized"
 # Network Configuration for VPC Endpoints
 # Option 1: Use EKS cluster lookup (recommended)
 # Leave vpc_id and subnet_ids null to use cluster_name lookup
-use_eks_cluster_lookup = true
-vpc_id                = null
-subnet_ids           = null
-security_group_ids   = null
+# use_eks_cluster_lookup = true
+# vpc_id                = null
+# subnet_ids           = null
+# security_group_ids   = null
 
 # Option 2: Direct VPC specification
-# Uncomment and specify if not using cluster lookup
-# use_eks_cluster_lookup = false
-# vpc_id             = "vpc-1234567890abcdef0"
-# subnet_ids         = ["subnet-1234567890abcdef0", "subnet-0987654321fedcba0"]
-# security_group_ids = ["sg-1234567890abcdef0"]
+use_eks_cluster_lookup = false
+vpc_id                = "vpc-07bff50640cc2dde5"
+subnet_ids           =  [
+  "subnet-0288fe1f3b475d90d",
+  "subnet-051e97122373614c7",
+  "subnet-054a87e337596757a",
+]
+security_group_ids   = ["sg-087debb93352a906a"]
 
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
@@ -40,8 +43,9 @@ party_services = [
   {
     name                      = "mpc-party-4"
     region                    = "eu-west-3"
-    partner_name              = "zws-dev"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0c8a37f02a896c7bc"
+    account_id                = "767398008331"
+    partner_name              = "party-4"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0432e3f717883982d"
     ports = [
       {
         name        = "grpc"

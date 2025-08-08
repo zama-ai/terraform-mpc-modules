@@ -55,9 +55,8 @@ variable "aws_region_for_eks" {
   default     = null
 }
 
-# Network Configuration Mode Selection
 variable "use_eks_cluster_lookup" {
-  description = "Whether to use EKS cluster lookup for network configuration (true) or direct specification (false)"
+  description = "Whether to automatically find the vpc/subnet/secg from the cluster name"
   type        = bool
   default     = false
 }
@@ -149,49 +148,6 @@ variable "dns_domain" {
   description = "DNS domain for custom DNS records"
   type        = string
   default     = "mpc-partners.internal"
-}
-
-# MPC Party Storage Configuration
-variable "enable_mpc_party_storage" {
-  description = "Whether to enable MPC party storage resources"
-  type        = bool
-  default     = false
-}
-
-variable "mpc_party_name" {
-  description = "Name of the MPC party (used for S3 bucket naming)"
-  type        = string
-  default     = null
-}
-
-variable "bucket_prefix" {
-  description = "Prefix for S3 bucket names"
-  type        = string
-  default     = "mpc-consumer-vault"
-}
-
-variable "mpc_party_namespace" {
-  description = "Kubernetes namespace for MPC party resources"
-  type        = string
-  default     = "mpc-storage"
-}
-
-variable "mpc_party_service_account_name" {
-  description = "Name of the Kubernetes service account for MPC party"
-  type        = string
-  default     = "mpc-consumer-sa"
-}
-
-variable "create_mpc_party_namespace" {
-  description = "Whether to create the MPC party namespace"
-  type        = bool
-  default     = true
-}
-
-variable "create_irsa" {
-  description = "Whether to create IRSA (IAM Role for Service Account)"
-  type        = bool
-  default     = true
 }
 
 # Tagging

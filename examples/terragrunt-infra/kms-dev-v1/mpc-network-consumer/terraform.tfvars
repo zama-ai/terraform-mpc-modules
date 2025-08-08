@@ -21,17 +21,17 @@ namespace        = "kms-decentralized"
 # Network Configuration for VPC Endpoints
 # Option 1: Use EKS cluster lookup (recommended)
 # Leave vpc_id and subnet_ids null to use cluster_name lookup
-use_eks_cluster_lookup = true
-vpc_id                = null
-subnet_ids           = null
-security_group_ids   = null
+# use_eks_cluster_lookup = true
+# vpc_id                = null
+# subnet_ids           = null
+# security_group_ids   = null
 
 # Option 2: Direct VPC specification
 # Uncomment and specify if not using cluster lookup
-# use_eks_cluster_lookup = false
-# vpc_id             = "vpc-1234567890abcdef0"
-# subnet_ids         = ["subnet-1234567890abcdef0", "subnet-0987654321fedcba0"]
-# security_group_ids = ["sg-1234567890abcdef0"]
+use_eks_cluster_lookup = false
+vpc_id             = "vpc-0eb96948db410744b"
+subnet_ids         = ["subnet-0027932ed0306303c", "subnet-048864a6944214156", "subnet-0c62aabc99b5f0a27"]
+security_group_ids = ["sg-033017badc63f1e10"]
 
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
@@ -40,8 +40,9 @@ party_services = [
   {
     name                      = "mpc-party-1"
     region                    = "eu-west-1"
+    account_id                = "715841358639"
     partner_name              = "zws-dev"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-033fa9ccd32797ef2"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-015ed042eebeed9e3"
     ports = [
       {
         name        = "grpc"
@@ -78,7 +79,7 @@ party_services = [
     name                      = "mpc-party-2"
     region                    = "eu-west-1"
     account_id                = "715841358639"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-06b05df54d8c1f24c"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-08bc2116c58ea3220"
     ports = [
       {
         name        = "grpc"
@@ -115,7 +116,7 @@ party_services = [
     name                      = "mpc-party-3"
     region                    = "eu-west-1"
     account_id                = "715841358639"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-0883ff03c50d3b55f"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-02f141d909536e76f"
     ports = [
       {
         name        = "grpc"
