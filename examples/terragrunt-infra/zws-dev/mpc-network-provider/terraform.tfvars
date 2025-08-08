@@ -130,18 +130,15 @@ mpc_services = [
 ]
 
 # VPC Endpoint Services Configuration
-create_vpc_endpoints              = true
 
 # Indicate all aws accounts and regions from which the partner services will be consumed
 # By default, the terraform module will add the current region to the supported regions list
 allowed_vpc_endpoint_principals  = ["arn:aws:iam::767398008331:root"]
 vpc_endpoint_supported_regions   = ["eu-west-3"]
 
-
 vpc_endpoint_acceptance_required = false
 # Custom DNS Configuration (disabled for this environment)
 create_custom_dns = false
-private_zone_id   = ""
 dns_domain        = "mpc.internal"
 
 # Tagging

@@ -70,12 +70,6 @@ variable "mpc_services" {
 }
 
 # VPC Endpoint Services Configuration
-variable "create_vpc_endpoints" {
-  description = "Whether to create VPC endpoint services to expose NLBs via PrivateLink"
-  type        = bool
-  default     = true
-}
-
 variable "allowed_vpc_endpoint_principals" {
   description = "List of AWS principal ARNs allowed to connect to the VPC endpoint services"
   type        = list(string)
@@ -94,23 +88,10 @@ variable "vpc_endpoint_supported_regions" {
   default     = ["eu-west-3"]
 }
 
-# Custom DNS Configuration
-variable "create_custom_dns" {
-  description = "Whether to create custom DNS records for VPC endpoints"
-  type        = bool
-  default     = false
-}
-
-variable "private_zone_id" {
-  description = "Route53 private hosted zone ID for custom DNS records"
+variable "service_create_timeout" {
+  description = "Timeout for creating Kubernetes services"
   type        = string
-  default     = ""
-}
-
-variable "dns_domain" {
-  description = "DNS domain for custom DNS records"
-  type        = string
-  default     = "mpc.internal"
+  default     = "5m"
 }
 
 # Tagging

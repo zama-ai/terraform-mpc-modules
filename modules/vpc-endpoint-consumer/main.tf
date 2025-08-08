@@ -28,15 +28,13 @@ data "aws_eks_cluster" "selected" {
 # Local values for determining network configuration based on mode
 locals {
   # Determine configuration mode and values to use
-  # Mode detection: if cluster_name is provided, use EKS lookup mode
-  use_eks_cluster = var.cluster_name != null && var.cluster_name != ""
-  
+
   # Network configuration based on mode
   # In EKS mode: extract from cluster data source
   # In direct mode: use provided variables
-  vpc_id = local.use_eks_cluster ? data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id : var.vpc_id
-  subnet_ids = local.use_eks_cluster ? data.aws_eks_cluster.selected[0].vpc_config[0].subnet_ids : var.subnet_ids
-  security_group_ids = local.use_eks_cluster ? [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id] : (var.security_group_ids != null ? var.security_group_ids : [])
+  vpc_id = var.use_eks_cluster_lookup ? data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id : var.vpc_id
+  subnet_ids = var.use_eks_cluster_lookup ? data.aws_eks_cluster.selected[0].vpc_config[0].subnet_ids : var.subnet_ids
+  security_group_ids = var.use_eks_cluster_lookup ? [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id] : (var.security_group_ids != null ? var.security_group_ids : [])
   
   # Cluster name for tagging (use provided cluster_name or default)
   cluster_name_for_tags = var.cluster_name != null ? var.cluster_name : "mpc-cluster"
@@ -102,7 +100,7 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
       "mpc:partner-region"  = var.party_services[count.index].region
       "mpc:component"       = "partner-interface"
       "mpc:cluster"         = local.cluster_name_for_tags
-      "mpc:config-mode"     = local.use_eks_cluster ? "eks-cluster-lookup" : "direct-specification"
+      "mpc:config-mode"     = var.use_eks_cluster_lookup ? "eks-cluster-lookup" : "direct-specification"
     },
     var.party_services[count.index].account_id != null ? {
       "mpc:partner-account" = var.party_services[count.index].account_id
