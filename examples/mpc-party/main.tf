@@ -86,12 +86,12 @@ module "nodegroup" {
   disk_size = var.nodegroup_disk_size
   taints = {
     dedicated = {
-      key = "kms-decentralized"
+      key = "kms"
       value = "true"
       effect = "NO_SCHEDULE"
     }
   }
   labels = {
-    "nodepool" = "kms-decentralized"
+    "nodepool" = "kms"
   }
 }

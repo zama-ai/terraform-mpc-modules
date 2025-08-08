@@ -38,7 +38,7 @@ security_group_ids = ["sg-033017badc63f1e10"]
 party_services = [
   # Example partner service configuration
   {
-    name                      = "mpc-party-1"
+    name                      = "mpc-node-1"
     region                    = "eu-west-1"
     account_id                = "715841358639"
     partner_name              = "zws-dev"
@@ -76,7 +76,7 @@ party_services = [
     }
   },
   {
-    name                      = "mpc-party-2"
+    name                      = "mpc-node-2"
     region                    = "eu-west-1"
     account_id                = "715841358639"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-08bc2116c58ea3220"
@@ -113,7 +113,7 @@ party_services = [
     }
   },
   {
-    name                      = "mpc-party-3"
+    name                      = "mpc-node-3"
     region                    = "eu-west-1"
     account_id                = "715841358639"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-02f141d909536e76f"

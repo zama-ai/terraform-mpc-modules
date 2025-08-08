@@ -38,7 +38,7 @@ mpc_services = [
     ]
     selector = {
       "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-4-core"
+      "app.kubernetes.io/name" = "kms-core-4-core"
     }
     additional_annotations = {
       "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-1,environment=dev"
@@ -47,7 +47,7 @@ mpc_services = [
       "mpc-role"    = "compute-node"
       "environment" = "dev"
       "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-4-core"
+      "app.kubernetes.io/name" = "kms-core-4-core"
     }
   },
 ]
