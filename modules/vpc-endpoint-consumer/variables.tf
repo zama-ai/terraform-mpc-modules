@@ -54,11 +54,6 @@ variable "cluster_name" {
   default     = null
 }
 
-variable "use_eks_cluster_lookup" {
-  description = "Whether to automatically find the vpc/subnet/secg from the cluster name"
-  type        = bool
-  default     = false
-}
 
 variable "vpc_id" {
   description = "VPC ID where the VPC interface endpoints will be created (Mode 2). Required if cluster_name is not provided."

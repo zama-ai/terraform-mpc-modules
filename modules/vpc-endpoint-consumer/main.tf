@@ -25,6 +25,12 @@ data "aws_eks_cluster" "selected" {
   name  = var.cluster_name
 }
 
+# Get details for all subnets used by the EKS cluster
+data "aws_subnet" "cluster_subnets" {
+  for_each = toset(data.aws_eks_cluster.selected[0].vpc_config[0].subnet_ids)
+  id       = each.value
+}
+
 # Local values for determining network configuration based on mode
 locals {
   # Determine configuration mode and values to use
@@ -32,9 +38,12 @@ locals {
   # Network configuration based on mode
   # In EKS mode: extract from cluster data source
   # In direct mode: use provided variables
-  vpc_id = var.use_eks_cluster_lookup ? data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id : var.vpc_id
-  subnet_ids = var.use_eks_cluster_lookup ? data.aws_eks_cluster.selected[0].vpc_config[0].subnet_ids : var.subnet_ids
-  security_group_ids = var.use_eks_cluster_lookup ? [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id] : (var.security_group_ids != null ? var.security_group_ids : [])
+  vpc_id = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
+  subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
+    for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
+    if subnet.map_public_ip_on_launch == false
+  ]
+  security_group_ids = var.security_group_ids != null ? var.security_group_ids : [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id]
   
   # Cluster name for tagging (use provided cluster_name or default)
   cluster_name_for_tags = var.cluster_name != null ? var.cluster_name : "mpc-cluster"
@@ -71,21 +80,6 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
   security_group_ids = local.security_group_ids
   service_region     = var.party_services[count.index].region
 
-  # Policy document for the VPC endpoint
-  //policy = var.endpoint_policy != null ? var.endpoint_policy : jsonencode({
-  //  Version = "2012-10-17"
-  //  Statement = [
-  //    {
-  //      Effect    = "Allow"
-  //      Principal = "*"
-  //      Action = [
-  //        "*"
-  //      ]
-  //      Resource = "*"
-  //    }
-  //  ]
-  //})
-
   # DNS options
   private_dns_enabled = var.private_dns_enabled
 
@@ -100,7 +94,6 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
       "mpc:partner-region"  = var.party_services[count.index].region
       "mpc:component"       = "partner-interface"
       "mpc:cluster"         = local.cluster_name_for_tags
-      "mpc:config-mode"     = var.use_eks_cluster_lookup ? "eks-cluster-lookup" : "direct-specification"
     },
     var.party_services[count.index].account_id != null ? {
       "mpc:partner-account" = var.party_services[count.index].account_id
