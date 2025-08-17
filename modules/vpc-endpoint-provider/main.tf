@@ -1,5 +1,9 @@
 # Provider requirements are defined in versions.tf
 
+# Data source to get current AWS account ID and region
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
 # Create namespace if it doesn't exist
 resource "kubernetes_namespace" "mpc_namespace" {
   count = var.create_namespace ? 1 : 0
@@ -138,3 +142,62 @@ resource "null_resource" "cleanup_sg_rules" {
   depends_on = [data.aws_lb.kubernetes_nlbs]
 }
 
+# Delete this once we have migrated to single terraform module
+# Data source to look up NLBs by arn
+#data "aws_lb" "nlb_lookup" {
+#  count = length(local.nlb_names)
+#  arn  = data.aws_lb.kubernetes_nlbs[count.index].arn
+#  depends_on = [kubernetes_service.mpc_nlb]
+#}
+
+# Wait for NLB to be available before creating VPC endpoint service
+data "external" "wait_nlb" {
+  count = length(data.aws_lb.kubernetes_nlbs)
+  program = ["bash", "-c", <<-EOF
+    set -e
+    aws elbv2 wait load-balancer-available --region ${data.aws_region.current.region} --load-balancer-arns ${data.aws_lb.kubernetes_nlbs[count.index].arn}
+    echo '{"ready": "true"}'
+  EOF
+  ]
+  depends_on = [data.aws_lb.kubernetes_nlbs]
+}
+
+# Local values for creating VPC endpoint service details
+locals {
+  # Create a list of NLB details for easy reference by index
+  nlb_details = [
+    for i, svc in data.aws_lb.kubernetes_nlbs : {
+      arn      = svc.arn
+      dns_name = svc.dns_name
+      zone_id  = svc.zone_id
+      vpc_id   = svc.vpc_id
+      display_name = var.mpc_services[i].display_nlb_name != null ? var.mpc_services[i].display_nlb_name : var.mpc_services[i].name
+    }
+  ]
+}
+
+# Create VPC endpoint services to expose NLBs via PrivateLink
+resource "aws_vpc_endpoint_service" "mpc_nlb_services" {
+  count = length(local.nlb_details)
+
+  # Associate with the Network Load Balancer
+  network_load_balancer_arns = [local.nlb_details[count.index].arn]
+  
+  # Whether manual acceptance is required for connections
+  acceptance_required = var.acceptance_required
+  
+  # Which principals can connect to this service
+  allowed_principals = var.allowed_principals
+  supported_regions = var.supported_regions
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${local.nlb_details[count.index].display_name}-endpoint-service"
+      NLB  = local.nlb_details[count.index].display_name
+    }
+  )
+
+  # Wait for NLB to be ready before creating VPC endpoint service
+  depends_on = [data.external.wait_nlb]
+} 

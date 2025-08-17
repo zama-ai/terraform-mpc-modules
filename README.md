@@ -22,38 +22,14 @@ The modules follow **clean separation of concerns** with focused, composable com
 
 1. **🎯 Root Module**: Pure networking orchestration for threshold MPC infrastructure (NLBs + VPC endpoints)
 2. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication for threshold cryptography
-3. **🔧 nlb-service-provider Module** (`modules/nlb-service-provider`): Kubernetes LoadBalancer services with AWS NLB for MPC node exposure
-4. **🌉 vpc-endpoint-bridge Module** (`modules/vpc-endpoint-bridge`): VPC endpoint services for secure MPC party communication via AWS PrivateLink
-5. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
+3. **🌉 vpc-endpoint-provider Module** (`modules/vpc-endpoint-provider`): Expose the kubernetes services asVPC endpoint services for secure MPC party communication via AWS PrivateLink
+4. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
 
 ### Examples
 
-6. **📋 mpc-party**: Deploy MPC node infrastructure for threshold key management
-7. **🔗 partner-consumer**: Connect to external MPC parties for distributed protocols (with optional storage)
-8. **🏭 partner-provider**: Provide MPC services to other parties in the threshold network
-
-### Deployment Patterns
-
-**🌐 Full-Mesh MPC Network** (Combined Provider + Consumer)
-Each MPC party in the network deploys both patterns to create bidirectional connectivity:
-
-**🏗️ Provider Capability** (Root Module)
-- Deploy your own threshold MPC nodes for secure key management with NLBs
-- Create VPC endpoint services to expose MPC nodes via AWS PrivateLink
-- Share VPC endpoint service names with other parties in the MPC network
-- Enable incoming connections from other MPC parties for distributed protocols
-
-**🔌 Consumer Capability** (Root Module in Consumer Mode)
-- Connect to all other MPC party nodes via VPC interface endpoints
-- Configure `party_services_config` for connections to each party in the network
-- Establish outgoing connections to participate in distributed threshold protocols
-- Automatic service discovery for seamless MPC protocol execution
-
-**📦 MPC Node Infrastructure** (mpcparty Module)
-- Deploy S3 buckets and IRSA for secure threshold key management operations
-- Self-contained storage for key shares, cryptographic materials, and computation data
-- Secure computation environment supporting AWS Nitro Enclaves (in progress)
-- Supports FHE key generation, key switching, and distributed decryption operations
+1. **📋 mpc-party**: Deploy MPC node infrastructure for threshold key management
+2. **🔗 mpc-network-consumer**: Connect to external MPC parties for distributed protocols
+3. **🏭 mpc-network-provider**: Provide MPC services to other parties in the threshold network
 
 ### 🕸️ **Network Topology**
 ```
@@ -166,12 +142,6 @@ graph TB
 3. **Network Load Balancer** connected to **VPC Endpoint Service**
 4. **VPC Endpoint Service** accepts connections from other MPC parties
 
-**🔒 Security Features:**
-- ✅ **Private Network**: AWS PrivateLink only (no internet)
-- ✅ **Cross-Account**: Independent AWS accounts per party
-- ✅ **Cross-Region**: Global distribution (us-east-1 ↔ eu-west-1)
-- ✅ **Encrypted Storage**: All key materials encrypted at rest
-
 ## 🌟 Features
 
 ### Enhanced Architecture Benefits
@@ -207,7 +177,7 @@ graph TB
 - AWS CLI
 - kubectl
 - aws-load-balancer-controller (v2 recommended)
-- eks with private subnets
+- EKS with private subnets and AWS VPC CNI
 
 ## 📁 Examples
 
