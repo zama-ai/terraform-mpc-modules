@@ -13,15 +13,6 @@ module "vpc_endpoint_provider" {
 
   service_create_timeout = var.service_create_timeout
 
-
-  # Use the NLB service names from the nlb-service-provider module
-  #service_details = [
-  #  for i, svc in module.nlb_service_provider.service_details : {
-  #    display_name = svc.name
-  #    lb_arn       = svc.lb_arn
-  #  }
-  #]
-
   # VPC Endpoint Service configuration
   acceptance_required = var.vpc_endpoint_acceptance_required
   allowed_principals  = var.allowed_vpc_endpoint_principals

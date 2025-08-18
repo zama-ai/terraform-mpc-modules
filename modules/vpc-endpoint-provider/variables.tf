@@ -34,6 +34,18 @@ variable "create_namespace" {
   default     = true
 }
 
+variable "cleanup_sg_rules_v1" {
+  description = "Whether to cleanup security group rules for NLBs made by the native aws load balancer controller v1"
+  type        = bool
+  default     = false
+}
+
+variable "load_balancer_controller_version" {
+  description = "Version of the load balancer controller to use"
+  type        = string
+  default     = "v2"
+}
+
 variable "aws_region" {
   description = "AWS region"
   type        = string

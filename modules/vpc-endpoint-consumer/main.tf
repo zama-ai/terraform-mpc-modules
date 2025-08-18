@@ -58,9 +58,9 @@ locals {
   }
 }
 
-# ***************************************
+# ************************************************************
 #  VPC interface endpoints to connect to partner MPC services
-# ***************************************
+# ************************************************************
 resource "aws_vpc_endpoint" "party_interface_endpoints" {
   count = length(var.party_services)
 
@@ -108,9 +108,9 @@ resource "kubernetes_namespace" "partner_namespace" {
   }
 }
 
-# ***************************************
+# *********************************************************************
 #  Create Kubernetes services that route to the VPC interface endpoints
-# ***************************************
+# *********************************************************************
 resource "kubernetes_service" "party_services" {
   count = length([for service in var.party_services : service if service.create_kube_service])
 
@@ -155,9 +155,9 @@ resource "kubernetes_service" "party_services" {
   }
 }
 
-# ***************************************
+# **************************************************************************************
 #  Create Route53 private hosted zone records for custom DNS names (in progress,optional)
-# ***************************************
+# **************************************************************************************
 resource "aws_route53_record" "partner_dns" {
   count = var.create_custom_dns_records ? length(var.party_services) : 0
 

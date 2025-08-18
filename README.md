@@ -20,10 +20,9 @@ The modules follow **clean separation of concerns** with focused, composable com
 
 ### Core Modules
 
-1. **🎯 Root Module**: Pure networking orchestration for threshold MPC infrastructure (NLBs + VPC endpoints)
-2. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication for threshold cryptography
-3. **🌉 vpc-endpoint-provider Module** (`modules/vpc-endpoint-provider`): Expose the kubernetes services asVPC endpoint services for secure MPC party communication via AWS PrivateLink
-4. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
+1. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication for threshold cryptography
+2. **🌉 vpc-endpoint-provider Module** (`modules/vpc-endpoint-provider`): Expose the kubernetes services asVPC endpoint services for secure MPC party communication via AWS PrivateLink
+3. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
 
 ### Examples
 

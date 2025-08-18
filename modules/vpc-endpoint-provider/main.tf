@@ -30,7 +30,7 @@ resource "kubernetes_namespace" "mpc_namespace" {
 }
 
 # ********************************************
-#  Create LoadBalancer services for MPC nodes
+#  Create LoadBalancer services for MPC nodes 
 # ********************************************
 resource "kubernetes_service" "mpc_nlb" {
   count                    = length(local.processed_mpc_services)
@@ -41,13 +41,12 @@ resource "kubernetes_service" "mpc_nlb" {
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
 
     annotations = merge({
-      "service.beta.kubernetes.io/aws-load-balancer-type"                              = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-type"                              = var.load_balancer_controller_version == "v2" ? "external" : "nlb"
       "service.beta.kubernetes.io/aws-load-balancer-scheme"                            = "internal"
       "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
       "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
       "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                  = "ip"
-      "service.beta.kubernetes.io/aws-load-balancer-alpn-policy" = "HTTP2Preferred"
     }, local.processed_mpc_services[count.index].additional_annotations)
 
     labels = merge({
@@ -108,9 +107,10 @@ data "aws_lb" "kubernetes_nlbs" {
 }
 
 # **************************************************************************************
-#  Cleanup security group rules for NLBs made by the native aws load balancer controller
+#  Cleanup security group rules for NLBs made by the native aws load balancer controller v1
 # **************************************************************************************
 resource "null_resource" "cleanup_sg_rules" {
+  count = var.cleanup_sg_rules_v1 ? 1 : 0
   # Force this resource to run on every apply/destroy of Terraform
   triggers = {
     nlb_names   = join(",", local.nlb_names)
