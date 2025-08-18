@@ -21,27 +21,17 @@ kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
 mpc_services = [
   {
     name = "mpc-node-1"
-    // TODO put in module
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      }
-    ]
+    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
+    # Uncomment and customize if different ports are needed:
+    # ports = [
+    #   {
+    #     name        = "custom-grpc"
+    #     port        = 60100
+    #     target_port = 60100
+    #     protocol    = "TCP"
+    #   }
+    # ]
+    
     selector = {
       "app" = "kms-core"
       "app.kubernetes.io/name" = "kms-core-1-core"
@@ -58,26 +48,8 @@ mpc_services = [
   },
   {
     name = "mpc-node-2"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      }
-    ]
+    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
+    
     selector = {
       "app" = "kms-core"
       "app.kubernetes.io/name" = "kms-core-2-core"
@@ -94,26 +66,8 @@ mpc_services = [
   },
   {
     name = "mpc-node-3"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      }
-    ]
+    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
+    
     selector = {
       "app" = "kms-core"
       "app.kubernetes.io/name" = "kms-core-3-core"

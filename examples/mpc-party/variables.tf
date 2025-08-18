@@ -143,3 +143,57 @@ variable "nodegroup_disk_size" {
   type        = number
   default     = 30
 }
+
+variable "nodegroup_capacity_type" {
+  description = "Capacity type for the nodegroup"
+  type        = string
+  default     = "ON_DEMAND"
+}
+
+variable "nodegroup_ami_type" {
+  description = "AMI type for the nodegroup"
+  type        = string
+  default     = "AL2_x86_64"
+}
+
+variable "nodegroup_enable_remote_access" {
+  description = "Whether to enable remote access to the nodegroup"
+  type        = bool
+  default     = false
+}
+
+variable "nodegroup_ec2_ssh_key" {
+  description = "EC2 Key Pair name that provides access for SSH communication with the worker nodes"
+  type        = string
+  default     = null
+}
+
+variable "nodegroup_source_security_group_ids" {
+  description = "List of security group IDs allowed for remote access"
+  type        = list(string)
+  default     = []
+}
+
+variable "nodegroup_labels" {
+  description = "Labels for the nodegroup"
+  type        = map(string)
+  default     = {
+    "nodepool" = "kms"
+  }
+}
+
+variable "nodegroup_taints" {
+  description = "Taints for the nodegroup"
+  type        = map(object({
+    key    = string
+    value  = string
+    effect = string
+  }))
+  default     = {
+    dedicated = {
+      key = "kms_dedicated"
+      value = "true"
+      effect = "NO_SCHEDULE"
+    }
+  }
+}

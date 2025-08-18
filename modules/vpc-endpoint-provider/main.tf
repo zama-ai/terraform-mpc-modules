@@ -1,10 +1,26 @@
-# Provider requirements are defined in versions.tf
-
-# Data source to get current AWS account ID and region
+# **************************************************************
+#  Data source to get current AWS account ID and region
+# **************************************************************
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# Create namespace if it doesn't exist
+# Local values for processing services with default port fallback
+locals {
+  # Process services and apply default ports if not specified
+  processed_mpc_services = [
+    for service in var.mpc_services : merge(service, {
+      ports = length(coalesce(service.ports, [])) > 0 ? service.ports : [
+        var.default_mpc_ports.grpc,
+        var.default_mpc_ports.peer,
+        var.default_mpc_ports.metrics
+      ]
+    })
+  ]
+}
+
+# **************************************************************
+#  Create namespace if it doesn't exist (optional)
+# **************************************************************
 resource "kubernetes_namespace" "mpc_namespace" {
   count = var.create_namespace ? 1 : 0
 
@@ -13,13 +29,15 @@ resource "kubernetes_namespace" "mpc_namespace" {
   }
 }
 
-# Create LoadBalancer services for MPC nodes
+# ********************************************
+#  Create LoadBalancer services for MPC nodes
+# ********************************************
 resource "kubernetes_service" "mpc_nlb" {
-  count                    = length(var.mpc_services)
+  count                    = length(local.processed_mpc_services)
   wait_for_load_balancer   = true
 
   metadata {
-    name      = var.mpc_services[count.index].name
+    name      = local.processed_mpc_services[count.index].name
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
 
     annotations = merge({
@@ -30,26 +48,26 @@ resource "kubernetes_service" "mpc_nlb" {
       "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                  = "ip"
       "service.beta.kubernetes.io/aws-load-balancer-alpn-policy" = "HTTP2Preferred"
-    }, var.mpc_services[count.index].additional_annotations)
+    }, local.processed_mpc_services[count.index].additional_annotations)
 
     labels = merge({
       "app.kubernetes.io/name"      = var.mpc_services[count.index].name
       "app.kubernetes.io/instance"  = var.mpc_services[count.index].name
       "app.kubernetes.io/component" = "mpc-node"
       "app.kubernetes.io/part-of"   = "mpc-cluster"
-    }, var.mpc_services[count.index].labels)
+    }, local.processed_mpc_services[count.index].labels)
   }
 
   spec {
     type                        = "LoadBalancer"
     load_balancer_class         = "service.k8s.aws/nlb"
-    session_affinity            = var.mpc_services[count.index].session_affinity
-    external_traffic_policy     = var.mpc_services[count.index].external_traffic_policy
-    internal_traffic_policy     = var.mpc_services[count.index].internal_traffic_policy
-    load_balancer_source_ranges = var.mpc_services[count.index].load_balancer_source_ranges
+    session_affinity            = local.processed_mpc_services[count.index].session_affinity
+    external_traffic_policy     = local.processed_mpc_services[count.index].external_traffic_policy
+    internal_traffic_policy     = local.processed_mpc_services[count.index].internal_traffic_policy
+    load_balancer_source_ranges = local.processed_mpc_services[count.index].load_balancer_source_ranges
 
     dynamic "port" {
-      for_each = var.mpc_services[count.index].ports
+      for_each = local.processed_mpc_services[count.index].ports
       content {
         name        = port.value.name
         port        = port.value.port
@@ -59,7 +77,7 @@ resource "kubernetes_service" "mpc_nlb" {
       }
     }
 
-    selector = var.mpc_services[count.index].selector
+    selector = local.processed_mpc_services[count.index].selector
   }
 
   timeouts {
@@ -89,8 +107,9 @@ data "aws_lb" "kubernetes_nlbs" {
   depends_on = [kubernetes_service.mpc_nlb]
 }
 
-# Cleanup security group rules for NLBs made by the native aws load balancer controller
-# Remove when migrating to the aws load balancer controller v2
+# **************************************************************************************
+#  Cleanup security group rules for NLBs made by the native aws load balancer controller
+# **************************************************************************************
 resource "null_resource" "cleanup_sg_rules" {
   # Force this resource to run on every apply/destroy of Terraform
   triggers = {
@@ -142,15 +161,9 @@ resource "null_resource" "cleanup_sg_rules" {
   depends_on = [data.aws_lb.kubernetes_nlbs]
 }
 
-# Delete this once we have migrated to single terraform module
-# Data source to look up NLBs by arn
-#data "aws_lb" "nlb_lookup" {
-#  count = length(local.nlb_names)
-#  arn  = data.aws_lb.kubernetes_nlbs[count.index].arn
-#  depends_on = [kubernetes_service.mpc_nlb]
-#}
-
-# Wait for NLB to be available before creating VPC endpoint service
+# ********************************************************************
+#  Wait for NLB to be available before creating VPC endpoint service 
+# ********************************************************************
 data "external" "wait_nlb" {
   count = length(data.aws_lb.kubernetes_nlbs)
   program = ["bash", "-c", <<-EOF
@@ -176,7 +189,9 @@ locals {
   ]
 }
 
-# Create VPC endpoint services to expose NLBs via PrivateLink
+# **************************************************************
+#  Create VPC endpoint services to expose NLBs via PrivateLink 
+# **************************************************************
 resource "aws_vpc_endpoint_service" "mpc_nlb_services" {
   count = length(local.nlb_details)
 

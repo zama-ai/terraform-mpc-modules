@@ -32,36 +32,26 @@ security_group_ids   = ["sg-087debb93352a906a"]
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
 party_services = [
-  # Example partner service configuration
+  # Example partner service configuration using default ports
   {
     name                      = "mpc-node-4"
     region                    = "eu-west-3"
     account_id                = "767398008331"
     partner_name              = "party-4"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0432e3f717883982d"
-    // TODO put in module
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      },
-    ]
+    
+    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
+    # Uncomment and customize if different ports are needed:
+    # ports = [
+    #   {
+    #     name        = "custom-grpc"
+    #     port        = 60100
+    #     target_port = 60100
+    #     protocol    = "TCP"
+    #   }
+    # ]
+    
     create_kube_service = true
-    // TODO put in module
     kube_service_config = {
       additional_annotations = {
         "mpc.io/partner-tier" = "tier-1"

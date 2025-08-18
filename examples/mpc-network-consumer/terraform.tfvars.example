@@ -1,4 +1,5 @@
-# This is a test file for the kms-dev-v1 consumer node
+# MPC Network Consumer Example Configuration
+# This demonstrates the simplified configuration using default port values
 
 # AWS Configuration
 aws_region         = "eu-west-1"
@@ -18,7 +19,6 @@ eks_cluster_name   = "zws-dev"  # Update for EKS authentication
 # Partner Services Namespace
 namespace        = "kms-decentralized"
 
-
 # Optional: the following lines if using EKS cluster lookup
 # vpc_id                = "vpc-07bff50640cc2dde5"
 # subnet_ids           =  [
@@ -29,39 +29,57 @@ namespace        = "kms-decentralized"
 
 security_group_ids   = ["sg-087debb93352a906a"]
 
+# Default MPC Port Configuration (optional - can be customized)
+# Uncomment and modify if you need different default ports across all services
+# default_mpc_ports = {
+#   grpc = {
+#     name        = "grpc"
+#     port        = 50100
+#     target_port = 50100
+#     protocol    = "TCP"
+#   }
+#   peer = {
+#     name        = "peer"
+#     port        = 50001
+#     target_port = 50001
+#     protocol    = "TCP"
+#   }
+#   metrics = {
+#     name        = "metrics"
+#     port        = 9646
+#     target_port = 9646
+#     protocol    = "TCP"
+#   }
+# }
+
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
+# Note: Ports are now optional - default ports (50100, 50001, 9646) will be used automatically
 party_services = [
-  # Example partner service configuration
+  # Example partner service configuration using default ports
   {
     name                      = "mpc-node-4"
     region                    = "eu-west-3"
     account_id                = "767398008331"
     partner_name              = "party-4"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0432e3f717883982d"
-    // TODO put in module
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      },
-    ]
+    
+    # Ports are now optional! The module will automatically use:
+    # - grpc: port 50100
+    # - peer: port 50001  
+    # - metrics: port 9646
+    
+    # Only specify ports if you need custom values for this specific service:
+    # ports = [
+    #   {
+    #     name        = "custom-grpc"
+    #     port        = 60100
+    #     target_port = 60100
+    #     protocol    = "TCP"
+    #   }
+    # ]
+    
     create_kube_service = true
-    // TODO put in module
     kube_service_config = {
       additional_annotations = {
         "mpc.io/partner-tier" = "tier-1"

@@ -107,12 +107,12 @@ variable "party_services" {
     account_id                = optional(string, null) # AWS account ID where the partner service is located (optional)
     partner_name              = optional(string, null) # Name of the partner name (optional)
     vpc_endpoint_service_name = string # VPC endpoint service name (required - AWS-generated name)
-    ports = list(object({
+    ports = optional(list(object({
       name        = string
       port        = number
       target_port = number
       protocol    = string
-    }))
+    })), null)
     create_kube_service = optional(bool, true) # Whether to create Kubernetes service
     kube_service_config = optional(object({
       additional_annotations  = optional(map(string), {})
@@ -194,6 +194,51 @@ variable "create_namespace" {
   description = "Whether to create the namespace if it doesn't exist"
   type        = bool
   default     = false
+}
+
+# Default MPC Port Configurations
+variable "default_mpc_ports" {
+  description = "Default port configurations for MPC services. These can be overridden per service in party_services configuration."
+  type = object({
+    grpc = object({
+      name        = string
+      port        = number
+      target_port = number
+      protocol    = string
+    })
+    peer = object({
+      name        = string
+      port        = number
+      target_port = number
+      protocol    = string
+    })
+    metrics = object({
+      name        = string
+      port        = number
+      target_port = number
+      protocol    = string
+    })
+  })
+  default = {
+    grpc = {
+      name        = "grpc"
+      port        = 50100
+      target_port = 50100
+      protocol    = "TCP"
+    }
+    peer = {
+      name        = "peer"
+      port        = 50001
+      target_port = 50001
+      protocol    = "TCP"
+    }
+    metrics = {
+      name        = "metrics"
+      port        = 9646
+      target_port = 9646
+      protocol    = "TCP"
+    }
+  }
 }
 
 # Custom DNS variables

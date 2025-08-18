@@ -38,21 +38,15 @@ nodegroup_min_size = 1
 nodegroup_max_size = 1
 nodegroup_desired_size = 1
 nodegroup_disk_size = 30
-
-# Example configurations for different scenarios:
-
-# Scenario 1: Development environment with IRSA
-# party_name  = "dev-party-alice"
-# environment = "dev"
-# create_irsa = true
-
-# Scenario 2: Production environment with custom naming
-# party_name    = "prod-party-bank-a"
-# environment   = "prod"
-# bucket_prefix = "company-secure-mpc"
-# create_irsa   = true
-
-# Scenario 3: Testing without IRSA (use manual AWS credentials)
-# party_name  = "test-party"
-# environment = "test"
-# create_irsa = false 
+nodegroup_capacity_type = "ON_DEMAND"
+nodegroup_ami_type = "AL2_x86_64"
+nodegroup_labels = {
+  "nodepool" = "kms"
+}
+nodegroup_taints = {
+  dedicated = {
+    key = "kms_dedicated"
+    value = "true"
+    effect = "NO_SCHEDULE"
+  }
+}
