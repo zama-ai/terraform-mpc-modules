@@ -1,4 +1,7 @@
-# Data source to get eks cluster
+# ***************************************
+#  Data sources
+# ***************************************
+
 data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
 }
@@ -8,11 +11,16 @@ data "aws_subnet" "cluster_subnets" {
   id       = each.value
 }
 
+data "aws_caller_identity" "current" {}
+
 locals {
   private_subnet_ids = [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
   ]
+  node_group_nitro_enclaves_enabled = var.kms_enabled_nitro_enclaves && var.nodegroup_enable_nitro_enclaves
+  node_group_nitro_enclaves_cpu_count = var.nitro_enclaves_override_cpu_count != null ? var.nitro_enclaves_override_cpu_count : floor(data.aws_ec2_instance_type.this[0].default_vcpus * 0.75)
+  node_group_nitro_enclaves_memory_mib = var.nitro_enclaves_override_memory_mib != null ? var.nitro_enclaves_override_memory_mib : floor(data.aws_ec2_instance_type.this[0].memory_size * 0.75)
 }
 
 # Create Kubernetes namespace (optional)
@@ -208,7 +216,73 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
 }
 
 # ***************************************
-#  ConfigMap with S3 bucket configuration
+#  aws kms key for mpc party
+# ***************************************
+resource "aws_kms_key" "mpc_party" {
+  count = var.kms_enabled_nitro_enclaves ? 1 : 0
+  description = "KMS key for MPC Party"
+  key_usage = var.kms_key_usage
+  customer_master_key_spec = var.kms_customer_master_key_spec
+  enable_key_rotation     = false
+  deletion_window_in_days = var.kms_deletion_window_in_days
+  tags = merge(var.common_tags, {
+    "Name"        = "mpc-party"
+  })
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::156692459989:role/zama-testnet-tkms-13-47ws8-7gcgq"
+        },
+        Action = [
+        "kms:Decrypt",
+        "kms:GenerateDataKey",
+        "kms:GetPublicKey"
+      ],
+        Resource = "*",
+        Condition = {
+          StringEqualsIgnoreCase = {
+          "kms:RecipientAttestation:ImageSha384": var.kms_image_attestation_sha
+        }
+      }
+    },
+    {
+      Effect = "Allow",
+      Principal = {
+        AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+      },
+      Action = [
+        "kms:Create*",
+        "kms:Describe*",
+        "kms:Enable*",
+        "kms:List*",
+        "kms:Put*",
+        "kms:Update*",
+        "kms:Revoke*",
+        "kms:Disable*",
+        "kms:Get*",
+        "kms:Delete*",
+        "kms:TagResource",
+        "kms:UntagResource",
+        "kms:ScheduleKeyDeletion",
+        "kms:CancelKeyDeletion"
+      ],
+      Resource = "*"
+    }
+  ]
+  })
+}
+
+resource "aws_kms_alias" "mpc_party" {
+  count = var.kms_enabled_nitro_enclaves ? 1 : 0
+  name          = "alias/mpc-${var.party_name}"
+  target_key_id = aws_kms_key.mpc_party[0].key_id
+}
+
+# ***************************************
+#  ConfigMap for MPC Party
 # ***************************************
 resource "kubernetes_config_map" "mpc_party_config" {
   count = var.create_config_map ? 1 : 0
@@ -233,12 +307,15 @@ resource "kubernetes_config_map" "mpc_party_config" {
   
   data = {
     "CORE_CLIENT__S3_ENDPOINT" = "https://${aws_s3_bucket.vault_public_bucket.id}.s3.${aws_s3_bucket.vault_public_bucket.region}.amazonaws.com"
-    "KMS_CORE__PUBLIC_VAULT__STORAGE"  = "s3://${aws_s3_bucket.vault_public_bucket.id}"
-    "KMS_CORE__PRIVATE_VAULT__STORAGE" = "s3://${aws_s3_bucket.vault_private_bucket.id}"
+    # should be removed after rc24 version
+    # "KMS_CORE__PUBLIC_VAULT__STORAGE"  = "s3://${aws_s3_bucket.vault_public_bucket.id}"
+    # "KMS_CORE__PRIVATE_VAULT__STORAGE" = "s3://${aws_s3_bucket.vault_private_bucket.id}"
     "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__BUCKET" = aws_s3_bucket.vault_private_bucket.id
     "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__PREFIX" = ""
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET" = aws_s3_bucket.vault_public_bucket.id
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX" = ""
+    "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID" = var.kms_enabled_nitro_enclaves ? aws_kms_key.mpc_party[0].key_id : null
+    "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC" = var.kms_enabled_nitro_enclaves ? "symm" : null
   }
   
   depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]
@@ -247,6 +324,12 @@ resource "kubernetes_config_map" "mpc_party_config" {
 # ***************************************
 #  EKS Managed Node Group
 # ***************************************
+
+data "aws_ec2_instance_type" "this" {
+  instance_type = var.nodegroup_instance_types[0]
+  count = var.nodegroup_enable_nitro_enclaves ? 1 : 0
+}
+
 module "eks_managed_node_group" {
   count = var.create_nodegroup ? 1 : 0
   source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
@@ -270,9 +353,59 @@ module "eks_managed_node_group" {
   instance_types = var.nodegroup_instance_types
   capacity_type  = var.nodegroup_capacity_type
   ami_type       = var.nodegroup_ami_type
+
+  # Enclave options for Nitro Enclaves
+  enclave_options = local.node_group_nitro_enclaves_enabled ? { enabled = true } : null
+
+  # Metadata options for Nitro Enclaves
+  metadata_options = local.node_group_nitro_enclaves_enabled ? {
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+    http_put_response_hop_limit = 2
+  } : null
   
-  # Disable settings that conflict with launch template
-  enable_bootstrap_user_data = false
+  iam_role_additional_policies = merge({
+      AmazonEBSCSIDriverPolicy           = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+      AmazonEKS_CNI_Policy               = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+      AmazonEKSWorkerNodePolicy          = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    },
+    var.nodegroup_enable_ssm_managed_instance ? {
+      AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" # Disable SSM managed instance for mainnet
+    } : {}
+  )
+  
+
+  # This script configures and launches the Nitro enclave allocator. The
+  # CPU_COUNT and MEMORY_MIB variables indicate the resources available to
+  # all enclaves running on the node. A rule of thumb for the kms-core is to
+  # allocate 75% of the underlying instance capacity.
+  cloudinit_pre_nodeadm =  local.node_group_nitro_enclaves_enabled ? [{
+      content_type = "text/x-shellscript; charset=\"us-ascii\""
+      content      = <<-EOT
+        #!/usr/bin/env bash
+        # Node resources that will be allocated for Nitro Enclaves
+        readonly CPU_COUNT=${local.node_group_nitro_enclaves_cpu_count}
+        readonly MEMORY_MIB=${local.node_group_nitro_enclaves_memory_mib}
+
+        readonly NE_ALLOCATOR_SPEC_PATH="/etc/nitro_enclaves/allocator.yaml"
+
+        # This step below is needed to install nitro-enclaves-allocator service.
+        dnf install aws-nitro-enclaves-cli -y
+
+        # Update enclave's allocator specification: allocator.yaml
+        sed -i "s/cpu_count:.*/cpu_count: $CPU_COUNT/g" $NE_ALLOCATOR_SPEC_PATH
+        sed -i "s/memory_mib:.*/memory_mib: $MEMORY_MIB/g" $NE_ALLOCATOR_SPEC_PATH
+
+        # Enable the nitro-enclaves-allocator service on boot
+        systemctl enable nitro-enclaves-allocator.service
+
+        # Restart the nitro-enclaves-allocator service to take changes effect.
+        systemctl restart nitro-enclaves-allocator.service
+
+        echo "NE user data script has finished successfully."
+      EOT
+    }] : null
   
   # Cluster service CIDR for user data
   cluster_service_cidr = data.aws_eks_cluster.cluster.kubernetes_network_config[0].service_ipv4_cidr
@@ -287,9 +420,126 @@ module "eks_managed_node_group" {
   } : null
 
   # Labels and Taints
-  labels = var.nodegroup_labels
-  taints = var.nodegroup_taints
+  labels = merge(var.nodegroup_labels, local.node_group_nitro_enclaves_enabled ? {
+    "node.kubernetes.io/enclave-enabled" = "true"
+  } : {})
+
+  taints = merge(var.nodegroup_taints, local.node_group_nitro_enclaves_enabled ? {
+    "aws-nitro-enclaves" = {
+      key = "node.kubernetes.io/enclave-enabled"
+      value = "true"
+      effect = "NO_SCHEDULE"
+    }
+  } : {})
 
   # Tags
   tags = var.tags
+}
+
+# ***************************************
+#  Deploy Daemonset AWS Nitro Enclaves
+# ***************************************
+resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
+  count = local.node_group_nitro_enclaves_enabled ? 1 : 0
+
+  metadata {
+    name = "aws-nitro-enclaves-k8s-device-plugin"
+    namespace = "kube-system"
+    labels = {
+      name = "aws-nitro-enclaves"
+      role = "agent"
+    }
+  }
+
+  spec {
+    selector {
+      match_labels = {
+        name = "aws-nitro-enclaves"
+      }
+    }
+    strategy {
+      type = "RollingUpdate"
+    }
+
+    template {
+      metadata {
+        labels = {
+          name = "aws-nitro-enclaves"
+        }
+        annotations = {
+          "node.kubernetes.io/bootstrap-checkpoint" = "true"
+        }
+      }
+
+      spec {
+        node_selector = {
+          "node.kubernetes.io/enclave-enabled" = "true"
+        }
+
+        priority_class_name              = "system-node-critical"
+        hostname                         = "aws-nitro-enclaves"
+        termination_grace_period_seconds = 30
+
+        container {
+          name              = "aws-nitro-enclaves"
+          image             = "${var.nodegroup_nitro_enclaves_image_repo}:${var.nodegroup_nitro_enclaves_image_tag}"
+          image_pull_policy = "IfNotPresent"
+
+          security_context {
+            read_only_root_filesystem  = true
+            allow_privilege_escalation = false
+            capabilities {
+              drop = ["ALL"]
+            }
+          }
+
+          resources {
+            limits = {
+              cpu    = "100m"
+              memory = "30Mi"
+            }
+            requests = {
+              cpu    = "10m"
+              memory = "15Mi"
+            }
+          }
+
+          volume_mount {
+            name       = "device-plugin"
+            mount_path = "/var/lib/kubelet/device-plugins"
+          }
+          volume_mount {
+            name       = "dev-dir"
+            mount_path = "/dev"
+          }
+          volume_mount {
+            name       = "sys-dir"
+            mount_path = "/sys"
+          }
+        }
+
+        volume {
+          name = "device-plugin"
+          host_path { path = "/var/lib/kubelet/device-plugins" }
+        }
+        volume {
+          name = "dev-dir"
+          host_path { path = "/dev" }
+        }
+        volume {
+          name = "sys-dir"
+          host_path { path = "/sys" }
+        }
+
+        toleration {
+          key = "node.kubernetes.io/enclave-enabled"
+          operator = "Equal"
+          value = "true"
+          effect = "NoSchedule"
+        }
+
+      }
+    }
+  }
+  depends_on = [module.eks_managed_node_group]
 }

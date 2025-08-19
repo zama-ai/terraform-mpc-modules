@@ -39,14 +39,17 @@ nodegroup_max_size = 1
 nodegroup_desired_size = 1
 nodegroup_disk_size = 30
 nodegroup_capacity_type = "ON_DEMAND"
-nodegroup_ami_type = "AL2_x86_64"
+# After 1.30.0 release, we need to use AL2023_x86_64_STANDARD
+nodegroup_ami_type = "AL2023_x86_64_STANDARD"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
-nodegroup_taints = {
-  dedicated = {
-    key = "kms_dedicated"
-    value = "true"
-    effect = "NO_SCHEDULE"
-  }
-}
+nodegroup_taints = {}
+nodegroup_additional_security_group_ids = ["sg-0e4f24b603b57f590"]
+nodegroup_enable_nitro_enclaves = true
+# nodegroup_enable_ssm_managed_instance = true
+
+# Nitro Enclaves Configuration for MPC Party
+kms_enabled_nitro_enclaves = true
+kms_image_attestation_sha = "fb386ef9ea16263dd1bba744c9b86eaa7a11401f13f6033e48b9b8e6c718bc71f3070ccafd9fab1535ec406975dff43d"
+kms_deletion_window_in_days = 7

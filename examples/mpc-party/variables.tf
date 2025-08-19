@@ -182,6 +182,12 @@ variable "nodegroup_labels" {
   }
 }
 
+variable "nodegroup_enable_nitro_enclaves" {
+  description = "Whether to enable Nitro Enclaves"
+  type        = bool
+  default     = false
+}
+
 variable "nodegroup_taints" {
   description = "Taints for the nodegroup"
   type        = map(object({
@@ -196,4 +202,34 @@ variable "nodegroup_taints" {
       effect = "NO_SCHEDULE"
     }
   }
+}
+
+variable "nodegroup_additional_security_group_ids" {
+  description = "List of additional security group IDs to associate with the node group"
+  type        = list(string)
+  default     = []
+}
+
+variable "nodegroup_enable_ssm_managed_instance" {
+  description = "Whether to enable SSM managed instance"
+  type        = bool
+  default     = false
+}
+
+# kms configuration (need to be updated if upgrade to new zama-kms image)
+variable "kms_image_attestation_sha" {
+  description = "Attestation SHA for KMS image"
+  type        = string
+}
+
+variable "kms_enabled_nitro_enclaves" {
+  description = "Whether to enable KMS for Nitro Enclaves"
+  type        = bool
+  default     = false
+}
+
+variable "kms_deletion_window_in_days" {
+  description = "Deletion window in days for KMS key"
+  type        = number
+  default     = 30
 }

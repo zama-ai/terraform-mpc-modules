@@ -141,42 +141,14 @@ graph TB
 3. **Network Load Balancer** connected to **VPC Endpoint Service**
 4. **VPC Endpoint Service** accepts connections from other MPC parties
 
-## 🌟 Features
-
-### Enhanced Architecture Benefits
-- ✅ **Modular Design**: Use only what you need
-- ✅ **Clean Separation**: Networking vs Storage vs Examples
-- ✅ **Self-Contained Modules**: No external dependencies between modules
-- ✅ **Composable**: Mix and match modules for custom solutions
-
-### MPC Node Infrastructure (mpcparty Module)
-- ✅ **Complete S3 Setup**: Private and public buckets for threshold key shares and cryptographic materials
-- ✅ **IRSA Integration**: Secure AWS access for threshold MPC operations
-- ✅ **Namespace Management**: Automatic Kubernetes namespace creation for MPC nodes
-- ✅ **Service Account**: Smart creation logic for secure MPC node deployment
-- ✅ **ConfigMap**: Environment variables for MPC node applications
-- ✅ **Comprehensive Tagging**: AWS resource organization for MPC infrastructure
-- 🚧 **AWS Nitro Enclave Support**: Enhanced secure computation environment (in progress)
-
-### Networking Infrastructure (Root Module)
-- ✅ **Multiple MPC Nodes**: Deploy threshold key management nodes with individual NLBs
-- ✅ **Cross-Zone Load Balancing**: High availability for distributed threshold protocols
-- ✅ **VPC Endpoint Services**: Secure cross-VPC connectivity for threshold MPC party communication
-- ✅ **Dual Deployment Modes**: Provider and consumer patterns for distributed key management topologies
-
-### MPC Party Integration (Direct Modules)
-- ✅ **Cross-Region Support**: Connect to threshold MPC parties in different AWS regions
-- ✅ **Cross-Account Support**: Secure multi-account distributed key management networks
-- ✅ **Kubernetes Integration**: Automatic service discovery for threshold MPC nodes
-- ✅ **Flexible Network Config**: EKS lookup or direct VPC specification for MPC deployment
-
 ## Requirements
 
 - Terraform 1.0+
 - AWS CLI
 - kubectl
+- EKS 1.30.0+ with private subnets
+- AWS VPC CNI
 - aws-load-balancer-controller (v2 recommended)
-- EKS with private subnets and AWS VPC CNI
 
 ## 📁 Examples
 
@@ -189,6 +161,20 @@ Deploy only storage infrastructure using the enhanced mpcparty module:
 
 ```bash
 cd examples/mpc-party
+terraform init
+terraform apply
+```
+
+### [mpc-network-provider](./examples/mpc-network-provider/)
+Provide threshold key management services to other MPC parties using the root module:
+- Network Load Balancers for threshold key management nodes
+- VPC endpoint services for secure MPC party access to distributed key operations
+- Complete threshold key management service provider setup
+
+```bash
+cd examples/mpc-network-provider
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your MPC node details
 terraform init
 terraform apply
 ```
@@ -209,29 +195,6 @@ cp terraform.tfvars.example terraform.tfvars
 terraform init
 terraform apply
 ```
-
-### [mpc-network-provider](./examples/mpc-network-provider/)
-Provide threshold key management services to other MPC parties using the root module:
-- Network Load Balancers for threshold key management nodes
-- VPC endpoint services for secure MPC party access to distributed key operations
-- Complete threshold key management service provider setup
-
-```bash
-cd examples/mpc-network-provider
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your MPC node details
-terraform init
-terraform apply
-```
-
-## 📋 Requirements
-
-| Name | Version |
-|------|---------|
-| terraform | >= 1.0 |
-| aws | >= 5.0 |
-| kubernetes | >= 2.23 |
-| random | >= 3.1 |
 
 ## 🤝 Contributing
 
