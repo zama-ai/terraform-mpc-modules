@@ -1,28 +1,23 @@
-
-# Data source to get current AWS account ID and region
+# ***************************************
+#  Data sources
+# ***************************************
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# Conditional data source to lookup EKS cluster (only when cluster_name is provided)
-# This is only executed when using EKS Cluster Lookup mode
 data "aws_eks_cluster" "selected" {
   count = var.cluster_name != null ? 1 : 0
   name  = var.cluster_name
 }
 
-# Get details for all subnets used by the EKS cluster
 data "aws_subnet" "cluster_subnets" {
   for_each = toset(data.aws_eks_cluster.selected[0].vpc_config[0].subnet_ids)
   id       = each.value
 }
 
-# Local values for determining network configuration based on mode
+# ***************************************
+#  Local variables
+# ***************************************
 locals {
-  # Determine configuration mode and values to use
-
-  # Network configuration based on mode
-  # In EKS mode: extract from cluster data source
-  # In direct mode: use provided variables
   vpc_id = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
   subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id

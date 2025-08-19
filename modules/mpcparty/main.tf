@@ -13,6 +13,10 @@ data "aws_subnet" "cluster_subnets" {
 
 data "aws_caller_identity" "current" {}
 
+
+# ***************************************
+#  Local variables
+# ***************************************
 locals {
   private_subnet_ids = [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id

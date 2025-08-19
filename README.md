@@ -20,9 +20,9 @@ The modules follow **clean separation of concerns** with focused, composable com
 
 ### Core Modules
 
-1. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication for threshold cryptography
-2. **🌉 vpc-endpoint-provider Module** (`modules/vpc-endpoint-provider`): Expose the kubernetes services asVPC endpoint services for secure MPC party communication via AWS PrivateLink
-3. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
+1. **📦 [mpcparty Module](./modules/mpcparty/)**: Self-contained MPC node storage and authentication for threshold cryptography
+2. **🌉 [vpc-endpoint-provider Module](./modules/vpc-endpoint-provider/)**: Expose the kubernetes services as VPC endpoint services for secure MPC party communication via AWS PrivateLink
+3. **🔌 [vpc-endpoint-consumer Module](./modules/vpc-endpoint-consumer/)**: VPC interface endpoints for connecting to external MPC parties
 
 ### Examples
 
@@ -141,6 +141,56 @@ graph TB
 3. **Network Load Balancer** connected to **VPC Endpoint Service**
 4. **VPC Endpoint Service** accepts connections from other MPC parties
 
+## 📚 Modules Documentation
+
+### [📦 MPC Party Module](./modules/mpcparty/)
+**Complete MPC node infrastructure for threshold cryptography**
+
+The `mpcparty` module provides a comprehensive solution for deploying Multi-Party Computation (MPC) party infrastructure on Amazon EKS. This module handles all the necessary AWS and Kubernetes resources required for a complete MPC party deployment.
+
+**Key Features:**
+- 🏗️ **Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, and Kubernetes resources
+- 🔐 **Security First**: Built-in IRSA (IAM Roles for Service Accounts) support for secure AWS access
+- 🔒 **Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration
+- 📦 **S3 Storage**: Automated setup of public and private S3 buckets with proper policies
+- ⚙️ **Configurable**: Extensive customization options for all components
+
+**[📖 View Complete Documentation →](./modules/mpcparty/README.md)**
+
+---
+
+### [🌉 VPC Endpoint Provider Module](./modules/vpc-endpoint-provider/)
+**Expose MPC services via AWS PrivateLink**
+
+The `vpc-endpoint-provider` module creates VPC endpoint services to expose your MPC services to other parties in the network through AWS PrivateLink. It automatically discovers Network Load Balancers created by Kubernetes services and makes them available as VPC endpoint services.
+
+**Key Features:**
+- 🚀 **Automatic NLB Discovery**: Finds and configures Network Load Balancers created by Kubernetes services
+- 🔒 **Secure Connectivity**: Exposes services via AWS PrivateLink for private network communication
+- ⚙️ **Flexible Configuration**: Supports multiple MPC services with custom port configurations
+- 🏷️ **Service Management**: Comprehensive tagging and service lifecycle management
+- 🛡️ **Access Control**: Configurable acceptance requirements and allowed principals
+
+**[📖 View Complete Documentation →](./modules/vpc-endpoint-provider/README.md)**
+
+---
+
+### [🔌 VPC Endpoint Consumer Module](./modules/vpc-endpoint-consumer/)
+**Connect to external MPC parties**
+
+The `vpc-endpoint-consumer` module creates VPC interface endpoints to connect to external MPC parties via AWS PrivateLink. It supports both EKS cluster lookup and direct VPC specification modes for maximum flexibility.
+
+**Key Features:**
+- 🌐 **Multi-Party Connectivity**: Connect to multiple external MPC parties simultaneously
+- 🔄 **Dual Configuration Modes**: EKS cluster lookup or direct VPC specification
+- ☸️ **Kubernetes Integration**: Automatic creation of ExternalName services for service discovery
+- 🏷️ **Custom DNS Support**: Optional Route53 private hosted zone integration
+- 📊 **Comprehensive Outputs**: Detailed connection information for application integration
+
+**[📖 View Complete Documentation →](./modules/vpc-endpoint-consumer/README.md)**
+
+---
+
 ## Requirements
 
 - Terraform 1.0+
@@ -211,6 +261,9 @@ This project is licensed under the MIT License.
 
 For issues and questions:
 - Check the example configurations in `examples/`
-- Review individual module documentation in `modules/`
+- Review individual module documentation:
+  - [📦 MPC Party Module](./modules/mpcparty/README.md)
+  - [🌉 VPC Endpoint Provider Module](./modules/vpc-endpoint-provider/README.md)
+  - [🔌 VPC Endpoint Consumer Module](./modules/vpc-endpoint-consumer/README.md)
 - Consult AWS EKS and S3 best practices
 - Open an issue for bugs or feature requests
