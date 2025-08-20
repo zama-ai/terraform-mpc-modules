@@ -47,8 +47,9 @@ nodegroup_max_size = 1
 nodegroup_desired_size = 1
 nodegroup_disk_size = 30
 nodegroup_capacity_type = "ON_DEMAND"
-# After 1.30.0 release, we need to use AL2023_x86_64_STANDARD
 nodegroup_ami_type = "AL2023_x86_64_STANDARD"
+nodegroup_use_latest_ami_release_version = false
+nodegroup_ami_release_version = "1.32.3-20250620"
 nodegroup_labels = {
   "nodepool" = "kms"
 }

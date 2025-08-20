@@ -233,6 +233,18 @@ variable "nodegroup_enable_ssm_managed_instance" {
   default     = false
 }
 
+variable "nodegroup_use_latest_ami_release_version" {
+  description = "Whether to use the latest AMI release version"
+  type        = bool
+  default     = false
+}
+
+variable "nodegroup_ami_release_version" {
+  description = "AMI release version for the nodegroup"
+  type        = string
+  default     = "1.32.3-20250620"
+}
+
 # kms configuration (need to be updated if upgrade to new zama-kms image)
 variable "kms_image_attestation_sha" {
   description = "Attestation SHA for KMS image"

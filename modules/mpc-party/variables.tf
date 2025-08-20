@@ -157,6 +157,23 @@ variable "kubernetes_version" {
   default     = null
 }
 
+variable "nodegroup_use_latest_ami_release_version" {
+  type        = bool
+  description = "Whether to use the latest AMI release version"
+  default     = false
+}
+
+
+variable "nodegroup_ami_release_version" {
+  type        = string
+  description = "AMI release version for the node group"
+  default     = "1.32.3-20250620"
+  validation {
+    condition     = contains(["1.32.3-20250620"], var.nodegroup_ami_release_version)
+    error_message = "This AMI release version is not supported. Please use the recommended version in the list."
+  }
+}
+
 # Scaling Configuration
 variable "nodegroup_min_size" {
   type        = number
