@@ -35,6 +35,10 @@ additional_tags = {
   "Cost-Center" = "engineering"
 }
 
+# RDS Configuration
+enable_rds = false
+rds_db_name = "kms-connector"
+
 # Node Group Configuration
 create_nodegroup = true
 nodegroup_instance_types = ["m5.2xlarge"]

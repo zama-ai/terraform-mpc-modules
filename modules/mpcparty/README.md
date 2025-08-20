@@ -4,10 +4,13 @@ A comprehensive Terraform module for deploying Multi-Party Computation (MPC) par
 
 ## Features
 
-- **🏗️ Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, and Kubernetes resources
+- **🏗️ Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, RDS database, and Kubernetes resources
 - **🔐 Security First**: Built-in IRSA (IAM Roles for Service Accounts) support for secure AWS access
 - **🔒 Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration
 - **📦 S3 Storage**: Automated setup of public and private S3 buckets with proper policies
+- **🗄️ Database Support**: Optional RDS PostgreSQL instance with security groups and secret management
+- **🌍 Region Enforcement**: Network environment-based region validation (testnet/mainnet)
+- **🔑 Secret Management**: AWS Secrets Manager integration for database credentials
 - **⚙️ Configurable**: Extensive customization options for all components
 - **🏷️ Well-Labeled**: Comprehensive tagging and labeling for resource management
 
@@ -22,6 +25,7 @@ graph TB
             CM[ConfigMap]
             NG[EKS Node Group]
             DS[Nitro Enclaves DaemonSet]
+            EXT[ExternalName Service]
         end
         
         subgraph "Storage"
@@ -29,9 +33,17 @@ graph TB
             PRIV[Private S3 Bucket]
         end
         
-        subgraph "Security"
+        subgraph "Database"
+            RDS[RDS PostgreSQL]
+            RDSSG[RDS Security Group]
+            SUBNET[DB Subnet Group]
+        end
+        
+        subgraph "Security & Secrets"
             KMS[KMS Key]
             IAM[IAM Role + Policy]
+            SM[Secrets Manager]
+            PASS[Random Passwords]
         end
     end
     
@@ -40,12 +52,19 @@ graph TB
     CM --> PRIV
     NG --> DS
     DS --> KMS
+    EXT --> RDS
+    RDS --> SUBNET
+    RDS --> RDSSG
+    PASS --> SM
+    SM --> RDS
     
     style NS fill:#e1f5fe,stroke:#000,stroke-width:2px,color:#000
     style SA fill:#f3e5f5,stroke:#000,stroke-width:2px,color:#000
     style PUB fill:#e8f5e8,stroke:#000,stroke-width:2px,color:#000
     style PRIV fill:#e8f5e8,stroke:#000,stroke-width:2px,color:#000
+    style RDS fill:#ffebee,stroke:#000,stroke-width:2px,color:#000
     style KMS fill:#fff3e0,stroke:#000,stroke-width:2px,color:#000
+    style SM fill:#f3e5f5,stroke:#000,stroke-width:2px,color:#000
 ```
 
 ## Usage
@@ -61,6 +80,12 @@ module "mpc_party" {
   vault_private_bucket_name = "prod-mpc-private-${random_id.suffix.hex}"
   vault_public_bucket_name  = "prod-mpc-public-${random_id.suffix.hex}"
   cluster_name             = "production-eks-cluster"
+
+  # Network Environment & Region Validation
+  network_environment        = "mainnet"  # or "testnet"
+  enable_region_validation   = true
+  mainnet_supported_regions  = ["eu-west-1", "us-east-1"]
+  testnet_supported_regions  = ["eu-west-1"]
 
   # Kubernetes Configuration
   k8s_namespace            = "mpc-production"
@@ -86,6 +111,43 @@ module "mpc_party" {
     "LOG_LEVEL"   = "info"
     "ENVIRONMENT" = "production"
   }
+
+  # RDS Database Configuration
+  enable_rds                    = true
+  rds_prefix                   = "zama"
+  rds_db_name                  = "mpc_production"
+  rds_username                 = "mpc_user"
+  rds_engine                   = "postgres"
+  rds_engine_version           = "17.2"
+  rds_instance_class           = "db.t4g.large"
+  rds_allocated_storage        = 100
+  rds_max_allocated_storage    = 500
+  rds_multi_az                 = true
+  rds_backup_retention_period  = 14
+  rds_deletion_protection      = true
+  rds_storage_encrypted        = true
+  rds_manage_master_user_password = true
+  
+  # RDS Network Configuration
+  rds_allowed_cidr_blocks = ["10.0.0.0/16"]
+  
+  # RDS Parameter Group
+  rds_parameter_group_family = "postgres17"
+  rds_parameters = [
+    {
+      name  = "log_statement"
+      value = "all"
+    },
+    {
+      name  = "log_min_duration_statement"
+      value = "1000"
+    }
+  ]
+  
+  # RDS Kubernetes Integration
+  rds_create_externalname_service   = true
+  rds_externalname_service_name     = "mpc-db-external"
+  rds_externalname_service_namespace = "mpc-production"
 
   # Node Group Configuration
   create_nodegroup                = true
@@ -141,6 +203,89 @@ module "mpc_party" {
 }
 ```
 
+### Database-Only Example
+
+If you only need the RDS database without node groups:
+
+```terraform
+module "mpc_party" {
+  source = "./modules/mpcparty"
+
+  # Core Configuration
+  party_name               = "mpc-party-db"
+  vault_private_bucket_name = "mpc-private-${random_id.suffix.hex}"
+  vault_public_bucket_name  = "mpc-public-${random_id.suffix.hex}"
+  cluster_name             = "existing-eks-cluster"
+
+  # Kubernetes Configuration
+  k8s_namespace            = "mpc-db"
+  k8s_service_account_name = "mpc-db-sa"
+  create_namespace         = true
+  create_service_account   = true
+  create_irsa             = true
+
+  # RDS Configuration
+  enable_rds                    = true
+  rds_db_name                  = "mpc_database"
+  rds_username                 = "mpc_admin"
+  rds_instance_class           = "db.t4g.medium"
+  rds_allocated_storage        = 50
+  rds_manage_master_user_password = true
+  rds_create_externalname_service = true
+
+  # Disable Node Group Creation
+  create_nodegroup                = false
+  nodegroup_enable_nitro_enclaves = false
+  kms_enabled_nitro_enclaves      = false
+
+  tags = {
+    "Environment" = "development"
+    "Purpose"     = "database-only"
+  }
+}
+```
+
+## RDS Database Integration
+
+The module now includes comprehensive RDS PostgreSQL support with the following capabilities:
+
+### Database Features
+
+- **🗄️ RDS PostgreSQL**: Fully managed PostgreSQL database with configurable versions (default: 17.2)
+- **🔐 Credential Management**: Integration with AWS Secrets Manager for secure password management
+- **🛡️ Security Groups**: Automatic creation of security groups with proper ingress rules
+- **🌐 Kubernetes Integration**: Optional ExternalName service for easy database access from pods
+- **⚙️ Parameter Groups**: Support for custom database parameter configurations
+- **📊 Monitoring**: Optional Performance Insights and enhanced monitoring
+- **💾 Backup & Recovery**: Configurable backup retention and snapshot management
+- **🔄 High Availability**: Multi-AZ deployment support for production workloads
+
+### Database Configuration Options
+
+- **Storage**: Configurable allocated storage with auto-scaling support
+- **Instance Classes**: Support for all RDS instance types (default: db.t4g.medium)
+- **Network**: Automatic subnet group creation using EKS private subnets
+- **Security**: CIDR-based access control and VPC security group integration
+- **Parameters**: Custom database parameter group configuration
+- **Maintenance**: Configurable maintenance windows and backup schedules
+
+### Secret Management
+
+When `rds_manage_master_user_password = true`, the module:
+
+1. Creates random passwords for both main database and KMS connector
+2. Stores credentials securely in AWS Secrets Manager
+3. Provides structured secret with database connection details
+4. Enables applications to retrieve credentials programmatically
+
+### Kubernetes Integration
+
+The module can optionally create:
+
+- **ExternalName Service**: Maps database endpoint to a Kubernetes service name
+- **ConfigMap Integration**: Database configuration available via environment variables
+- **IRSA Integration**: Service accounts can access Secrets Manager for credentials
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -157,6 +302,7 @@ module "mpc_party" {
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.23 |
+| <a name="provider_random"></a> [random](#provider\_random) | >= 3.1 |
 
 ## Modules
 
@@ -164,6 +310,9 @@ module "mpc_party" {
 |------|--------|---------|
 | <a name="module_eks_managed_node_group"></a> [eks\_managed\_node\_group](#module\_eks\_managed\_node\_group) | terraform-aws-modules/eks/aws//modules/eks-managed-node-group | 21.0.6 |
 | <a name="module_iam_assumable_role_mpc_party"></a> [iam\_assumable\_role\_mpc\_party](#module\_iam\_assumable\_role\_mpc\_party) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
+| <a name="module_rds_instance"></a> [rds\_instance](#module\_rds\_instance) | terraform-aws-modules/rds/aws | ~> 6.10 |
+| <a name="module_rds_kms_connector_creds"></a> [rds\_kms\_connector\_creds](#module\_rds\_kms\_connector\_creds) | terraform-aws-modules/secrets-manager/aws | ~> 1.3 |
+| <a name="module_rds_security_group"></a> [rds\_security\_group](#module\_rds\_security\_group) | terraform-aws-modules/security-group/aws | ~> 5.2 |
 
 ## Resources
 
@@ -185,10 +334,14 @@ module "mpc_party" {
 | [kubernetes_config_map.mpc_party_config](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map) | resource |
 | [kubernetes_daemon_set_v1.aws_nitro_enclaves_device_plugin](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/daemon_set_v1) | resource |
 | [kubernetes_namespace.mpc_party_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
+| [kubernetes_service.externalname](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
 | [kubernetes_service_account.mpc_party_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
+| [random_password.db_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
+| [random_password.kms_connector_db_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ec2_instance_type.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_type) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnet.cluster_subnets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 
 ## Inputs
@@ -204,6 +357,8 @@ module "mpc_party" {
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Whether to create the Kubernetes namespace | `bool` | `true` | no |
 | <a name="input_create_nodegroup"></a> [create\_nodegroup](#input\_create\_nodegroup) | Whether to create an EKS managed node group | `bool` | `false` | no |
 | <a name="input_create_service_account"></a> [create\_service\_account](#input\_create\_service\_account) | Whether to create the Kubernetes service account (should be false when using IRSA as IRSA creates it) | `bool` | `true` | no |
+| <a name="input_enable_rds"></a> [enable\_rds](#input\_enable\_rds) | Whether to create the RDS instance | `bool` | `true` | no |
+| <a name="input_enable_region_validation"></a> [enable\_region\_validation](#input\_enable\_region\_validation) | Whether to enable region validation | `bool` | `true` | no |
 | <a name="input_k8s_namespace"></a> [k8s\_namespace](#input\_k8s\_namespace) | The Kubernetes namespace for MPC party resources | `string` | n/a | yes |
 | <a name="input_k8s_service_account_name"></a> [k8s\_service\_account\_name](#input\_k8s\_service\_account\_name) | The name of the Kubernetes service account for MPC party | `string` | n/a | yes |
 | <a name="input_kms_customer_master_key_spec"></a> [kms\_customer\_master\_key\_spec](#input\_kms\_customer\_master\_key\_spec) | Customer master key spec for KMS | `string` | `"SYMMETRIC_DEFAULT"` | no |
@@ -212,8 +367,10 @@ module "mpc_party" {
 | <a name="input_kms_image_attestation_sha"></a> [kms\_image\_attestation\_sha](#input\_kms\_image\_attestation\_sha) | Attestation SHA for KMS image | `string` | n/a | yes |
 | <a name="input_kms_key_usage"></a> [kms\_key\_usage](#input\_kms\_key\_usage) | Key usage for KMS | `string` | `"ENCRYPT_DECRYPT"` | no |
 | <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version for the node group. If not specified, the EKS cluster's Kubernetes version will be used | `string` | `null` | no |
+| <a name="input_mainnet_supported_regions"></a> [mainnet\_supported\_regions](#input\_mainnet\_supported\_regions) | AWS regions supported by the MPC party for mainnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
 | <a name="input_namespace_annotations"></a> [namespace\_annotations](#input\_namespace\_annotations) | Additional annotations to apply to the namespace | `map(string)` | `{}` | no |
 | <a name="input_namespace_labels"></a> [namespace\_labels](#input\_namespace\_labels) | Additional labels to apply to the namespace | `map(string)` | `{}` | no |
+| <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
 | <a name="input_nitro_enclaves_override_cpu_count"></a> [nitro\_enclaves\_override\_cpu\_count](#input\_nitro\_enclaves\_override\_cpu\_count) | Override the CPU count for Nitro Enclaves | `number` | `null` | no |
 | <a name="input_nitro_enclaves_override_memory_mib"></a> [nitro\_enclaves\_override\_memory\_mib](#input\_nitro\_enclaves\_override\_memory\_mib) | Override the memory for Nitro Enclaves | `number` | `null` | no |
 | <a name="input_nodegroup_additional_security_group_ids"></a> [nodegroup\_additional\_security\_group\_ids](#input\_nodegroup\_additional\_security\_group\_ids) | List of additional security group IDs to associate with the node group | `list(string)` | `[]` | no |
@@ -236,9 +393,48 @@ module "mpc_party" {
 | <a name="input_nodegroup_taints"></a> [nodegroup\_taints](#input\_nodegroup\_taints) | Map of Kubernetes taints to apply to the node group | <pre>map(object({<br/>    key    = string<br/>    value  = string<br/>    effect = string<br/>  }))</pre> | `{}` | no |
 | <a name="input_nodegroup_use_custom_launch_template"></a> [nodegroup\_use\_custom\_launch\_template](#input\_nodegroup\_use\_custom\_launch\_template) | Whether to use a custom launch template | `bool` | `true` | no |
 | <a name="input_party_name"></a> [party\_name](#input\_party\_name) | The name of the MPC party (used for resource naming and tagging) | `string` | n/a | yes |
+| <a name="input_rds_allocated_storage"></a> [rds\_allocated\_storage](#input\_rds\_allocated\_storage) | Allocated storage in GiB. | `number` | `50` | no |
+| <a name="input_rds_allowed_cidr_blocks"></a> [rds\_allowed\_cidr\_blocks](#input\_rds\_allowed\_cidr\_blocks) | CIDR blocks allowed to reach the database port. | `list(string)` | `[]` | no |
+| <a name="input_rds_backup_retention_period"></a> [rds\_backup\_retention\_period](#input\_rds\_backup\_retention\_period) | n/a | `number` | `7` | no |
+| <a name="input_rds_blue_green_update_enabled"></a> [rds\_blue\_green\_update\_enabled](#input\_rds\_blue\_green\_update\_enabled) | n/a | `bool` | `false` | no |
+| <a name="input_rds_create_externalname_service"></a> [rds\_create\_externalname\_service](#input\_rds\_create\_externalname\_service) | n/a | `bool` | `false` | no |
+| <a name="input_rds_db_name"></a> [rds\_db\_name](#input\_rds\_db\_name) | Optional initial database name. | `string` | `null` | no |
+| <a name="input_rds_delete_automated_backups"></a> [rds\_delete\_automated\_backups](#input\_rds\_delete\_automated\_backups) | n/a | `bool` | `true` | no |
+| <a name="input_rds_deletion_protection"></a> [rds\_deletion\_protection](#input\_rds\_deletion\_protection) | n/a | `bool` | `false` | no |
+| <a name="input_rds_engine"></a> [rds\_engine](#input\_rds\_engine) | Engine name (e.g., postgres, mysql). | `string` | `"postgres"` | no |
+| <a name="input_rds_engine_version"></a> [rds\_engine\_version](#input\_rds\_engine\_version) | Exact engine version string. | `string` | `"17.2"` | no |
+| <a name="input_rds_externalname_service_name"></a> [rds\_externalname\_service\_name](#input\_rds\_externalname\_service\_name) | n/a | `string` | `"kms-connector-db-external"` | no |
+| <a name="input_rds_externalname_service_namespace"></a> [rds\_externalname\_service\_namespace](#input\_rds\_externalname\_service\_namespace) | n/a | `string` | `"default"` | no |
+| <a name="input_rds_extra_secret_namespaces"></a> [rds\_extra\_secret\_namespaces](#input\_rds\_extra\_secret\_namespaces) | Namespaces to replicate the DB secret into. | `list(string)` | `[]` | no |
+| <a name="input_rds_final_snapshot_enabled"></a> [rds\_final\_snapshot\_enabled](#input\_rds\_final\_snapshot\_enabled) | Create a final snapshot on destroy (recommended for prod). | `bool` | `true` | no |
+| <a name="input_rds_identifier_override"></a> [rds\_identifier\_override](#input\_rds\_identifier\_override) | Explicit DB identifier. If null, a normalized name is derived from prefix+environment+identifier. | `string` | `null` | no |
+| <a name="input_rds_instance_class"></a> [rds\_instance\_class](#input\_rds\_instance\_class) | DB instance class (e.g., db.t4g.medium). | `string` | `"db.t4g.medium"` | no |
+| <a name="input_rds_iops"></a> [rds\_iops](#input\_rds\_iops) | n/a | `number` | `null` | no |
+| <a name="input_rds_k8s_secret_name"></a> [rds\_k8s\_secret\_name](#input\_rds\_k8s\_secret\_name) | Secrets & Kubernetes | `string` | `"db-credentials"` | no |
+| <a name="input_rds_k8s_secret_namespace"></a> [rds\_k8s\_secret\_namespace](#input\_rds\_k8s\_secret\_namespace) | n/a | `string` | `"default"` | no |
+| <a name="input_rds_maintenance_window"></a> [rds\_maintenance\_window](#input\_rds\_maintenance\_window) | n/a | `string` | `null` | no |
+| <a name="input_rds_manage_master_user_password"></a> [rds\_manage\_master\_user\_password](#input\_rds\_manage\_master\_user\_password) | If true, let AWS Secrets Manager manage the master user password. If false, a random\_password will be generated and stored to K8s secrets. | `bool` | `false` | no |
+| <a name="input_rds_max_allocated_storage"></a> [rds\_max\_allocated\_storage](#input\_rds\_max\_allocated\_storage) | Max autoscaled storage in GiB. | `number` | `100` | no |
+| <a name="input_rds_monitoring_interval"></a> [rds\_monitoring\_interval](#input\_rds\_monitoring\_interval) | n/a | `number` | `0` | no |
+| <a name="input_rds_monitoring_role_arn"></a> [rds\_monitoring\_role\_arn](#input\_rds\_monitoring\_role\_arn) | n/a | `string` | `null` | no |
+| <a name="input_rds_multi_az"></a> [rds\_multi\_az](#input\_rds\_multi\_az) | n/a | `bool` | `false` | no |
+| <a name="input_rds_parameter_group_family"></a> [rds\_parameter\_group\_family](#input\_rds\_parameter\_group\_family) | DB parameter group family (e.g., postgres16). If null, no parameter group will be created. | `string` | `null` | no |
+| <a name="input_rds_parameters"></a> [rds\_parameters](#input\_rds\_parameters) | List of DB parameter maps for the parameter group. | `list(map(string))` | `[]` | no |
+| <a name="input_rds_performance_insights_enabled"></a> [rds\_performance\_insights\_enabled](#input\_rds\_performance\_insights\_enabled) | n/a | `bool` | `false` | no |
+| <a name="input_rds_performance_insights_kms_key_id"></a> [rds\_performance\_insights\_kms\_key\_id](#input\_rds\_performance\_insights\_kms\_key\_id) | n/a | `string` | `null` | no |
+| <a name="input_rds_performance_insights_retention_period"></a> [rds\_performance\_insights\_retention\_period](#input\_rds\_performance\_insights\_retention\_period) | n/a | `number` | `null` | no |
+| <a name="input_rds_port"></a> [rds\_port](#input\_rds\_port) | Port for the RDS instance | `number` | `5432` | no |
+| <a name="input_rds_prefix"></a> [rds\_prefix](#input\_rds\_prefix) | Name organization prefix (e.g., 'zama'). | `string` | `"zama"` | no |
+| <a name="input_rds_snapshot_identifier"></a> [rds\_snapshot\_identifier](#input\_rds\_snapshot\_identifier) | If set, restore from this snapshot instead of creating a fresh DB. | `string` | `null` | no |
+| <a name="input_rds_storage_encrypted"></a> [rds\_storage\_encrypted](#input\_rds\_storage\_encrypted) | n/a | `bool` | `true` | no |
+| <a name="input_rds_storage_type"></a> [rds\_storage\_type](#input\_rds\_storage\_type) | n/a | `string` | `"gp3"` | no |
+| <a name="input_rds_subnet_ids"></a> [rds\_subnet\_ids](#input\_rds\_subnet\_ids) | Private subnet IDs for the DB subnet group. | `list(string)` | `[]` | no |
+| <a name="input_rds_username"></a> [rds\_username](#input\_rds\_username) | Username for the RDS instance | `string` | `"zws"` | no |
+| <a name="input_rds_vpc_id"></a> [rds\_vpc\_id](#input\_rds\_vpc\_id) | VPC ID hosting the RDS instance. | `string` | `null` | no |
 | <a name="input_service_account_annotations"></a> [service\_account\_annotations](#input\_service\_account\_annotations) | Additional annotations to apply to the service account (excluding IRSA annotations which are handled automatically) | `map(string)` | `{}` | no |
 | <a name="input_service_account_labels"></a> [service\_account\_labels](#input\_service\_account\_labels) | Additional labels to apply to the service account | `map(string)` | `{}` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to assign to the resource | `map(string)` | `{}` | no |
+| <a name="input_testnet_supported_regions"></a> [testnet\_supported\_regions](#input\_testnet\_supported\_regions) | AWS regions supported by the MPC party for testnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
 | <a name="input_vault_private_bucket_name"></a> [vault\_private\_bucket\_name](#input\_vault\_private\_bucket\_name) | The name of the S3 bucket for private MPC party storage | `string` | n/a | yes |
 | <a name="input_vault_public_bucket_name"></a> [vault\_public\_bucket\_name](#input\_vault\_public\_bucket\_name) | The name of the S3 bucket for public MPC party storage | `string` | n/a | yes |
 
@@ -288,6 +484,18 @@ module "mpc_party" {
    - Verify security group rules
    - Review IAM permissions
 
+4. **RDS Database Issues**
+   - Verify VPC and subnet configuration match EKS cluster
+   - Check security group allows connections from EKS nodes
+   - Ensure `rds_allowed_cidr_blocks` includes your application's subnet ranges
+   - Validate parameter group family matches engine version (e.g., `postgres17` for PostgreSQL 17.x)
+   - Check AWS Secrets Manager permissions if using `rds_manage_master_user_password = true`
+
+5. **Region Validation Errors**
+   - Ensure current AWS region is in `testnet_supported_regions` or `mainnet_supported_regions`
+   - Set `enable_region_validation = false` to disable validation if needed
+   - Update supported regions list based on your deployment requirements
+
 ### Debug Commands
 
 ```bash
@@ -302,6 +510,17 @@ module "mpc_party" {
     
     # View ConfigMap contents
     kubectl get configmap <config-map-name> -n <namespace> -o yaml
+    
+    # Check RDS ExternalName service
+    kubectl get svc <rds-externalname-service-name> -n <namespace>
+    kubectl describe svc <rds-externalname-service-name> -n <namespace>
+    
+    # View RDS secrets in AWS Secrets Manager
+    aws secretsmanager describe-secret --secret-id <cluster-name>/app/<db-name>
+    aws secretsmanager get-secret-value --secret-id <cluster-name>/app/<db-name>
+    
+    # Test database connectivity from within cluster
+    kubectl run -it --rm debug --image=postgres:17 --restart=Never -- psql -h <rds-endpoint> -U <username> -d <database>
 ```
 
 ## Examples

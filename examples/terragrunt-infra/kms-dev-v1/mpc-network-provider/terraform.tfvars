@@ -20,26 +20,6 @@ kubeconfig_context = "arn:aws:eks:eu-west-3:767398008331:cluster/kms-development
 mpc_services = [
   {
     name = "mpc-node-4"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metric"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      }
-    ]
     selector = {
       "app" = "kms-core"
       "app.kubernetes.io/name" = "kms-core-4-core"

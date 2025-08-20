@@ -250,3 +250,154 @@ variable "kms_deletion_window_in_days" {
   type        = number
   default     = 30
 }
+
+# RDS Configuration
+variable "enable_rds" {
+  description = "Whether to enable RDS"
+  type        = bool
+  default     = false
+}
+
+variable "rds_db_name" {
+  description = "Name of the RDS database"
+  type        = string
+  default     = "kms-connector"
+}
+
+variable "rds_manage_master_user_password" {
+  description = "Whether to manage the master user password"
+  type        = bool
+  default     = false
+}
+
+variable "rds_engine" {
+  description = "Engine for the RDS database"
+  type        = string
+  default     = "postgres"
+}
+
+variable "rds_engine_version" {
+  description = "Engine version for the RDS database"
+  type        = string
+  default     = "17.2"
+}
+
+variable "rds_instance_class" {
+  description = "Instance class for the RDS database"
+  type        = string
+  default     = "db.t3.medium"
+}
+
+variable "rds_allocated_storage" {
+  description = "Allocated storage for the RDS database"
+  type        = number
+  default     = 50
+}
+
+variable "rds_max_allocated_storage" {
+  description = "Maximum allocated storage for the RDS database"
+  type        = number
+  default     = 100
+}
+
+variable "rds_multi_az" {
+  description = "Whether to enable multi-AZ for the RDS database"
+  type        = bool
+  default     = false
+}
+
+variable "rds_backup_retention_period" {
+  description = "Backup retention period for the RDS database"
+  type        = number
+  default     = 7
+}
+
+variable "rds_maintenance_window" {
+  description = "Maintenance window for the RDS database"
+  type        = string
+  default     = "sun:05:00-sun:08:00"
+}
+
+variable "rds_monitoring_interval" {
+  description = "Monitoring interval for the RDS database"
+  type        = number
+  default     = 60
+}
+
+variable "rds_monitoring_role_arn" {
+  description = "ARN of the monitoring role for the RDS database"
+  type        = string
+  default     = null
+}
+
+variable "rds_performance_insights_enabled" {
+  description = "Whether to enable performance insights for the RDS database"
+  type        = bool
+  default     = false
+}
+
+variable "rds_performance_insights_kms_key_id" {
+  description = "KMS key ID for performance insights"
+  type        = string
+  default     = null
+}
+
+variable "rds_performance_insights_retention_period" {
+  description = "Retention period for performance insights"
+  type        = number
+  default     = 7
+}
+
+variable "rds_blue_green_update_enabled" {
+  description = "Whether to enable blue-green update for the RDS database"
+  type        = bool
+  default     = false
+}
+
+variable "rds_parameters" {
+  description = "Parameters for the RDS database"
+  type        = list(map(string))
+  default     = []
+}
+
+variable "rds_snapshot_identifier" {
+  description = "Snapshot identifier for the RDS database"
+  type        = string
+  default     = null
+}
+
+variable "rds_final_snapshot_enabled" {
+  description = "Whether to enable final snapshot for the RDS database"
+  type        = bool
+  default     = false
+}
+
+variable "rds_k8s_secret_name" {
+  description = "Name of the Kubernetes secret for the RDS database"
+  type        = string
+  default     = "rds-credentials"
+}
+
+variable "rds_k8s_secret_namespace" {
+  description = "Namespace of the Kubernetes secret for the RDS database"
+  type        = string
+  default     = "mpc-party"
+}
+
+variable "rds_allowed_cidr_blocks" {
+  description = "Allowed CIDR blocks for the RDS database"
+  type        = list(string)
+  default     = []
+}
+
+variable "rds_vpc_id" {
+  description = "VPC ID for the RDS database"
+  type        = string
+  default     = null
+}
+
+variable "rds_subnet_ids" {
+  description = "Subnet IDs for the RDS database"
+  type        = list(string)
+  default     = []
+}

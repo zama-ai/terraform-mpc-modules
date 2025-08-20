@@ -323,3 +323,224 @@ variable "nodegroup_enable_ssm_managed_instance" {
   description = "Whether to enable SSM managed instance"
   default     = false
 }
+
+# ******************************************************
+# variables for the RDS instance
+# ******************************************************
+variable "enable_rds" {
+  type        = bool
+  description = "Whether to create the RDS instance"
+  default     = true
+}
+
+variable "rds_prefix" {
+  description = "Name organization prefix (e.g., 'zama')."
+  type        = string
+  default     = "zama"
+}
+
+variable "rds_vpc_id" {
+  description = "VPC ID hosting the RDS instance."
+  type        = string
+  default     = null
+}
+
+variable "rds_subnet_ids" {
+  description = "Private subnet IDs for the DB subnet group."
+  type        = list(string)
+  default     = []
+}
+
+variable "rds_allowed_cidr_blocks" {
+  description = "CIDR blocks allowed to reach the database port."
+  type        = list(string)
+  default     = []
+}
+
+variable "rds_engine" { 
+  type = string  
+  description = "Engine name (e.g., postgres, mysql)." 
+  default = "postgres"
+}
+
+variable "rds_engine_version" { 
+  type = string  
+  description = "Exact engine version string." 
+  default = "17.2"
+}
+
+variable "rds_instance_class" { 
+  type = string  
+  description = "DB instance class (e.g., db.t4g.medium)." 
+  default = "db.t4g.medium" 
+}
+
+variable "rds_allocated_storage" { 
+  type = number  
+  description = "Allocated storage in GiB." 
+  default = 50
+}
+
+variable "rds_max_allocated_storage" { 
+  type = number 
+  description = "Max autoscaled storage in GiB." 
+  default = 100
+}
+
+variable "rds_db_name" { 
+  type = string  
+  default = null 
+  description = "Optional initial database name." 
+}
+
+variable "rds_backup_retention_period" { 
+  type = number 
+  default = 7 
+}
+
+variable "rds_maintenance_window" { 
+  type = string 
+  default = null 
+}
+
+variable "rds_multi_az" { 
+  type = bool  
+  default = false 
+}
+
+variable "rds_deletion_protection" { 
+  type = bool  
+  default = false 
+}
+
+variable "rds_delete_automated_backups" { 
+  type = bool 
+  default = true 
+}
+
+variable "rds_storage_encrypted" { 
+  type = bool  
+  default = true 
+}
+
+variable "rds_storage_type" { 
+  type = string 
+  default = "gp3" 
+}
+
+variable "rds_iops" { 
+  type = number 
+  default = null 
+}
+
+variable "rds_monitoring_interval" { 
+  type = number 
+  default = 0 
+}
+
+variable "rds_monitoring_role_arn" { 
+  type = string 
+  default = null 
+}
+
+variable "rds_performance_insights_enabled" { 
+  type = bool  
+  default = false 
+}
+
+variable "rds_performance_insights_kms_key_id" { 
+  type = string 
+  default = null 
+}
+
+variable "rds_performance_insights_retention_period" { 
+  type = number 
+  default = null 
+}
+
+variable "rds_blue_green_update_enabled" { 
+  type = bool 
+  default = false 
+}
+
+# Parameter group
+variable "rds_parameter_group_family" {
+  type        = string
+  default     = null
+  description = "DB parameter group family (e.g., postgres16). If null, no parameter group will be created."
+}
+
+variable "rds_parameters" {
+  description = "List of DB parameter maps for the parameter group."
+  type        = list(map(string))
+  default     = []
+}
+
+# Snapshots / restore
+variable "rds_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "If set, restore from this snapshot instead of creating a fresh DB."
+}
+
+variable "rds_final_snapshot_enabled" {
+  type        = bool
+  default     = true
+  description = "Create a final snapshot on destroy (recommended for prod)."
+}
+
+# Secrets & Kubernetes
+variable "rds_k8s_secret_name"      { 
+  type = string 
+  default = "db-credentials" 
+}
+variable "rds_k8s_secret_namespace" { 
+  type = string 
+  default = "default" 
+}
+variable "rds_extra_secret_namespaces" {
+  type        = list(string)
+  default     = []
+  description = "Namespaces to replicate the DB secret into."
+}
+
+variable "rds_create_externalname_service" { 
+  type = bool  
+  default = false 
+}
+
+variable "rds_externalname_service_name"   { 
+  type = string 
+  default = "kms-connector-db-external" 
+}
+
+variable "rds_externalname_service_namespace" { 
+  type = string 
+  default = "default" 
+}
+
+# Master password strategy
+variable "rds_manage_master_user_password" {
+  type        = bool
+  default     = false
+  description = "If true, let AWS Secrets Manager manage the master user password. If false, a random_password will be generated and stored to K8s secrets."
+}
+
+# Optional override for RDS identifier
+variable "rds_identifier_override" {
+  type        = string
+  default     = null
+  description = "Explicit DB identifier. If null, a normalized name is derived from prefix+environment+identifier."
+}
+
+variable "rds_port" {
+  type        = number
+  default     = 5432
+  description = "Port for the RDS instance"
+}
+
+variable "rds_username" {
+  type        = string
+  default     = "zws"
+  description = "Username for the RDS instance"
+}
