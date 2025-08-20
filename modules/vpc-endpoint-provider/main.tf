@@ -29,7 +29,7 @@ resource "kubernetes_namespace" "mpc_namespace" {
 resource "kubernetes_service" "mpc_nlb" {
   wait_for_load_balancer   = true
   metadata {
-    name      = "kms-core-${var.party_id}-core"
+    name      = "mpc-node-${var.party_id}"
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
 
     annotations = {
@@ -69,7 +69,6 @@ resource "kubernetes_service" "mpc_nlb" {
     }
 
     selector = {
-      "app.kubernetes.io/name" = "kms-core-${var.party_id}-core"
       "app" = "kms-core"
     }
   }

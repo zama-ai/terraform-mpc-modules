@@ -1,8 +1,11 @@
-# Network Environment and Region Configuration
-network_environment = "testnet"     # or "mainnet"
-aws_region          = "eu-west-1"   # Required for testnet, or choose from allowed mainnet regions
+# Network Environment Configuration
+network_environment = "testnet"
 
-# MPC Party Configuration  
+# AWS Configuration
+aws_region = "eu-west-3"
+enable_region_validation = false
+
+# MPC Party Configuration
 party_name  = "mpc-party-4"
 environment = "dev"
 
@@ -32,9 +35,13 @@ additional_tags = {
   "Cost-Center" = "engineering"
 }
 
+# RDS Configuration
+enable_rds = false
+rds_db_name = "kms-connector"
+
 # Node Group Configuration
 create_nodegroup = true
-nodegroup_instance_types = ["m5.2xlarge"]
+nodegroup_instance_types = ["c7a.16xlarge"]
 nodegroup_min_size = 1
 nodegroup_max_size = 1
 nodegroup_desired_size = 1

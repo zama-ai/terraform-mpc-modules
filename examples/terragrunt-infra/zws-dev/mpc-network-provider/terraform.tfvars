@@ -12,77 +12,11 @@ environment  = "dev"
 owner        = "zws-team"
 
 # Kubernetes Provider Configuration
-# Option 1: Using kubeconfig context (current method)
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
 
-
-# MPC Services Configuration
-mpc_services = [
-  {
-    name = "mpc-node-1"
-    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
-    # Uncomment and customize if different ports are needed:
-    # ports = [
-    #   {
-    #     name        = "custom-grpc"
-    #     port        = 60100
-    #     target_port = 60100
-    #     protocol    = "TCP"
-    #   }
-    # ]
-    
-    selector = {
-      "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-core-1-core"
-    }
-    additional_annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-1,environment=dev"
-    }
-    labels = {
-      "mpc-role"    = "compute-node"
-      "environment" = "dev"
-      "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-core-1-core"
-    }
-  },
-  {
-    name = "mpc-node-2"
-    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
-    
-    selector = {
-      "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-core-2-core"
-    }
-    additional_annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-2,environment=dev"
-    }
-    labels = {
-      "mpc-role"    = "compute-node"
-      "environment" = "dev"
-      "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-core-2-core"
-    }
-  },
-  {
-    name = "mpc-node-3"
-    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
-    
-    selector = {
-      "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-core-3-core"
-    }
-    additional_annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = "mpc-node=node-3,environment=dev"
-    }
-    labels = {
-      "mpc-role"    = "compute-node"
-      "environment" = "dev"
-      "app" = "kms-core"
-      "app.kubernetes.io/name" = "kms-core-3-core"
-    }
-  }
-]
+# MPC Party Configuration
+party_id = "2"
 
 # VPC Endpoint Services Configuration
 

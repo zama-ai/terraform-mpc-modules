@@ -41,7 +41,7 @@ rds_db_name = "kms-connector"
 
 # Node Group Configuration
 create_nodegroup = true
-nodegroup_instance_types = ["m5.2xlarge"]
+nodegroup_instance_types = ["c7a.16xlarge"]
 nodegroup_min_size = 1
 nodegroup_max_size = 1
 nodegroup_desired_size = 1
