@@ -14,7 +14,6 @@ owner        = "mpc-consumer-team"
 # IMPORTANT: Update these values for each consumer node
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"  # Set to specific context or null to use current
-eks_cluster_name   = "zws-dev"  # Update for EKS authentication
 
 # Partner Services Namespace
 namespace        = "kms-decentralized"
@@ -47,7 +46,7 @@ party_services = [
         "mpc.io/partner-tier" = "tier-1"
       }
       labels = {
-        "partner-name" = "partner-4"
+        "partner-name" = "partner-1"
         "environment"  = "dev"
       }
       session_affinity = "None"

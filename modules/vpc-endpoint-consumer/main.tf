@@ -121,7 +121,7 @@ resource "kubernetes_service" "party_services" {
   count = length([for service in var.party_services : service if service.create_kube_service])
 
   metadata {
-    name      = "kms-core-${var.party_services[count.index].party_id}-core"
+    name      = "mpc-node-${var.party_services[count.index].party_id}"
     namespace = var.create_namespace ? kubernetes_namespace.partner_namespace[0].metadata[0].name : var.namespace
 
     annotations = merge({

@@ -14,24 +14,14 @@ owner        = "mpc-consumer-team"
 # IMPORTANT: Update these values for each consumer node
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "arn:aws:eks:eu-west-3:767398008331:cluster/kms-development-v1"  # Set to specific context or null to use current
-eks_cluster_name   = "kms-development-v1"  # Update for EKS authentication
 
 # Partner Services Namespace
 namespace        = "kms-decentralized"
 
-# Network Configuration for VPC Endpoints
-# Option 1: Use EKS cluster lookup (recommended)
-# Leave vpc_id and subnet_ids null to use cluster_name lookup
-# use_eks_cluster_lookup = true
-# vpc_id                = null
-# subnet_ids           = null
-# security_group_ids   = null
+# Option: the following lines if using EKS cluster lookup
+# vpc_id             = "vpc-0eb96948db410744b"
+# subnet_ids         = ["subnet-0027932ed0306303c", "subnet-048864a6944214156", "subnet-0c62aabc99b5f0a27"]
 
-# Option 2: Direct VPC specification
-# Uncomment and specify if not using cluster lookup
-use_eks_cluster_lookup = false
-vpc_id             = "vpc-0eb96948db410744b"
-subnet_ids         = ["subnet-0027932ed0306303c", "subnet-048864a6944214156", "subnet-0c62aabc99b5f0a27"]
 security_group_ids = ["sg-033017badc63f1e10"]
 
 # Partner Services Configuration
@@ -39,10 +29,11 @@ security_group_ids = ["sg-033017badc63f1e10"]
 party_services = [
   # Example partner service configuration
   {
-    name                      = "kms-core-1-core"
+    party_id                  = "2"
+    name                      = "mpc-node-2"
     region                    = "eu-west-1"
     account_id                = "715841358639"
-    partner_name              = "zws-dev"
+    partner_name              = "partner-2"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-015ed042eebeed9e3"
     create_kube_service = true
     kube_service_config = {
@@ -50,7 +41,7 @@ party_services = [
         "mpc.io/partner-tier" = "tier-1"
       }
       labels = {
-        "partner-name" = "partner-1"
+        "partner-name" = "partner-2"
         "environment"  = "dev"
       }
       session_affinity = "None"
