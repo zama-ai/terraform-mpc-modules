@@ -55,7 +55,7 @@ resource "kubernetes_namespace" "mpc_party_namespace" {
     }, var.namespace_labels)
     
     annotations = merge({
-      "terraform.io/module"   = "mpcparty"
+      "terraform.io/module"   = "mpc-party"
       "mpc.io/party-name"     = var.party_name
       "mpc.io/cluster"        = var.cluster_name
     }, var.namespace_annotations)
@@ -223,7 +223,7 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
     }, var.service_account_labels)
     
     annotations = merge({
-      "terraform.io/module"   = "mpcparty"
+      "terraform.io/module"   = "mpc-party"
       "mpc.io/party-name"     = var.party_name
       "eks.amazonaws.com/role-arn" = module.iam_assumable_role_mpc_party.iam_role_arn
     }, var.service_account_annotations)
@@ -316,7 +316,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
     }
     
     annotations = {
-      "terraform.io/module" = "mpcparty"
+      "terraform.io/module" = "mpc-party"
       "mpc.io/party-name"   = var.party_name
     }
   }

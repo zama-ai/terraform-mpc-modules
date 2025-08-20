@@ -73,7 +73,7 @@ graph TB
 
 ```terraform
 module "mpc_party" {
-  source = "./modules/mpcparty"
+  source = "./modules/mpc-party"
 
   # Core Configuration
   party_name               = "mpc-party-production"
@@ -209,7 +209,7 @@ If you only need the RDS database without node groups:
 
 ```terraform
 module "mpc_party" {
-  source = "./modules/mpcparty"
+  source = "./modules/mpc-party"
 
   # Core Configuration
   party_name               = "mpc-party-db"
@@ -350,7 +350,7 @@ The module can optionally create:
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_config_data"></a> [additional\_config\_data](#input\_additional\_config\_data) | Additional key-value pairs to add to the ConfigMap | `map(string)` | `{}` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the EKS cluster for IRSA configuration | `string` | n/a | yes |
-| <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Common tags to apply to all AWS resources | `map(string)` | <pre>{<br/>  "module": "mpcparty",<br/>  "terraform": "true"<br/>}</pre> | no |
+| <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Common tags to apply to all AWS resources | `map(string)` | <pre>{<br/>  "module": "mpc-party",<br/>  "terraform": "true"<br/>}</pre> | no |
 | <a name="input_config_map_name"></a> [config\_map\_name](#input\_config\_map\_name) | Name of the ConfigMap (defaults to 'mpc-party-config-{party\_name}' if not provided) | `string` | `null` | no |
 | <a name="input_create_config_map"></a> [create\_config\_map](#input\_create\_config\_map) | Whether to create a ConfigMap with S3 bucket environment variables | `bool` | `true` | no |
 | <a name="input_create_irsa"></a> [create\_irsa](#input\_create\_irsa) | Whether to create IRSA (IAM Roles for Service Accounts) role for secure AWS access | `bool` | `true` | no |

@@ -20,7 +20,7 @@ The modules follow **clean separation of concerns** with focused, composable com
 
 ### Core Modules
 
-1. **📦 [mpcparty Module](./modules/mpcparty/)**: Self-contained MPC node storage and authentication for threshold cryptography
+1. **📦 [mpc-party Module](./modules/mpc-party/)**: Self-contained MPC node storage and authentication for threshold cryptography
 2. **🌉 [vpc-endpoint-provider Module](./modules/vpc-endpoint-provider/)**: Expose the kubernetes services as VPC endpoint services for secure MPC party communication via AWS PrivateLink
 3. **🔌 [vpc-endpoint-consumer Module](./modules/vpc-endpoint-consumer/)**: VPC interface endpoints for connecting to external MPC parties
 
@@ -143,10 +143,10 @@ graph TB
 
 ## 📚 Modules Documentation
 
-### [📦 MPC Party Module](./modules/mpcparty/)
+### [📦 MPC Party Module](./modules/mpc-party/)
 **Complete MPC node infrastructure for threshold cryptography**
 
-The `mpcparty` module provides a comprehensive solution for deploying Multi-Party Computation (MPC) party infrastructure on Amazon EKS. This module handles all the necessary AWS and Kubernetes resources required for a complete MPC party deployment.
+The `mpc-party` module provides a comprehensive solution for deploying Multi-Party Computation (MPC) party infrastructure on Amazon EKS. This module handles all the necessary AWS and Kubernetes resources required for a complete MPC party deployment.
 
 **Key Features:**
 - 🏗️ **Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, and Kubernetes resources
@@ -155,7 +155,7 @@ The `mpcparty` module provides a comprehensive solution for deploying Multi-Part
 - 📦 **S3 Storage**: Automated setup of public and private S3 buckets with proper policies
 - ⚙️ **Configurable**: Extensive customization options for all components
 
-**[📖 View Complete Documentation →](./modules/mpcparty/README.md)**
+**[📖 View Complete Documentation →](./modules/mpc-party/README.md)**
 
 ---
 
@@ -203,7 +203,7 @@ The `vpc-endpoint-consumer` module creates VPC interface endpoints to connect to
 ## 📁 Examples
 
 ### [mpc-party](./examples/mpc-party/)
-Deploy only storage infrastructure using the enhanced mpcparty module:
+Deploy only storage infrastructure using the enhanced mpc-party module:
 - S3 buckets (private + public) with proper policies
 - IRSA role for secure AWS access
 - Kubernetes namespace and service account
@@ -262,7 +262,7 @@ This project is licensed under the MIT License.
 For issues and questions:
 - Check the example configurations in `examples/`
 - Review individual module documentation:
-  - [📦 MPC Party Module](./modules/mpcparty/README.md)
+  - [📦 MPC Party Module](./modules/mpc-party/README.md)
   - [🌉 VPC Endpoint Provider Module](./modules/vpc-endpoint-provider/README.md)
   - [🔌 VPC Endpoint Consumer Module](./modules/vpc-endpoint-consumer/README.md)
 - Consult AWS EKS and S3 best practices

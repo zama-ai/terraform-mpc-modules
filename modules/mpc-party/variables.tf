@@ -134,7 +134,7 @@ variable "common_tags" {
   description = "Common tags to apply to all AWS resources"
   default = {
     "terraform" = "true"
-    "module"    = "mpcparty"
+    "module"    = "mpc-party"
   }
 }
 
