@@ -1,8 +1,9 @@
-# This is a test file for the kms-dev-v1 consumer node
-
 # AWS Configuration
 aws_region         = "eu-west-1"
-aws_region_for_eks = "eu-west-1"
+enable_region_validation = false
+
+# Network Environment Configuration
+network_environment = "testnet"
 
 # Cluster Configuration
 cluster_name = "zws-dev"
@@ -32,36 +33,26 @@ security_group_ids   = ["sg-087debb93352a906a"]
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
 party_services = [
-  # Example partner service configuration
+  # Example partner service configuration using default ports
   {
     name                      = "mpc-node-4"
     region                    = "eu-west-3"
     account_id                = "767398008331"
     partner_name              = "party-4"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0432e3f717883982d"
-    // TODO put in module
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      },
-    ]
+    
+    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
+    # Uncomment and customize if different ports are needed:
+    # ports = [
+    #   {
+    #     name        = "custom-grpc"
+    #     port        = 60100
+    #     target_port = 60100
+    #     protocol    = "TCP"
+    #   }
+    # ]
+    
     create_kube_service = true
-    // TODO put in module
     kube_service_config = {
       additional_annotations = {
         "mpc.io/partner-tier" = "tier-1"
@@ -86,7 +77,6 @@ endpoint_delete_timeout = "10m"
 # Custom DNS (optional)
 create_custom_dns_records = false
 private_zone_id           = ""
-dns_domain                = ""
 
 # Tagging
 common_tags = {

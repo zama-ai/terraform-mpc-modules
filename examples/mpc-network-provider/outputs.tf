@@ -1,12 +1,8 @@
 # Example MPC Cluster Outputs
 
-output "nlb_service_provider" {
-  description = "Outputs from the nlb-service-provider module"
-  value       = module.nlb_service_provider
-}
-output "vpc_endpoint_bridge" {
-  description = "Outputs from the vpc-endpoint-bridge module"
-  value       = module.vpc_endpoint_bridge
+output "vpc_endpoint_provider" {
+  description = "Outputs from the vpc-endpoint-provider module"
+  value       = module.vpc_endpoint_provider
 }
 
 # # Cluster Information

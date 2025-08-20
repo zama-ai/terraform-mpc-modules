@@ -43,12 +43,12 @@ output "vault_public_bucket_domain_name" {
 # IAM and Security Information
 output "irsa_role_arn" {
   description = "ARN of the IRSA role for MPC party (null if create_irsa is false)"
-  value       = var.create_irsa ? module.irsa[0].iam_role_arn : null
+  value       = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
 }
 
 output "irsa_role_name" {
   description = "Name of the IRSA role for MPC party (null if create_irsa is false)" 
-  value       = var.create_irsa ? module.irsa[0].iam_role_name : null
+  value       = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_name : null
 }
 
 output "irsa_enabled" {
@@ -126,7 +126,7 @@ output "deployment_summary" {
     
     security = {
       irsa_enabled = var.create_irsa
-      irsa_role_arn = var.create_irsa ? module.irsa[0].iam_role_arn : null
+      irsa_role_arn = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
     }
   }
 }

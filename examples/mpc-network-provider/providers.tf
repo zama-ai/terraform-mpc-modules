@@ -20,7 +20,7 @@ terraform {
 
 # Configure providers
 provider "aws" {
-  region = var.aws_region_for_eks != null ? var.aws_region_for_eks : var.aws_region
+  region = var.aws_region
 }
 
 provider "kubernetes" {

@@ -1,5 +1,8 @@
-aws_region         = "eu-west-3"
-aws_region_for_eks = "eu-west-3"
+# AWS Configuration
+aws_region         = "eu-west-1"
+
+# Network Environment Configuration
+network_environment = "testnet"
 
 cluster_name = "kms-development-v1"
 namespace    = "kms-decentralized"
@@ -12,30 +15,49 @@ kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "arn:aws:eks:eu-west-3:767398008331:cluster/kms-development-v1"
 
 
+# Default MPC Port Configuration (optional - can be customized)
+# Uncomment and modify if you need different default ports across all services
+# default_mpc_ports = {
+#   grpc = {
+#     name        = "grpc"
+#     port        = 50100
+#     target_port = 50100
+#     protocol    = "TCP"
+#   }
+#   peer = {
+#     name        = "peer"
+#     port        = 50001
+#     target_port = 50001
+#     protocol    = "TCP"
+#   }
+#   metrics = {
+#     name        = "metrics"
+#     port        = 9646
+#     target_port = 9646
+#     protocol    = "TCP"
+#   }
+# }
+
 # MPC Services Configuration
+# Note: Ports are now optional - default ports (50100, 50001, 9646) will be used automatically
 mpc_services = [
   {
     name = "mpc-node-4"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metric"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      }
-    ]
+    # Ports are now optional! The module will automatically use:
+    # - grpc: port 50100
+    # - peer: port 50001  
+    # - metrics: port 9646
+    
+    # Only specify ports if you need custom values for this specific service:
+    # ports = [
+    #   {
+    #     name        = "custom-grpc"
+    #     port        = 60100
+    #     target_port = 60100
+    #     protocol    = "TCP"
+    #   }
+    # ]
+    
     selector = {
       "app" = "kms-core"
       "app.kubernetes.io/name" = "kms-core-4-core"
@@ -61,7 +83,6 @@ vpc_endpoint_supported_regions   = ["eu-west-1"]
 
 
 vpc_endpoint_acceptance_required = false
-create_custom_dns = false
 dns_domain        = ""
 
 # Tagging

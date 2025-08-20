@@ -1,43 +1,32 @@
-# ==============================================================================
-# VPC Endpoint Consumer Module - Main Configuration
-# ==============================================================================
-# 
-# This module creates VPC interface endpoints to connect to partner MPC services.
-# It supports two configuration modes:
-#
-# 1. EKS Cluster Lookup: Automatically retrieves network details from EKS cluster
-# 2. Direct Specification: Uses manually provided VPC/subnet/security group IDs
-#
-# The module uses conditional logic to determine which configuration mode to use
-# based on whether cluster_name is provided.
-# ==============================================================================
-
-# Provider requirements are defined in versions.tf
-
-# Data source to get current AWS account ID and region
+# ***************************************
+#  Data sources
+# ***************************************
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
 
-# Conditional data source to lookup EKS cluster (only when cluster_name is provided)
-# This is only executed when using EKS Cluster Lookup mode
+data "aws_region" "current" {
+  lifecycle {
+    postcondition {
+      condition     = var.enable_region_validation ? contains(local.allowed_regions, self.region) : true
+      error_message = "This module supports only ${join(", ", local.allowed_regions)} (got: ${self.region})."
+    }
+  }
+}
+
 data "aws_eks_cluster" "selected" {
   count = var.cluster_name != null ? 1 : 0
   name  = var.cluster_name
 }
 
-# Get details for all subnets used by the EKS cluster
 data "aws_subnet" "cluster_subnets" {
   for_each = toset(data.aws_eks_cluster.selected[0].vpc_config[0].subnet_ids)
   id       = each.value
 }
 
-# Local values for determining network configuration based on mode
+# ***************************************
+#  Local variables
+# ***************************************
 locals {
-  # Determine configuration mode and values to use
-
-  # Network configuration based on mode
-  # In EKS mode: extract from cluster data source
-  # In direct mode: use provided variables
+  allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
   vpc_id = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
   subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
@@ -55,21 +44,27 @@ locals {
     for service in var.party_services : service.vpc_endpoint_service_name
   ]
 
-  # Create a map for easy reference
+  # Create a map for easy reference with default ports fallback
   partner_service_map = {
     for i, service in var.party_services : "${service.name}-${i}" => {
       name                      = service.name
       region                    = service.region
       account_id                = service.account_id
       vpc_endpoint_service_name = local.vpc_endpoint_service_names[i]
-      ports                     = service.ports
+      ports                     = length(coalesce(service.ports, [])) > 0 ? service.ports : [
+        var.default_mpc_ports.grpc,
+        var.default_mpc_ports.peer,
+        var.default_mpc_ports.metrics
+      ]
       create_kube_service       = service.create_kube_service
       kube_service_config       = service.kube_service_config
     }
   }
 }
 
-# Create VPC interface endpoints to connect to partner MPC services
+# ************************************************************
+#  VPC interface endpoints to connect to partner MPC services
+# ************************************************************
 resource "aws_vpc_endpoint" "party_interface_endpoints" {
   count = length(var.party_services)
 
@@ -117,8 +112,9 @@ resource "kubernetes_namespace" "partner_namespace" {
   }
 }
 
-# Create Kubernetes services that route to the VPC interface endpoints
-# Create based on individual service create_kube_service flags
+# *********************************************************************
+#  Create Kubernetes services that route to the VPC interface endpoints
+# *********************************************************************
 resource "kubernetes_service" "party_services" {
   count = length([for service in var.party_services : service if service.create_kube_service])
 
@@ -152,7 +148,7 @@ resource "kubernetes_service" "party_services" {
     session_affinity = var.party_services[count.index].kube_service_config.session_affinity
 
     dynamic "port" {
-      for_each = var.party_services[count.index].ports
+      for_each = local.partner_service_map["${var.party_services[count.index].name}-${count.index}"].ports
       content {
         name        = port.value.name
         port        = port.value.port
@@ -163,7 +159,9 @@ resource "kubernetes_service" "party_services" {
   }
 }
 
-# Optional: Create Route53 private hosted zone records for custom DNS names
+# **************************************************************************************
+#  Create Route53 private hosted zone records for custom DNS names (in progress,optional)
+# **************************************************************************************
 resource "aws_route53_record" "partner_dns" {
   count = var.create_custom_dns_records ? length(var.party_services) : 0
 

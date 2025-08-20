@@ -27,8 +27,8 @@ output "service_details" {
       arn          = service.arn
       state        = service.state
       service_type = service.service_type
-      nlb_name     = var.service_details[i].display_name
-      nlb_arn      = var.service_details[i].lb_arn
+      nlb_name     = local.nlb_details[i].display_name
+      nlb_arn      = local.nlb_details[i].arn
     }
   ]
 }

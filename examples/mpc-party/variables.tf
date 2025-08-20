@@ -1,8 +1,25 @@
-# AWS Configuration
-variable "aws_region" {
-  description = "AWS region where resources will be created"
+# Network Environment Configuration
+variable "network_environment" {
+  description = "MPC network environment that determines region constraints"
   type        = string
-  default     = "us-west-2"
+  default     = "testnet"
+  
+  validation {
+    condition     = contains(["testnet", "mainnet"], var.network_environment)
+    error_message = "Network environment must be either 'testnet' or 'mainnet'."
+  }
+}
+
+variable "aws_region" {
+  description = "AWS region for MPC network deployment (validated against network environment)"
+  type        = string
+  default     = "eu-west-1"
+}
+
+variable "enable_region_validation" {
+  type        = bool
+  description = "Whether to enable region validation"
+  default     = true
 }
 
 # MPC Party Configuration
@@ -140,6 +157,96 @@ variable "nodegroup_desired_size" {
 
 variable "nodegroup_disk_size" {
   description = "Disk size for the nodegroup"
+  type        = number
+  default     = 30
+}
+
+variable "nodegroup_capacity_type" {
+  description = "Capacity type for the nodegroup"
+  type        = string
+  default     = "ON_DEMAND"
+}
+
+variable "nodegroup_ami_type" {
+  description = "AMI type for the nodegroup"
+  type        = string
+  default     = "AL2_x86_64"
+}
+
+variable "nodegroup_enable_remote_access" {
+  description = "Whether to enable remote access to the nodegroup"
+  type        = bool
+  default     = false
+}
+
+variable "nodegroup_ec2_ssh_key" {
+  description = "EC2 Key Pair name that provides access for SSH communication with the worker nodes"
+  type        = string
+  default     = null
+}
+
+variable "nodegroup_source_security_group_ids" {
+  description = "List of security group IDs allowed for remote access"
+  type        = list(string)
+  default     = []
+}
+
+variable "nodegroup_labels" {
+  description = "Labels for the nodegroup"
+  type        = map(string)
+  default     = {
+    "nodepool" = "kms"
+  }
+}
+
+variable "nodegroup_enable_nitro_enclaves" {
+  description = "Whether to enable Nitro Enclaves"
+  type        = bool
+  default     = false
+}
+
+variable "nodegroup_taints" {
+  description = "Taints for the nodegroup"
+  type        = map(object({
+    key    = string
+    value  = string
+    effect = string
+  }))
+  default     = {
+    dedicated = {
+      key = "kms_dedicated"
+      value = "true"
+      effect = "NO_SCHEDULE"
+    }
+  }
+}
+
+variable "nodegroup_additional_security_group_ids" {
+  description = "List of additional security group IDs to associate with the node group"
+  type        = list(string)
+  default     = []
+}
+
+variable "nodegroup_enable_ssm_managed_instance" {
+  description = "Whether to enable SSM managed instance"
+  type        = bool
+  default     = false
+}
+
+# kms configuration (need to be updated if upgrade to new zama-kms image)
+variable "kms_image_attestation_sha" {
+  description = "Attestation SHA for KMS image"
+  type        = string
+}
+
+variable "kms_enabled_nitro_enclaves" {
+  description = "Whether to enable KMS for Nitro Enclaves"
+  type        = bool
+  default     = false
+}
+
+variable "kms_deletion_window_in_days" {
+  description = "Deletion window in days for KMS key"
   type        = number
   default     = 30
 }

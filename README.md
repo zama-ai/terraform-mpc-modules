@@ -20,40 +20,15 @@ The modules follow **clean separation of concerns** with focused, composable com
 
 ### Core Modules
 
-1. **🎯 Root Module**: Pure networking orchestration for threshold MPC infrastructure (NLBs + VPC endpoints)
-2. **📦 mpcparty Module** (`modules/mpcparty`): Self-contained MPC node storage and authentication for threshold cryptography
-3. **🔧 nlb-service-provider Module** (`modules/nlb-service-provider`): Kubernetes LoadBalancer services with AWS NLB for MPC node exposure
-4. **🌉 vpc-endpoint-bridge Module** (`modules/vpc-endpoint-bridge`): VPC endpoint services for secure MPC party communication via AWS PrivateLink
-5. **🔌 vpc-endpoint-consumer Module** (`modules/vpc-endpoint-consumer`): VPC interface endpoints for connecting to external MPC parties
+1. **📦 [mpcparty Module](./modules/mpcparty/)**: Self-contained MPC node storage and authentication for threshold cryptography
+2. **🌉 [vpc-endpoint-provider Module](./modules/vpc-endpoint-provider/)**: Expose the kubernetes services as VPC endpoint services for secure MPC party communication via AWS PrivateLink
+3. **🔌 [vpc-endpoint-consumer Module](./modules/vpc-endpoint-consumer/)**: VPC interface endpoints for connecting to external MPC parties
 
 ### Examples
 
-6. **📋 mpc-party**: Deploy MPC node infrastructure for threshold key management
-7. **🔗 partner-consumer**: Connect to external MPC parties for distributed protocols (with optional storage)
-8. **🏭 partner-provider**: Provide MPC services to other parties in the threshold network
-
-### Deployment Patterns
-
-**🌐 Full-Mesh MPC Network** (Combined Provider + Consumer)
-Each MPC party in the network deploys both patterns to create bidirectional connectivity:
-
-**🏗️ Provider Capability** (Root Module)
-- Deploy your own threshold MPC nodes for secure key management with NLBs
-- Create VPC endpoint services to expose MPC nodes via AWS PrivateLink
-- Share VPC endpoint service names with other parties in the MPC network
-- Enable incoming connections from other MPC parties for distributed protocols
-
-**🔌 Consumer Capability** (Root Module in Consumer Mode)
-- Connect to all other MPC party nodes via VPC interface endpoints
-- Configure `party_services_config` for connections to each party in the network
-- Establish outgoing connections to participate in distributed threshold protocols
-- Automatic service discovery for seamless MPC protocol execution
-
-**📦 MPC Node Infrastructure** (mpcparty Module)
-- Deploy S3 buckets and IRSA for secure threshold key management operations
-- Self-contained storage for key shares, cryptographic materials, and computation data
-- Secure computation environment supporting AWS Nitro Enclaves (in progress)
-- Supports FHE key generation, key switching, and distributed decryption operations
+1. **📋 mpc-party**: Deploy MPC node infrastructure for threshold key management
+2. **🔗 mpc-network-consumer**: Connect to external MPC parties for distributed protocols
+3. **🏭 mpc-network-provider**: Provide MPC services to other parties in the threshold network
 
 ### 🕸️ **Network Topology**
 ```
@@ -166,48 +141,64 @@ graph TB
 3. **Network Load Balancer** connected to **VPC Endpoint Service**
 4. **VPC Endpoint Service** accepts connections from other MPC parties
 
-**🔒 Security Features:**
-- ✅ **Private Network**: AWS PrivateLink only (no internet)
-- ✅ **Cross-Account**: Independent AWS accounts per party
-- ✅ **Cross-Region**: Global distribution (us-east-1 ↔ eu-west-1)
-- ✅ **Encrypted Storage**: All key materials encrypted at rest
+## 📚 Modules Documentation
 
-## 🌟 Features
+### [📦 MPC Party Module](./modules/mpcparty/)
+**Complete MPC node infrastructure for threshold cryptography**
 
-### Enhanced Architecture Benefits
-- ✅ **Modular Design**: Use only what you need
-- ✅ **Clean Separation**: Networking vs Storage vs Examples
-- ✅ **Self-Contained Modules**: No external dependencies between modules
-- ✅ **Composable**: Mix and match modules for custom solutions
+The `mpcparty` module provides a comprehensive solution for deploying Multi-Party Computation (MPC) party infrastructure on Amazon EKS. This module handles all the necessary AWS and Kubernetes resources required for a complete MPC party deployment.
 
-### MPC Node Infrastructure (mpcparty Module)
-- ✅ **Complete S3 Setup**: Private and public buckets for threshold key shares and cryptographic materials
-- ✅ **IRSA Integration**: Secure AWS access for threshold MPC operations
-- ✅ **Namespace Management**: Automatic Kubernetes namespace creation for MPC nodes
-- ✅ **Service Account**: Smart creation logic for secure MPC node deployment
-- ✅ **ConfigMap**: Environment variables for MPC node applications
-- ✅ **Comprehensive Tagging**: AWS resource organization for MPC infrastructure
-- 🚧 **AWS Nitro Enclave Support**: Enhanced secure computation environment (in progress)
+**Key Features:**
+- 🏗️ **Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, and Kubernetes resources
+- 🔐 **Security First**: Built-in IRSA (IAM Roles for Service Accounts) support for secure AWS access
+- 🔒 **Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration
+- 📦 **S3 Storage**: Automated setup of public and private S3 buckets with proper policies
+- ⚙️ **Configurable**: Extensive customization options for all components
 
-### Networking Infrastructure (Root Module)
-- ✅ **Multiple MPC Nodes**: Deploy threshold key management nodes with individual NLBs
-- ✅ **Cross-Zone Load Balancing**: High availability for distributed threshold protocols
-- ✅ **VPC Endpoint Services**: Secure cross-VPC connectivity for threshold MPC party communication
-- ✅ **Dual Deployment Modes**: Provider and consumer patterns for distributed key management topologies
+**[📖 View Complete Documentation →](./modules/mpcparty/README.md)**
 
-### MPC Party Integration (Direct Modules)
-- ✅ **Cross-Region Support**: Connect to threshold MPC parties in different AWS regions
-- ✅ **Cross-Account Support**: Secure multi-account distributed key management networks
-- ✅ **Kubernetes Integration**: Automatic service discovery for threshold MPC nodes
-- ✅ **Flexible Network Config**: EKS lookup or direct VPC specification for MPC deployment
+---
+
+### [🌉 VPC Endpoint Provider Module](./modules/vpc-endpoint-provider/)
+**Expose MPC services via AWS PrivateLink**
+
+The `vpc-endpoint-provider` module creates VPC endpoint services to expose your MPC services to other parties in the network through AWS PrivateLink. It automatically discovers Network Load Balancers created by Kubernetes services and makes them available as VPC endpoint services.
+
+**Key Features:**
+- 🚀 **Automatic NLB Discovery**: Finds and configures Network Load Balancers created by Kubernetes services
+- 🔒 **Secure Connectivity**: Exposes services via AWS PrivateLink for private network communication
+- ⚙️ **Flexible Configuration**: Supports multiple MPC services with custom port configurations
+- 🏷️ **Service Management**: Comprehensive tagging and service lifecycle management
+- 🛡️ **Access Control**: Configurable acceptance requirements and allowed principals
+
+**[📖 View Complete Documentation →](./modules/vpc-endpoint-provider/README.md)**
+
+---
+
+### [🔌 VPC Endpoint Consumer Module](./modules/vpc-endpoint-consumer/)
+**Connect to external MPC parties**
+
+The `vpc-endpoint-consumer` module creates VPC interface endpoints to connect to external MPC parties via AWS PrivateLink. It supports both EKS cluster lookup and direct VPC specification modes for maximum flexibility.
+
+**Key Features:**
+- 🌐 **Multi-Party Connectivity**: Connect to multiple external MPC parties simultaneously
+- 🔄 **Dual Configuration Modes**: EKS cluster lookup or direct VPC specification
+- ☸️ **Kubernetes Integration**: Automatic creation of ExternalName services for service discovery
+- 🏷️ **Custom DNS Support**: Optional Route53 private hosted zone integration
+- 📊 **Comprehensive Outputs**: Detailed connection information for application integration
+
+**[📖 View Complete Documentation →](./modules/vpc-endpoint-consumer/README.md)**
+
+---
 
 ## Requirements
 
 - Terraform 1.0+
 - AWS CLI
 - kubectl
+- EKS 1.30.0+ with private subnets
+- AWS VPC CNI
 - aws-load-balancer-controller (v2 recommended)
-- eks with private subnets
 
 ## 📁 Examples
 
@@ -220,6 +211,20 @@ Deploy only storage infrastructure using the enhanced mpcparty module:
 
 ```bash
 cd examples/mpc-party
+terraform init
+terraform apply
+```
+
+### [mpc-network-provider](./examples/mpc-network-provider/)
+Provide threshold key management services to other MPC parties using the root module:
+- Network Load Balancers for threshold key management nodes
+- VPC endpoint services for secure MPC party access to distributed key operations
+- Complete threshold key management service provider setup
+
+```bash
+cd examples/mpc-network-provider
+cp terraform.tfvars.example terraform.tfvars
+# Edit terraform.tfvars with your MPC node details
 terraform init
 terraform apply
 ```
@@ -241,29 +246,6 @@ terraform init
 terraform apply
 ```
 
-### [mpc-network-provider](./examples/mpc-network-provider/)
-Provide threshold key management services to other MPC parties using the root module:
-- Network Load Balancers for threshold key management nodes
-- VPC endpoint services for secure MPC party access to distributed key operations
-- Complete threshold key management service provider setup
-
-```bash
-cd examples/mpc-network-provider
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your MPC node details
-terraform init
-terraform apply
-```
-
-## 📋 Requirements
-
-| Name | Version |
-|------|---------|
-| terraform | >= 1.0 |
-| aws | >= 5.0 |
-| kubernetes | >= 2.23 |
-| random | >= 3.1 |
-
 ## 🤝 Contributing
 
 1. Each module should have a single, clear responsibility
@@ -279,6 +261,9 @@ This project is licensed under the MIT License.
 
 For issues and questions:
 - Check the example configurations in `examples/`
-- Review individual module documentation in `modules/`
+- Review individual module documentation:
+  - [📦 MPC Party Module](./modules/mpcparty/README.md)
+  - [🌉 VPC Endpoint Provider Module](./modules/vpc-endpoint-provider/README.md)
+  - [🔌 VPC Endpoint Consumer Module](./modules/vpc-endpoint-consumer/README.md)
 - Consult AWS EKS and S3 best practices
 - Open an issue for bugs or feature requests

@@ -12,6 +12,10 @@ resource "random_id" "bucket_suffix" {
 module "mpc_party" {
   source = "../../modules/mpcparty"
 
+  # Network environment configuration
+  network_environment = var.network_environment
+  enable_region_validation = var.enable_region_validation
+
   # Party configuration
   party_name               = var.party_name
   vault_private_bucket_name = "${var.bucket_prefix}-private-${random_id.bucket_suffix.hex}"
@@ -56,6 +60,27 @@ module "mpc_party" {
     "CLUSTER_NAME"  = var.cluster_name
   }
 
+  # Node Group configuration
+  create_nodegroup = var.create_nodegroup
+  nodegroup_name = "mpc-${substr(var.party_name, 0, 8)}-nodegroup"
+  nodegroup_instance_types = var.nodegroup_instance_types
+  nodegroup_min_size = var.nodegroup_min_size
+  nodegroup_max_size = var.nodegroup_max_size
+  nodegroup_desired_size = var.nodegroup_desired_size
+  nodegroup_disk_size = var.nodegroup_disk_size
+  nodegroup_capacity_type = var.nodegroup_capacity_type
+  nodegroup_ami_type = var.nodegroup_ami_type
+  nodegroup_enable_remote_access = var.nodegroup_enable_remote_access
+  nodegroup_ec2_ssh_key = var.nodegroup_ec2_ssh_key
+  nodegroup_labels = var.nodegroup_labels
+  nodegroup_taints = var.nodegroup_taints
+  nodegroup_enable_nitro_enclaves = var.nodegroup_enable_nitro_enclaves
+  kms_enabled_nitro_enclaves = var.kms_enabled_nitro_enclaves
+  kms_image_attestation_sha = var.kms_image_attestation_sha
+  kms_deletion_window_in_days = var.kms_deletion_window_in_days
+  nodegroup_additional_security_group_ids = var.nodegroup_additional_security_group_ids
+  nodegroup_enable_ssm_managed_instance = var.nodegroup_enable_ssm_managed_instance
+
   # Tagging
   common_tags = merge(var.additional_tags, {
     "Environment" = var.environment
@@ -66,32 +91,3 @@ module "mpc_party" {
     "Party"       = var.party_name
   })
 } 
-
-data "aws_eks_cluster" "cluster" {
-  name = var.cluster_name
-  count = var.create_nodegroup ? 1 : 0
-}
-
-# Create Node Group for MPC Party
-module "nodegroup" {
-  count = var.create_nodegroup ? 1 : 0
-  source = "../../modules/nodegroup"
-  name = "mpc-${substr(var.party_name, 0, 8)}-ng"
-  cluster_name = var.cluster_name
-  instance_types = var.nodegroup_instance_types
-  min_size = var.nodegroup_min_size
-  max_size = var.nodegroup_max_size
-  desired_size = var.nodegroup_desired_size
-  ami_type = "AL2_x86_64"
-  disk_size = var.nodegroup_disk_size
-  taints = {
-    dedicated = {
-      key = "kms"
-      value = "true"
-      effect = "NO_SCHEDULE"
-    }
-  }
-  labels = {
-    "nodepool" = "kms"
-  }
-}
