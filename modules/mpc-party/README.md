@@ -6,13 +6,9 @@ A comprehensive Terraform module for deploying Multi-Party Computation (MPC) par
 
 - **🏗️ Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, RDS database, and Kubernetes resources
 - **🔐 Security First**: Built-in IRSA (IAM Roles for Service Accounts) support for secure AWS access
-- **🔒 Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration
-- **📦 S3 Storage**: Automated setup of public and private S3 buckets with proper policies
-- **🗄️ Database Support**: Optional RDS PostgreSQL instance with security groups and secret management
-- **🌍 Region Enforcement**: Network environment-based region validation (testnet/mainnet)
-- **🔑 Secret Management**: AWS Secrets Manager integration for database credentials
-- **⚙️ Configurable**: Extensive customization options for all components
-- **🏷️ Well-Labeled**: Comprehensive tagging and labeling for resource management
+- **🔒 Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration (for securing mpc computations)
+- **📦 S3 Storage**: Automated setup of public and private S3 buckets with proper policies (for storing key materials and configuration)
+- **🗄️ Database Support**: Optional RDS PostgreSQL instance with security groups and secret management (for kms-connector application, not required during the first phase of the MPC deployment)
 
 ## Architecture
 
@@ -245,7 +241,7 @@ module "mpc_party" {
 }
 ```
 
-## RDS Database Integration
+## RDS Database Integration for kms-connector application (not required during the first phase of the MPC deployment)
 
 The module now includes comprehensive RDS PostgreSQL support with the following capabilities:
 
@@ -273,10 +269,11 @@ The module now includes comprehensive RDS PostgreSQL support with the following 
 
 When `rds_manage_master_user_password = true`, the module:
 
-1. Creates random passwords for both main database and KMS connector
+1. Creates random passwords for KMS connector
 2. Stores credentials securely in AWS Secrets Manager
-3. Provides structured secret with database connection details
-4. Enables applications to retrieve credentials programmatically
+
+Depending on company policy, secrets may be managed differently.  
+Zama recommends using the **External Secrets Operator** to manage secrets within the Kubernetes cluster. This is not included in this module.
 
 ### Kubernetes Integration
 
@@ -284,7 +281,6 @@ The module can optionally create:
 
 - **ExternalName Service**: Maps database endpoint to a Kubernetes service name
 - **ConfigMap Integration**: Database configuration available via environment variables
-- **IRSA Integration**: Service accounts can access Secrets Manager for credentials
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
