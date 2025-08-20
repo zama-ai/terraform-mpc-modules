@@ -1,6 +1,6 @@
 # MPC Party Example
 # This example demonstrates how to deploy only the MPC party infrastructure
-# using the enhanced mpcparty module that handles all Kubernetes resources
+# using the enhanced mpc-party module that handles all Kubernetes resources
 
 
 # Random suffix for bucket names to ensure uniqueness
@@ -8,9 +8,9 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
-# Deploy MPC Party infrastructure using the enhanced mpcparty module
+# Deploy MPC Party infrastructure using the enhanced mpc-party module
 module "mpc_party" {
-  source = "../../modules/mpcparty"
+  source = "../../modules/mpc-party"
 
   # Network environment configuration
   network_environment = var.network_environment

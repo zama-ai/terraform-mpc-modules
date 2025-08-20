@@ -81,7 +81,7 @@ variable "service_account_name" {
 }
 
 variable "create_namespace" {
-  description = "Whether to create the Kubernetes namespace (handled by mpcparty module)"
+  description = "Whether to create the Kubernetes namespace (handled by mpc-party module)"
   type        = bool
   default     = true
 }
