@@ -1,6 +1,6 @@
 # MPC Cluster Terraform Modules
 
-A comprehensive collection of Terraform modules for deploying Zama Multi-Party Computation (MPC) infrastructure on AWS. These modules enable secure deployment of threshold MPC nodes that implement advanced multi-party cryptographic protocols for secure key management, replacing traditional Hardware Security Modules (HSMs) with distributed threshold security. The infrastructure supports FHE (Fully Homomorphic Encryption) operations including threshold key generation, distributed decryption, key switching, and secure multi-party computations on encrypted data.
+A comprehensive collection of Terraform modules for deploying Zama Multi-Party Computation (MPC) infrastructure on AWS. These modules enable secure deployment of threshold MPC nodes that implement advanced multi-party cryptographic protocols for secure key management, replacing traditional Hardware Security Modules (HSMs) with distributed threshold security. The infrastructure supports FHE (Fully Homomorphic Encryption) operations including threshold key generation and distributed decryption.
 
 ## 🏗️ Architecture Overview
 
@@ -14,9 +14,7 @@ Each MPC party operates independently on its own EKS cluster and AWS account, wh
 - **Threshold Security**: Cryptographic operations require cooperation from multiple parties
 - **Private Network**: All communication flows through AWS PrivateLink (no internet)
 - **Cross-Region/Account**: Parties can be distributed across AWS regions and accounts
-- **Bidirectional Connectivity**: Each party can initiate or respond to MPC protocols
-
-The modules follow **clean separation of concerns** with focused, composable components:
+- **Connectivity**: Each party establishes outbound unary gRPC client connections to other parties and runs a server to accept inbound connections.
 
 ### Core Modules
 
@@ -118,7 +116,7 @@ graph TB
 - **EKS Cluster**: Container orchestration platform hosting all Kubernetes resources
   - **MPC Node Pod**: Threshold cryptography computation engine
   - **LoadBalancer Service**: Kubernetes service that provisions AWS Network Load Balancer
-  - **ExternalName Service**: DNS resolution for connecting to other MPC parties
+  - **ExternalName Service**: DNS resolution for connecting to other MPC parties (this will be replaced by a vpc interface endpoint DNS in the future for TLS support)
 - **Network Load Balancer**: AWS-managed load balancer created by Kubernetes service
 - **VPC Endpoint Service**: Exposes services to other MPC parties via AWS PrivateLink
 - **VPC Interface Endpoint**: Connects to other MPC parties' VPC Endpoint Services
@@ -129,7 +127,7 @@ graph TB
 
 **Outbound (Alice → Bob):**
 1. **MPC Node Pod** calls `bob-mpc-service.mpc-network.svc.cluster.local`
-2. **ExternalName Service** resolves to VPC Interface Endpoint DNS
+2. **ExternalName Service** resolves to VPC Interface Endpoint DNS (this will be replaced by a vpc interface endpoint DNS in the future for TLS support)
 3. **VPC Interface Endpoint** routes traffic through AWS PrivateLink
 4. **VPC Endpoint Service** receives traffic in Bob's account
 5. **Network Load Balancer** forwards to Bob's LoadBalancer Service
@@ -149,10 +147,10 @@ graph TB
 The `mpc-party` module provides a comprehensive solution for deploying Multi-Party Computation (MPC) party infrastructure on Amazon EKS. This module handles all the necessary AWS and Kubernetes resources required for a complete MPC party deployment.
 
 **Key Features:**
-- 🏗️ **Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS node groups, and Kubernetes resources
+- 🏗️ **Complete Infrastructure**: Deploys S3 storage, IAM roles, EKS enclave node group, RDS for KMS connector, and Kubernetes resources
 - 🔐 **Security First**: Built-in IRSA (IAM Roles for Service Accounts) support for secure AWS access
-- 🔒 **Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration
-- 📦 **S3 Storage**: Automated setup of public and private S3 buckets with proper policies
+- 🔒 **Nitro Enclaves**: Full support for AWS Nitro Enclaves with KMS integration (for securing mpc computations)
+- 📦 **S3 Storage**: Automated setup of public and private S3 buckets with proper policies (for storing key materials and configuration)
 - ⚙️ **Configurable**: Extensive customization options for all components
 
 **[📖 View Complete Documentation →](./modules/mpc-party/README.md)**
@@ -162,12 +160,11 @@ The `mpc-party` module provides a comprehensive solution for deploying Multi-Par
 ### [🌉 VPC Endpoint Provider Module](./modules/vpc-endpoint-provider/)
 **Expose MPC services via AWS PrivateLink**
 
-The `vpc-endpoint-provider` module creates VPC endpoint services to expose your MPC services to other parties in the network through AWS PrivateLink. It automatically discovers Network Load Balancers created by Kubernetes services and makes them available as VPC endpoint services.
+The `vpc-endpoint-provider` module creates VPC endpoint services to expose your MPC services to other parties in the network through AWS PrivateLink. It automatically discovers Network Load Balancers created by Kubernetes services and makes them available as VPC endpoint service. This vpc endpoint service will be used by the `vpc-endpoint-consumer` module to peer with other MPC parties.
 
 **Key Features:**
-- 🚀 **Automatic NLB Discovery**: Finds and configures Network Load Balancers created by Kubernetes services
-- 🔒 **Secure Connectivity**: Exposes services via AWS PrivateLink for private network communication
-- ⚙️ **Flexible Configuration**: Supports multiple MPC services with custom port configurations
+- � **Automatic NLB Discovery**: Finds and configures Network Load Balancers created by Kubernetes services
+- �🔒 **Secure Connectivity**: Exposes services via AWS PrivateLink for private network communication
 - 🏷️ **Service Management**: Comprehensive tagging and service lifecycle management
 - 🛡️ **Access Control**: Configurable acceptance requirements and allowed principals
 
@@ -182,9 +179,7 @@ The `vpc-endpoint-consumer` module creates VPC interface endpoints to connect to
 
 **Key Features:**
 - 🌐 **Multi-Party Connectivity**: Connect to multiple external MPC parties simultaneously
-- 🔄 **Dual Configuration Modes**: EKS cluster lookup or direct VPC specification
-- ☸️ **Kubernetes Integration**: Automatic creation of ExternalName services for service discovery
-- 🏷️ **Custom DNS Support**: Optional Route53 private hosted zone integration
+- ☸️ **Kubernetes Integration**: Automatic creation of ExternalName services for service discovery (this will be replaced by a vpc interface endpoint DNS in the future for TLS support)
 - 📊 **Comprehensive Outputs**: Detailed connection information for application integration
 
 **[📖 View Complete Documentation →](./modules/vpc-endpoint-consumer/README.md)**
@@ -232,11 +227,9 @@ terraform apply
 ### [mpc-network-consumer](./examples/mpc-network-consumer/)
 Connect to external MPC party nodes for distributed threshold key management via VPC interface endpoints:
 - **Cross-region MPC party connectivity** via AWS PrivateLink for distributed threshold key management protocols
-- **Multiple MPC party nodes** with independent VPC endpoint configurations for secure key operations
 - **Kubernetes service integration** with automatic service discovery for threshold key management
-- **Flexible network configuration** (EKS cluster lookup or direct VPC specification)
 - **Comprehensive connection outputs** for threshold cryptographic application integration
-- **Optional MPC party storage** for key shares, cryptographic materials and secure computation data
+- **MPC party storage** for key shares, cryptographic materials and secure computation data
 
 ```bash
 cd examples/mpc-network-consumer
