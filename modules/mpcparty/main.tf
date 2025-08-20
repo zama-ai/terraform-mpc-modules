@@ -30,6 +30,10 @@ locals {
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
   ]
+  private_subnet_cidr_blocks = [
+    for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet.cidr_block
+    if subnet.map_public_ip_on_launch == false
+  ]
   node_group_nitro_enclaves_enabled = var.kms_enabled_nitro_enclaves && var.nodegroup_enable_nitro_enclaves
   node_group_nitro_enclaves_cpu_count = var.nitro_enclaves_override_cpu_count != null ? var.nitro_enclaves_override_cpu_count : floor(data.aws_ec2_instance_type.this[0].default_vcpus * 0.75)
   node_group_nitro_enclaves_memory_mib = var.nitro_enclaves_override_memory_mib != null ? var.nitro_enclaves_override_memory_mib : floor(data.aws_ec2_instance_type.this[0].memory_size * 0.75)
@@ -554,4 +558,122 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
     }
   }
   depends_on = [module.eks_managed_node_group]
+}
+
+# ***************************************
+#  RDS Instance
+# ***************************************
+
+locals {
+  external_name = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
+  db_identifier = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
+}
+
+
+resource "random_password" "db_password" {
+  count = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
+  length           = 64
+  special          = true
+  override_special = local.allowed_special_chars
+}
+
+resource "random_password" "kms_connector_db_password" {
+  count = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
+  length           = 64
+  special          = true
+  override_special = local.allowed_special_chars
+}
+
+# changes to the secret would trigger a replacement of the db
+# hence those local definitions
+locals {
+  app_name              = "${var.rds_db_name}"
+  allowed_special_chars = "!#$%&*()-_=+[]{}<>:?"
+}
+
+module "rds_kms_connector_creds" {
+  source = "terraform-aws-modules/secrets-manager/aws"
+  version = "~> 1.3"
+  count = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
+  name = "${var.cluster_name}/app/${var.rds_db_name}"
+
+  secret_string = jsonencode({
+    DB_USER     = var.rds_username
+    DB_NAME     = var.rds_db_name
+    DB_PASSWORD = var.rds_manage_master_user_password ? random_password.db_password[0].result : ""
+    DB_HOST     = module.rds_instance[0].db_instance_endpoint
+    KMS_CONNECTOR_DB_PASSWORD  = random_password.kms_connector_db_password[0].result
+  })
+  tags = var.tags
+}
+
+module "rds_instance" {
+  count = var.enable_rds ? 1 : 0
+  source  = "terraform-aws-modules/rds/aws"
+  version = "~> 6.10"
+
+  identifier = local.db_identifier
+
+  engine         = var.rds_engine
+  engine_version = var.rds_engine_version
+  family         = "postgres${floor(var.rds_engine_version)}"
+
+  instance_class        = var.rds_instance_class
+  allocated_storage     = var.rds_allocated_storage
+  max_allocated_storage = var.rds_max_allocated_storage
+  multi_az              = var.rds_multi_az
+  parameters = var.rds_parameters
+
+  db_name  = var.rds_db_name
+  username = var.rds_username
+  password = var.rds_manage_master_user_password ? random_password.db_password[0].result : null
+  port     = var.rds_port
+
+  manage_master_user_password = var.rds_manage_master_user_password
+
+  iam_database_authentication_enabled = true
+
+  maintenance_window      = var.rds_maintenance_window
+  backup_retention_period = var.rds_backup_retention_period
+
+  monitoring_interval    = var.rds_monitoring_interval
+  create_monitoring_role = var.rds_monitoring_role_arn == null ? true : false
+  monitoring_role_arn    = var.rds_monitoring_role_arn
+
+  create_db_subnet_group = true
+  subnet_ids             = local.private_subnet_ids
+  vpc_security_group_ids = [module.rds_security_group[0].security_group_id]
+
+  deletion_protection = true
+  tags = var.tags
+}
+
+module "rds_security_group" {
+  count = var.enable_rds ? 1 : 0
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 5.2"
+
+  name        = var.rds_db_name != null ? var.rds_db_name : "rds-sg"
+  description = "Security group for ${var.rds_db_name != null ? var.rds_db_name : "RDS"} RDS Postgres opened port within VPC"
+  vpc_id      = var.rds_vpc_id == null ? data.aws_eks_cluster.cluster.vpc_config[0].vpc_id : var.rds_vpc_id
+  ingress_with_cidr_blocks = [
+    {
+      rule        = "postgresql-tcp"
+      cidr_blocks = join(",", concat(var.rds_allowed_cidr_blocks, local.private_subnet_cidr_blocks))
+    }
+  ]
+  tags = var.tags
+}
+
+resource "kubernetes_service" "externalname" {
+  count = var.enable_rds && var.rds_create_externalname_service ? 1 : 0
+
+  metadata {
+    name        = var.rds_externalname_service_name
+    namespace   = var.rds_externalname_service_namespace
+  }
+  spec {
+    type          = "ExternalName"
+    external_name = module.rds_instance[0].db_instance_endpoint
+  }
 }

@@ -130,3 +130,26 @@ output "deployment_summary" {
     }
   }
 }
+
+# ******************************************************
+# Outputs for RDS Information
+# ******************************************************
+output "rds_db_name" {
+  description = "Name of the RDS database (null if enable_rds is false)"
+  value       = var.enable_rds ? module.rds_instance[0].db_instance_name : null
+}
+
+output "rds_db_endpoint" {
+  description = "Endpoint of the RDS database (null if enable_rds is false)"
+  value       = var.enable_rds ? module.rds_instance[0].db_instance_endpoint : null
+}
+
+output "rds_db_port" {
+  description = "Port of the RDS database (null if enable_rds is false)"
+  value       = var.enable_rds ? module.rds_instance[0].db_instance_port : null
+}
+
+output "rds_db_username" {
+  description = "Username of the RDS database (null if enable_rds is false)"
+  value       = var.enable_rds ? module.rds_instance[0].db_instance_username : null
+}

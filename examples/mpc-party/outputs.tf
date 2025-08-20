@@ -101,3 +101,24 @@ output "deployment_summary" {
   description = "Summary of the MPC party deployment from the enhanced module"
   value       = module.mpc_party.deployment_summary
 }
+
+# RDS Information
+output "rds_db_name" {
+  description = "Name of the RDS database"
+  value       = module.mpc_party.rds_db_name
+}
+
+output "rds_db_endpoint" {
+  description = "Endpoint of the RDS database"
+  value       = module.mpc_party.rds_db_endpoint
+}
+
+output "rds_db_port" {
+  description = "Port of the RDS database"
+  value       = module.mpc_party.rds_db_port
+}
+
+output "rds_db_username" {
+  description = "Username of the RDS database"
+  value       = module.mpc_party.rds_db_username
+}

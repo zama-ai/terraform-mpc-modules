@@ -81,6 +81,34 @@ module "mpc_party" {
   nodegroup_additional_security_group_ids = var.nodegroup_additional_security_group_ids
   nodegroup_enable_ssm_managed_instance = var.nodegroup_enable_ssm_managed_instance
 
+
+  # RDS Configuration
+  enable_rds = var.enable_rds
+  rds_db_name = var.rds_db_name
+  rds_manage_master_user_password = var.rds_manage_master_user_password
+  rds_engine = var.rds_engine
+  rds_engine_version = var.rds_engine_version
+  rds_instance_class = var.rds_instance_class
+  rds_allocated_storage = var.rds_allocated_storage
+  rds_max_allocated_storage = var.rds_max_allocated_storage
+  rds_multi_az = var.rds_multi_az
+  rds_backup_retention_period = var.rds_backup_retention_period
+  rds_maintenance_window = var.rds_maintenance_window
+  rds_monitoring_interval = var.rds_monitoring_interval
+  rds_monitoring_role_arn = var.rds_monitoring_role_arn
+  rds_performance_insights_enabled = var.rds_performance_insights_enabled
+  rds_performance_insights_kms_key_id = var.rds_performance_insights_kms_key_id
+  rds_performance_insights_retention_period = var.rds_performance_insights_retention_period
+  rds_blue_green_update_enabled = var.rds_blue_green_update_enabled
+  rds_parameters = var.rds_parameters
+  rds_snapshot_identifier = var.rds_snapshot_identifier
+  rds_final_snapshot_enabled = var.rds_final_snapshot_enabled
+  rds_k8s_secret_name = var.rds_k8s_secret_name
+  rds_k8s_secret_namespace = var.rds_k8s_secret_namespace
+  rds_allowed_cidr_blocks = var.rds_allowed_cidr_blocks
+  rds_vpc_id = var.rds_vpc_id
+  rds_subnet_ids = var.rds_subnet_ids
+
   # Tagging
   common_tags = merge(var.additional_tags, {
     "Environment" = var.environment
