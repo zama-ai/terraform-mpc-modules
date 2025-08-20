@@ -39,31 +39,11 @@ security_group_ids = ["sg-033017badc63f1e10"]
 party_services = [
   # Example partner service configuration
   {
-    name                      = "mpc-node-1"
+    name                      = "kms-core-1-core"
     region                    = "eu-west-1"
     account_id                = "715841358639"
     partner_name              = "zws-dev"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-015ed042eebeed9e3"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      },
-    ]
     create_kube_service = true
     kube_service_config = {
       additional_annotations = {
@@ -76,80 +56,6 @@ party_services = [
       session_affinity = "None"
     }
   },
-  {
-    name                      = "mpc-node-2"
-    region                    = "eu-west-1"
-    account_id                = "715841358639"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-08bc2116c58ea3220"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      },
-    ]
-    create_kube_service = true
-    kube_service_config = {
-      additional_annotations = {
-        "mpc.io/partner-tier" = "tier-1"
-      }
-      labels = {
-        "partner-name" = "partner-2"
-        "environment"  = "dev"
-      }
-      session_affinity = "None"
-    }
-  },
-  {
-    name                      = "mpc-node-3"
-    region                    = "eu-west-1"
-    account_id                = "715841358639"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-02f141d909536e76f"
-    ports = [
-      {
-        name        = "grpc"
-        port        = 50100
-        target_port = 50100
-        protocol    = "TCP"
-      },
-      {
-        name        = "peer"
-        port        = 50001
-        target_port = 50001
-        protocol    = "TCP"
-      },
-      {
-        name        = "metrics"
-        port        = 9646
-        target_port = 9646
-        protocol    = "TCP"
-      },
-    ]
-    create_kube_service = true
-    kube_service_config = {
-      additional_annotations = {
-        "mpc.io/partner-tier" = "tier-1"
-      }
-      labels = {
-        "partner-name" = "partner-3"
-        "environment"  = "dev"
-      }
-      session_affinity = "None"
-    }
-  }
 ]
 
 # VPC Endpoint Configuration

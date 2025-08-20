@@ -35,23 +35,12 @@ security_group_ids   = ["sg-087debb93352a906a"]
 party_services = [
   # Example partner service configuration using default ports
   {
-    name                      = "mpc-node-4"
+    party_id                  = "1"
+    name                      = "mpc-node-1"
     region                    = "eu-west-3"
     account_id                = "767398008331"
-    partner_name              = "party-4"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0432e3f717883982d"
-    
-    # Ports now use defaults (50100, 50001, 9646) - no need to specify explicitly
-    # Uncomment and customize if different ports are needed:
-    # ports = [
-    #   {
-    #     name        = "custom-grpc"
-    #     port        = 60100
-    #     target_port = 60100
-    #     protocol    = "TCP"
-    #   }
-    # ]
-    
+    partner_name              = "partner-1"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0e13100b8fdc2f048"
     create_kube_service = true
     kube_service_config = {
       additional_annotations = {

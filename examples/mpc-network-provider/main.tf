@@ -10,9 +10,11 @@ module "vpc_endpoint_provider" {
   network_environment = var.network_environment
   enable_region_validation = var.enable_region_validation
 
+  # Party Configuration
+  party_id = var.party_id
+
   namespace        = var.namespace
   create_namespace = false
-  mpc_services     = var.mpc_services
 
   service_create_timeout = var.service_create_timeout
 

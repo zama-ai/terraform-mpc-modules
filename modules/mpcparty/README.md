@@ -454,6 +454,10 @@ The module can optionally create:
 | <a name="output_k8s_service_account_created"></a> [k8s\_service\_account\_created](#output\_k8s\_service\_account\_created) | Whether the Kubernetes service account was created by this module (excludes IRSA-created service accounts) |
 | <a name="output_k8s_service_account_name"></a> [k8s\_service\_account\_name](#output\_k8s\_service\_account\_name) | Name of the Kubernetes service account for MPC party |
 | <a name="output_party_name"></a> [party\_name](#output\_party\_name) | Name of the MPC party |
+| <a name="output_rds_db_endpoint"></a> [rds\_db\_endpoint](#output\_rds\_db\_endpoint) | Endpoint of the RDS database (null if enable\_rds is false) |
+| <a name="output_rds_db_name"></a> [rds\_db\_name](#output\_rds\_db\_name) | Name of the RDS database (null if enable\_rds is false) |
+| <a name="output_rds_db_port"></a> [rds\_db\_port](#output\_rds\_db\_port) | Port of the RDS database (null if enable\_rds is false) |
+| <a name="output_rds_db_username"></a> [rds\_db\_username](#output\_rds\_db\_username) | Username of the RDS database (null if enable\_rds is false) |
 | <a name="output_s3_environment_variables"></a> [s3\_environment\_variables](#output\_s3\_environment\_variables) | Environment variables for S3 configuration that applications can use |
 | <a name="output_vault_private_bucket_arn"></a> [vault\_private\_bucket\_arn](#output\_vault\_private\_bucket\_arn) | ARN of the private S3 bucket for MPC party storage |
 | <a name="output_vault_private_bucket_domain_name"></a> [vault\_private\_bucket\_domain\_name](#output\_vault\_private\_bucket\_domain\_name) | Domain name of the private S3 bucket |

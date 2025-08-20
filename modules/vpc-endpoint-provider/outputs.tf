@@ -1,16 +1,16 @@
-output "vpc_endpoint_service_ids" {
+output "vpc_endpoint_service_id" {
   description = "IDs of the created VPC endpoint services"
-  value       = [for service in aws_vpc_endpoint_service.mpc_nlb_services : service.id]
+  value       = aws_vpc_endpoint_service.mpc_nlb_service.id
 }
 
-output "vpc_endpoint_service_names" {
+output "vpc_endpoint_service_name" {
   description = "Service names of the created VPC endpoint services (what consumers use to connect)"
-  value       = [for service in aws_vpc_endpoint_service.mpc_nlb_services : service.service_name]
+  value       = aws_vpc_endpoint_service.mpc_nlb_service.service_name
 }
 
-output "vpc_endpoint_service_arns" {
+output "vpc_endpoint_service_arn" {
   description = "ARNs of the created VPC endpoint services"
-  value       = [for service in aws_vpc_endpoint_service.mpc_nlb_services : service.arn]
+  value       = aws_vpc_endpoint_service.mpc_nlb_service.arn
 }
 
 output "nlb_details" {
@@ -20,15 +20,14 @@ output "nlb_details" {
 
 output "service_details" {
   description = "Detailed information about the created VPC endpoint services"
-  value = [
-    for i, service in aws_vpc_endpoint_service.mpc_nlb_services : {
-      id           = service.id
-      service_name = service.service_name
-      arn          = service.arn
-      state        = service.state
-      service_type = service.service_type
-      nlb_name     = local.nlb_details[i].display_name
-      nlb_arn      = local.nlb_details[i].arn
-    }
-  ]
+  value = {
+    id           = aws_vpc_endpoint_service.mpc_nlb_service.id
+    service_name = aws_vpc_endpoint_service.mpc_nlb_service.service_name
+    kubernetes_service_name = kubernetes_service.mpc_nlb.metadata[0].name
+    arn          = aws_vpc_endpoint_service.mpc_nlb_service.arn
+    state        = aws_vpc_endpoint_service.mpc_nlb_service.state
+    service_type = aws_vpc_endpoint_service.mpc_nlb_service.service_type
+    nlb_name     = local.nlb_details.display_name
+    nlb_arn      = local.nlb_details.arn
+  }
 }
