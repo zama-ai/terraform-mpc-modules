@@ -63,44 +63,9 @@ variable "create_namespace" {
   default     = true
 }
 
-variable "cleanup_sg_rules_v1" {
-  description = "Whether to cleanup security group rules for NLBs made by the native aws load balancer controller v1"
-  type        = bool
-  default     = false
-}
-
-variable "load_balancer_controller_version" {
-  description = "Version of the load balancer controller to use"
+variable "party_id" {
+  description = "Party ID for the MPC service"
   type        = string
-  default     = "v2"
-}
-
-
-variable "mpc_services" {
-  description = "List of MPC services to create with their configurations"
-  type = list(object({
-    name = string
-    display_nlb_name = optional(string, null)
-    ports = optional(list(object({
-      name        = string
-      port        = number
-      target_port = any
-      protocol    = string
-      node_port   = optional(number)
-    })), null)
-    selector                    = map(string)
-    additional_annotations      = optional(map(string), {})
-    labels                      = optional(map(string), {})
-    session_affinity            = optional(string, "None")
-    external_traffic_policy     = optional(string, "Cluster")
-    internal_traffic_policy     = optional(string, "Cluster")
-    load_balancer_source_ranges = optional(list(string), [])
-  }))
-
-  validation {
-    condition     = length(var.mpc_services) > 0
-    error_message = "At least one MPC service must be defined."
-  }
 }
 
 # Default MPC Port Configurations
@@ -152,4 +117,10 @@ variable "service_create_timeout" {
   description = "Timeout for creating Kubernetes services"
   type        = string
   default     = "10m"
+}
+
+variable "kubernetes_nlb_extra_labels" {
+  description = "Extra labels to add to the Kubernetes NLB"
+  type        = map(string)
+  default     = {}
 }

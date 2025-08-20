@@ -10,6 +10,12 @@ variable "network_environment" {
   }
 }
 
+# Party Configuration
+variable "party_id" {
+  description = "Party ID for the MPC service"
+  type        = string
+}
+
 variable "enable_region_validation" {
   type        = bool
   description = "Whether to enable region validation"
@@ -66,24 +72,6 @@ variable "owner" {
   description = "Owner of the resources for tagging purposes"
   type        = string
   default     = "zws-team"
-}
-
-# MPC Services Configuration
-variable "mpc_services" {
-  description = "List of MPC services to deploy"
-  type = list(object({
-    name = string
-    ports = list(object({
-      name        = string
-      port        = number
-      target_port = number
-      protocol    = string
-    }))
-    selector = map(string)
-    additional_annotations = optional(map(string), {})
-    labels = optional(map(string), {})
-  }))
-  default = []
 }
 
 # VPC Endpoint Services Configuration

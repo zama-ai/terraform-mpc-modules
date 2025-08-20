@@ -55,18 +55,19 @@ variable "security_group_ids" {
 variable "party_services" {
   description = "List of partner MPC services to connect to via VPC interface endpoints"
   type = list(object({
-    name                      = string # Name of the partner service
-    region                    = string # AWS region where the partner service is located  
-    account_id                = optional(string, null) # AWS account ID where the partner service is located (optional)
-    partner_name              = optional(string, null) # Name of the partner name (optional)
-    vpc_endpoint_service_name = string # VPC endpoint service name (required - AWS-generated name)
+    name                      = string
+    region                    = string
+    party_id                  = string
+    account_id                = optional(string, null)
+    partner_name              = optional(string, null)
+    vpc_endpoint_service_name = string
     ports = optional(list(object({
       name        = string
       port        = number
       target_port = number
       protocol    = string
     })), null)
-    create_kube_service = optional(bool, true) # Whether to create Kubernetes service
+    create_kube_service = optional(bool, true)
     kube_service_config = optional(object({
       additional_annotations  = optional(map(string), {})
       labels                  = optional(map(string), {})

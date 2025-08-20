@@ -2,8 +2,11 @@
 # This demonstrates the simplified configuration using default port values
 
 # AWS Configuration
-aws_region         = "ddeu-west-1"
+aws_region         = "eu-west-1"
 enable_region_validation = true
+
+# Party Configuration
+party_id = "1"
 
 # Network Environment Configuration
 network_environment = "testnet"

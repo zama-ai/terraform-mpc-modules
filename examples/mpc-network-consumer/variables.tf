@@ -103,15 +103,16 @@ variable "party_services" {
   type = list(object({
     name                      = string
     region                    = string
+    party_id                  = string
     account_id                = optional(string)
     partner_name              = optional(string)
     vpc_endpoint_service_name = string
-    ports = list(object({
+    ports = optional(list(object({
       name        = string
       port        = number
       target_port = number
       protocol    = string
-    }))
+    })), [])
     create_kube_service = optional(bool, true)
     kube_service_config = optional(object({
       additional_annotations = optional(map(string), {})

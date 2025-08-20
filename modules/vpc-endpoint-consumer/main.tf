@@ -44,9 +44,11 @@ locals {
     for service in var.party_services : service.vpc_endpoint_service_name
   ]
 
+  
   # Create a map for easy reference with default ports fallback
   partner_service_map = {
     for i, service in var.party_services : "${service.name}-${i}" => {
+      party_id                  = service.party_id
       name                      = service.name
       region                    = service.region
       account_id                = service.account_id
@@ -119,12 +121,10 @@ resource "kubernetes_service" "party_services" {
   count = length([for service in var.party_services : service if service.create_kube_service])
 
   metadata {
-    name      = var.party_services[count.index].name
+    name      = "kms-core-${var.party_services[count.index].party_id}-core"
     namespace = var.create_namespace ? kubernetes_namespace.partner_namespace[0].metadata[0].name : var.namespace
 
     annotations = merge({
-      "mpc.io/partner-region"  = var.party_services[count.index].region
-      "mpc.io/vpc-endpoint-id" = aws_vpc_endpoint.party_interface_endpoints[count.index].id
       "mpc.io/connection-type" = "partner-interface"
       "mpc.io/partner-service" = var.party_services[count.index].name
     },
@@ -134,8 +134,8 @@ resource "kubernetes_service" "party_services" {
     var.party_services[count.index].kube_service_config.additional_annotations)
 
     labels = merge({
-      "app.kubernetes.io/name"      = var.party_services[count.index].name
-      "app.kubernetes.io/instance"  = var.party_services[count.index].name
+      "app.kubernetes.io/name"      = "kms-${var.party_services[count.index].party_id}-core"
+      "app.kubernetes.io/instance"  = "kms-${var.party_services[count.index].party_id}-core"
       "app.kubernetes.io/component" = "mpc-partner-interface"
       "app.kubernetes.io/part-of"   = "mpc-cluster"
       "mpc.io/partner-service"      = "true"
@@ -148,7 +148,11 @@ resource "kubernetes_service" "party_services" {
     session_affinity = var.party_services[count.index].kube_service_config.session_affinity
 
     dynamic "port" {
-      for_each = local.partner_service_map["${var.party_services[count.index].name}-${count.index}"].ports
+      for_each = [
+        var.default_mpc_ports.grpc,
+        var.default_mpc_ports.peer,
+        var.default_mpc_ports.metrics
+      ]
       content {
         name        = port.value.name
         port        = port.value.port
