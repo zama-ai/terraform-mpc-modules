@@ -1,8 +1,25 @@
-# AWS Configuration
+# Network Environment Configuration
+variable "network_environment" {
+  description = "MPC network environment that determines region constraints"
+  type        = string
+  default     = "testnet"
+  
+  validation {
+    condition     = contains(["testnet", "mainnet"], var.network_environment)
+    error_message = "Network environment must be either 'testnet' or 'mainnet'."
+  }
+}
+
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
-  default     = "us-west-2"
+  default     = "eu-west-1"
+}
+
+variable "enable_region_validation" { 
+  type        = bool
+  description = "Whether to enable region validation"
+  default     = true
 }
 
 # MPC Cluster Configuration

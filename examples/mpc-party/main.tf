@@ -12,6 +12,10 @@ resource "random_id" "bucket_suffix" {
 module "mpc_party" {
   source = "../../modules/mpcparty"
 
+  # Network environment configuration
+  network_environment = var.network_environment
+  enable_region_validation = var.enable_region_validation
+
   # Party configuration
   party_name               = var.party_name
   vault_private_bucket_name = "${var.bucket_prefix}-private-${random_id.bucket_suffix.hex}"

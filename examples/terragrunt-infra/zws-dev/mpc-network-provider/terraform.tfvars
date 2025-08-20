@@ -1,9 +1,9 @@
-# Partner Provider MPC Cluster Configuration
-# ZWS Dev Environment - Provider Side (Terragrunt Managed)
-
 # AWS Configuration
 aws_region         = "eu-west-1"
-aws_region_for_eks = "eu-west-1"
+enable_region_validation = false
+
+# Network Environment Configuration
+network_environment = "testnet"
 
 # MPC Cluster Configuration
 cluster_name = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
@@ -92,9 +92,6 @@ allowed_vpc_endpoint_principals  = ["arn:aws:iam::767398008331:root"]
 vpc_endpoint_supported_regions   = ["eu-west-3"]
 
 vpc_endpoint_acceptance_required = false
-# Custom DNS Configuration (disabled for this environment)
-create_custom_dns = false
-dns_domain        = "mpc.internal"
 
 # Tagging
 common_tags = {

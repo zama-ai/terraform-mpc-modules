@@ -1,8 +1,9 @@
-# This is a test file for the kms-dev-v1 consumer node
-
 # AWS Configuration
 aws_region         = "eu-west-1"
-aws_region_for_eks = "eu-west-1"
+enable_region_validation = false
+
+# Network Environment Configuration
+network_environment = "testnet"
 
 # Cluster Configuration
 cluster_name = "zws-dev"
@@ -76,7 +77,6 @@ endpoint_delete_timeout = "10m"
 # Custom DNS (optional)
 create_custom_dns_records = false
 private_zone_id           = ""
-dns_domain                = ""
 
 # Tagging
 common_tags = {

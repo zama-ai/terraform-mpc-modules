@@ -4,6 +4,10 @@
 module "vpc_endpoint_consumer" {
   source = "../..//modules/vpc-endpoint-consumer"
 
+  # Network environment configuration
+  network_environment = var.network_environment
+  enable_region_validation = var.enable_region_validation
+
   # Partner services configuration
   party_services = var.party_services
 

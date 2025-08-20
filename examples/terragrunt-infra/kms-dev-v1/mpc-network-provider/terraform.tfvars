@@ -1,5 +1,9 @@
+# Network Environment Configuration
+network_environment = "testnet"
+
+# AWS Configuration
 aws_region         = "eu-west-3"
-aws_region_for_eks = "eu-west-3"
+enable_region_validation = false
 
 cluster_name = "kms-development-v1"
 namespace    = "kms-decentralized"
@@ -61,8 +65,6 @@ vpc_endpoint_supported_regions   = ["eu-west-1"]
 
 
 vpc_endpoint_acceptance_required = false
-create_custom_dns = false
-dns_domain        = ""
 
 # Tagging
 common_tags = {

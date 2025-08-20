@@ -1,8 +1,16 @@
 # **************************************************************
-#  Data source to get current AWS account ID and region
+#  Data sources
 # **************************************************************
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
+
+data "aws_region" "current" {
+  lifecycle {
+    postcondition {
+      condition     = var.enable_region_validation ? contains(local.allowed_regions, self.region) : true
+      error_message = "This module supports only ${join(", ", local.allowed_regions)} (got: ${self.region})."
+    }
+  }
+}
 
 # Local values for processing services with default port fallback
 locals {
@@ -84,8 +92,11 @@ resource "kubernetes_service" "mpc_nlb" {
   }
 }
 
-# Extract Load Balancer names from the Kubernetes service hostnames
+# ***************************************
+#  Local variables
+# ***************************************
 locals {
+  allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
   # First extract the hostname parts for each service
   hostname_parts = [
     for service in kubernetes_service.mpc_nlb :

@@ -1,52 +1,31 @@
-# ==============================================================================
-# VPC Endpoint Consumer Module - Variables
-# ==============================================================================
-# 
-# This module supports two configuration modes for network setup:
-#
-# MODE 1: EKS Cluster Lookup (Recommended for EKS deployments)
-# -------------------------------------------------------------
-# Automatically retrieves VPC, subnet, and security group details from an 
-# existing EKS cluster. This is the recommended approach when connecting to
-# partner services from an EKS-based MPC cluster.
-#
-# Required variables:
-# - cluster_name: Name of the EKS cluster to lookup
-#
-# Example:
-#   cluster_name = "my-mpc-cluster"
-#   # vpc_id, subnet_ids, security_group_ids are automatically retrieved
-#
-# MODE 2: Direct Specification (Custom network configuration)
-# -----------------------------------------------------------
-# Manually specify VPC, subnet, and security group details. Use this mode
-# when you need custom network configuration or when not using EKS.
-#
-# Required variables:
-# - vpc_id: VPC ID where endpoints will be created
-# - subnet_ids: List of subnet IDs for the endpoints
-#
-# Optional variables:
-# - security_group_ids: List of security group IDs (defaults to cluster SGs if not provided)
-#
-# Example:
-#   vpc_id = "vpc-0123456789abcdef0"
-#   subnet_ids = ["subnet-abc123", "subnet-def456"]
-#   security_group_ids = ["sg-abc123"]  # Optional
-#
-# KUBERNETES SERVICES:
-# -------------------
-# Kubernetes services are created individually based on each partner service's 
-# create_kube_service flag. Set create_kube_service = false for specific services
-# to skip Kubernetes service creation for those services.
-#
-# IMPORTANT: Only use ONE network mode at a time. The module includes validation to
-# prevent conflicts between the two modes.
-# ==============================================================================
+variable "network_environment" {
+  description = "MPC network environment that determines region constraints"
+  type        = string
+  default     = "testnet"
+  
+  validation {
+    condition     = contains(["testnet", "mainnet"], var.network_environment)
+    error_message = "Network environment must be either 'testnet' or 'mainnet'."
+  }
+}
 
-# Network Configuration - Choose one of two modes:
-# Mode 1: EKS Cluster Lookup - provide cluster_name
-# Mode 2: Direct Specification - provide vpc_id, subnet_ids, security_group_ids
+variable "testnet_supported_regions" {
+  description = "AWS regions supported by the VPC endpoint consumer for testnet"
+  type        = list(string)
+  default     = ["eu-west-1"]
+}
+
+variable "mainnet_supported_regions" { 
+  description = "AWS regions supported by the VPC endpoint consumer for mainnet"
+  type        = list(string)
+  default     = ["eu-west-1"]
+}
+
+variable "enable_region_validation" {
+  type        = bool
+  description = "Whether to enable region validation"
+  default     = true
+}
 
 variable "cluster_name" {
   description = "Name of the EKS cluster to lookup VPC, subnet, and security group details (Mode 1). If provided, vpc_id, subnet_ids, and security_group_ids will be ignored."
@@ -72,32 +51,6 @@ variable "security_group_ids" {
   type        = list(string)
   default     = null
 }
-
-# Internal validation variable to ensure network configuration is correct
-# TODO fix this
-# variable "configuration_mode_validation" {
-#   description = "Internal variable for validation - do not set manually"
-#   type        = string
-#   default     = "auto"
-#
-#   validation {
-#     condition = var.configuration_mode_validation == "auto" && (
-#       # Mode 1: cluster_name provided
-#       (var.cluster_name != null && var.cluster_name != "") ||
-#       # Mode 2: vpc_id, subnet_ids provided (security_group_ids optional)
-#       (var.vpc_id != null && var.vpc_id != "" && var.subnet_ids != null && length(coalesce(var.subnet_ids, [])) > 0)
-#     )
-#     error_message = "Either 'cluster_name' OR ('vpc_id' + 'subnet_ids') must be provided."
-#   }
-#
-#   validation {
-#     condition = var.configuration_mode_validation == "auto" && !(
-#       (var.cluster_name != null && var.cluster_name != "") &&
-#       (var.vpc_id != null && var.vpc_id != "")
-#     )
-#     error_message = "Cannot provide both 'cluster_name' and 'vpc_id'. Choose either EKS cluster lookup OR direct VPC specification."
-#   }
-# }
 
 variable "party_services" {
   description = "List of partner MPC services to connect to via VPC interface endpoints"

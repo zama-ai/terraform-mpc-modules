@@ -1,3 +1,32 @@
+variable "network_environment" {
+  description = "MPC network environment that determines region constraints"
+  type        = string
+  default     = "testnet"
+  
+  validation {
+    condition     = contains(["testnet", "mainnet"], var.network_environment)
+    error_message = "Network environment must be either 'testnet' or 'mainnet'."
+  }
+}
+
+variable "testnet_supported_regions" {
+  description = "AWS regions supported by the VPC endpoint service for testnet"
+  type        = list(string)
+  default     = ["eu-west-1"]
+}
+
+variable "mainnet_supported_regions" { 
+  description = "AWS regions supported by the VPC endpoint service for mainnet"
+  type        = list(string)
+  default     = ["eu-west-1"]
+}
+
+variable "enable_region_validation" {
+  type        = bool
+  description = "Whether to enable region validation"
+  default     = true
+}
+
 variable "acceptance_required" {
   description = "Whether or not VPC endpoint connection requests to the service must be accepted by the service owner"
   type        = bool
@@ -46,10 +75,6 @@ variable "load_balancer_controller_version" {
   default     = "v2"
 }
 
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-}
 
 variable "mpc_services" {
   description = "List of MPC services to create with their configurations"

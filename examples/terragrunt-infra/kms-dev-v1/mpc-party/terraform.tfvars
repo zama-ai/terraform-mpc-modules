@@ -1,5 +1,9 @@
+# Network Environment Configuration
+network_environment = "testnet"
+
 # AWS Configuration
 aws_region = "eu-west-3"
+enable_region_validation = false
 
 # MPC Party Configuration
 party_name  = "mpc-party-4"

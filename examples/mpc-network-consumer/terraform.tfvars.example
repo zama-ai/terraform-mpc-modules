@@ -2,8 +2,11 @@
 # This demonstrates the simplified configuration using default port values
 
 # AWS Configuration
-aws_region         = "eu-west-1"
-aws_region_for_eks = "eu-west-1"
+aws_region         = "ddeu-west-1"
+enable_region_validation = true
+
+# Network Environment Configuration
+network_environment = "testnet"
 
 # Cluster Configuration
 cluster_name = "zws-dev"

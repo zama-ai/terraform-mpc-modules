@@ -6,10 +6,13 @@ data "aws_region" "current" {}
 module "vpc_endpoint_provider" {
   source = "../..//modules/vpc-endpoint-provider"
 
+  # Network environment configuration
+  network_environment = var.network_environment
+  enable_region_validation = var.enable_region_validation
+
   namespace        = var.namespace
   create_namespace = false
   mpc_services     = var.mpc_services
-  aws_region       = data.aws_region.current.region
 
   service_create_timeout = var.service_create_timeout
 

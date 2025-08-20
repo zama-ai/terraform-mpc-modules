@@ -2,7 +2,15 @@
 #  Data sources
 # ***************************************
 data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
+
+data "aws_region" "current" {
+  lifecycle {
+    postcondition {
+      condition     = var.enable_region_validation ? contains(local.allowed_regions, self.region) : true
+      error_message = "This module supports only ${join(", ", local.allowed_regions)} (got: ${self.region})."
+    }
+  }
+}
 
 data "aws_eks_cluster" "selected" {
   count = var.cluster_name != null ? 1 : 0
@@ -18,6 +26,7 @@ data "aws_subnet" "cluster_subnets" {
 #  Local variables
 # ***************************************
 locals {
+  allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
   vpc_id = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
   subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id

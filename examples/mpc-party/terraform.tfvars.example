@@ -1,7 +1,8 @@
-# AWS Configuration
-aws_region = "eu-west-3"
+# Network Environment and Region Configuration
+network_environment = "testnet"     # or "mainnet"
+aws_region          = "eu-west-1"   # Required for testnet, or choose from allowed mainnet regions
 
-# MPC Party Configuration
+# MPC Party Configuration  
 party_name  = "mpc-party-4"
 environment = "dev"
 
