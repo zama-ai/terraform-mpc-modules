@@ -163,10 +163,10 @@ The `mpc-party` module provides a comprehensive solution for deploying Multi-Par
 The `vpc-endpoint-provider` module creates VPC endpoint services to expose your MPC services to other parties in the network through AWS PrivateLink. It automatically discovers Network Load Balancers created by Kubernetes services and makes them available as VPC endpoint service. This vpc endpoint service will be used by the `vpc-endpoint-consumer` module to peer with other MPC parties.
 
 **Key Features:**
-- � **Automatic NLB Discovery**: Finds and configures Network Load Balancers created by Kubernetes services
-- �🔒 **Secure Connectivity**: Exposes services via AWS PrivateLink for private network communication
-- 🏷️ **Service Management**: Comprehensive tagging and service lifecycle management
-- 🛡️ **Access Control**: Configurable acceptance requirements and allowed principals
+- **Automatic NLB Discovery**: Finds and configures Network Load Balancers created by Kubernetes services
+- **Secure Connectivity**: Exposes services via AWS PrivateLink for private network communication
+- **Service Management**: Comprehensive tagging and service lifecycle management
+- **Access Control**: Configurable acceptance requirements and allowed principals
 
 **[📖 View Complete Documentation →](./modules/vpc-endpoint-provider/README.md)**
 
@@ -211,7 +211,7 @@ terraform apply
 ```
 
 ### [mpc-network-provider](./examples/mpc-network-provider/)
-Provide threshold key management services to other MPC parties using the root module:
+Provide threshold key management services to other MPC parties:
 - Network Load Balancers for threshold key management nodes
 - VPC endpoint services for secure MPC party access to distributed key operations
 - Complete threshold key management service provider setup
