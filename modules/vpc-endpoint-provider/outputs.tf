@@ -21,13 +21,13 @@ output "nlb_details" {
 output "service_details" {
   description = "Detailed information about the created VPC endpoint services"
   value = {
-    id           = aws_vpc_endpoint_service.mpc_nlb_service.id
-    service_name = aws_vpc_endpoint_service.mpc_nlb_service.service_name
+    id                      = aws_vpc_endpoint_service.mpc_nlb_service.id
+    service_name            = aws_vpc_endpoint_service.mpc_nlb_service.service_name
     kubernetes_service_name = kubernetes_service.mpc_nlb.metadata[0].name
-    arn          = aws_vpc_endpoint_service.mpc_nlb_service.arn
-    state        = aws_vpc_endpoint_service.mpc_nlb_service.state
-    service_type = aws_vpc_endpoint_service.mpc_nlb_service.service_type
-    nlb_name     = local.nlb_details.display_name
-    nlb_arn      = local.nlb_details.arn
+    arn                     = aws_vpc_endpoint_service.mpc_nlb_service.arn
+    state                   = aws_vpc_endpoint_service.mpc_nlb_service.state
+    service_type            = aws_vpc_endpoint_service.mpc_nlb_service.service_type
+    nlb_name                = local.nlb_details.display_name
+    nlb_arn                 = local.nlb_details.arn
   }
 }

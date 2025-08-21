@@ -1,5 +1,5 @@
 # AWS Configuration
-aws_region         = "eu-west-1"
+aws_region               = "eu-west-1"
 enable_region_validation = false
 
 # Network Environment Configuration
@@ -12,8 +12,8 @@ environment  = "dev"
 owner        = "zws-team"
 
 # Kubernetes Provider Configuration
-kubeconfig_path    = "~/.kube/config"
-kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
+kubeconfig_path                = "~/.kube/config"
+kubeconfig_context             = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
 use_eks_cluster_authentication = false
 
 # MPC Party Configuration
@@ -23,8 +23,8 @@ party_id = "2"
 
 # Indicate all aws accounts and regions from which the partner services will be consumed
 # By default, the terraform module will add the current region to the supported regions list
-allowed_vpc_endpoint_principals  = ["arn:aws:iam::767398008331:root"]
-vpc_endpoint_supported_regions   = ["eu-west-3"]
+allowed_vpc_endpoint_principals = ["arn:aws:iam::767398008331:root"]
+vpc_endpoint_supported_regions  = ["eu-west-3"]
 
 vpc_endpoint_acceptance_required = false
 

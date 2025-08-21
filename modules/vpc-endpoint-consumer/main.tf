@@ -27,13 +27,13 @@ data "aws_subnet" "cluster_subnets" {
 # ***************************************
 locals {
   allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
-  vpc_id = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
+  vpc_id          = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
   subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
   ]
   security_group_ids = var.security_group_ids != null ? var.security_group_ids : [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id]
-  
+
   # Cluster name for tagging (use provided cluster_name or default)
   cluster_name_for_tags = var.cluster_name != null ? var.cluster_name : "mpc-cluster"
 
@@ -44,7 +44,7 @@ locals {
     for service in var.party_services : service.vpc_endpoint_service_name
   ]
 
-  
+
   # Create a map for easy reference with default ports fallback
   partner_service_map = {
     for i, service in var.party_services : "${service.name}-${i}" => {
@@ -53,13 +53,13 @@ locals {
       region                    = service.region
       account_id                = service.account_id
       vpc_endpoint_service_name = local.vpc_endpoint_service_names[i]
-      ports                     = length(coalesce(service.ports, [])) > 0 ? service.ports : [
+      ports = length(coalesce(service.ports, [])) > 0 ? service.ports : [
         var.default_mpc_ports.grpc,
         var.default_mpc_ports.peer,
         var.default_mpc_ports.metrics
       ]
-      create_kube_service       = service.create_kube_service
-      kube_service_config       = service.kube_service_config
+      create_kube_service = service.create_kube_service
+      kube_service_config = service.kube_service_config
     }
   }
 }
@@ -127,10 +127,10 @@ resource "kubernetes_service" "party_services" {
     annotations = merge({
       "mpc.io/connection-type" = "partner-interface"
       "mpc.io/partner-service" = var.party_services[count.index].name
-    },
-    var.party_services[count.index].account_id != null ? {
-      "mpc.io/partner-account" = var.party_services[count.index].account_id
-    } : {},
+      },
+      var.party_services[count.index].account_id != null ? {
+        "mpc.io/partner-account" = var.party_services[count.index].account_id
+      } : {},
     var.party_services[count.index].kube_service_config.additional_annotations)
 
     labels = merge({

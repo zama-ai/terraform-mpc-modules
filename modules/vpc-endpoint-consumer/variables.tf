@@ -2,7 +2,7 @@ variable "network_environment" {
   description = "MPC network environment that determines region constraints"
   type        = string
   default     = "testnet"
-  
+
   validation {
     condition     = contains(["testnet", "mainnet"], var.network_environment)
     error_message = "Network environment must be either 'testnet' or 'mainnet'."
@@ -15,7 +15,7 @@ variable "testnet_supported_regions" {
   default     = ["eu-west-1"]
 }
 
-variable "mainnet_supported_regions" { 
+variable "mainnet_supported_regions" {
   description = "AWS regions supported by the VPC endpoint consumer for mainnet"
   type        = list(string)
   default     = ["eu-west-1"]
@@ -69,9 +69,9 @@ variable "party_services" {
     })), null)
     create_kube_service = optional(bool, true)
     kube_service_config = optional(object({
-      additional_annotations  = optional(map(string), {})
-      labels                  = optional(map(string), {})
-      session_affinity        = optional(string, "None")
+      additional_annotations = optional(map(string), {})
+      labels                 = optional(map(string), {})
+      session_affinity       = optional(string, "None")
     }), {})
   }))
 
@@ -82,7 +82,7 @@ variable "party_services" {
 
   validation {
     condition = alltrue([
-      for service in var.party_services : 
+      for service in var.party_services :
       service.vpc_endpoint_service_name != null && service.vpc_endpoint_service_name != ""
     ])
     error_message = "vpc_endpoint_service_name is required for all partner services and must be the actual AWS-generated VPC endpoint service name (e.g., 'com.amazonaws.vpce.region.vpce-svc-xxxxx')."

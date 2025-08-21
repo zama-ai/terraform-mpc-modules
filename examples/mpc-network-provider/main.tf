@@ -7,7 +7,7 @@ module "vpc_endpoint_provider" {
   source = "../..//modules/vpc-endpoint-provider"
 
   # Network environment configuration
-  network_environment = var.network_environment
+  network_environment      = var.network_environment
   enable_region_validation = var.enable_region_validation
 
   # Party Configuration
@@ -23,5 +23,5 @@ module "vpc_endpoint_provider" {
   allowed_principals  = var.allowed_vpc_endpoint_principals
   # Always ensure current region is included in supported_regions
   supported_regions = length(var.vpc_endpoint_supported_regions) > 0 ? distinct(concat(var.vpc_endpoint_supported_regions, [data.aws_region.current.id])) : [data.aws_region.current.id]
-  tags               = var.common_tags
+  tags              = var.common_tags
 }

@@ -26,7 +26,7 @@ provider "aws" {
 provider "kubernetes" {
   config_path    = var.kubeconfig_path
   config_context = var.kubeconfig_context
-  
+
   # Optional: EKS cluster authentication via AWS CLI
   dynamic "exec" {
     for_each = var.use_eks_cluster_authentication ? [1] : []

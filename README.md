@@ -243,8 +243,7 @@ terraform apply
 
 1. Each module should have a single, clear responsibility
 2. Examples should demonstrate real-world usage patterns
-3. All modules should be self-contained with no external dependencies
-4. Follow the established patterns for variables, outputs, and documentation
+3. Follow the established patterns for variables, outputs, and documentation
 
 ## 📝 License
 

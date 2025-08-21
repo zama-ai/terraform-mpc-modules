@@ -1,5 +1,5 @@
 # AWS Configuration
-aws_region         = "eu-west-1"
+aws_region               = "eu-west-1"
 enable_region_validation = false
 
 # Network Environment Configuration
@@ -12,12 +12,12 @@ owner        = "mpc-consumer-team"
 
 # Kubernetes Provider Configuration
 # IMPORTANT: Update these values for each consumer node
-kubeconfig_path    = "~/.kube/config"
-kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"  # Set to specific context or null to use current
+kubeconfig_path                = "~/.kube/config"
+kubeconfig_context             = "tailscale-operator-zws-dev.diplodocus-boa.ts.net" # Set to specific context or null to use current
 use_eks_cluster_authentication = false
 
 # Partner Services Namespace
-namespace        = "kms-decentralized"
+namespace = "kms-decentralized"
 
 
 # Optional: the following lines if using EKS cluster lookup
@@ -28,7 +28,7 @@ namespace        = "kms-decentralized"
 #   "subnet-054a87e337596757a",
 # ]
 
-security_group_ids   = ["sg-087debb93352a906a"]
+security_group_ids = ["sg-087debb93352a906a"]
 
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
@@ -41,7 +41,7 @@ party_services = [
     account_id                = "767398008331"
     partner_name              = "partner-1"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0e13100b8fdc2f048"
-    create_kube_service = true
+    create_kube_service       = true
     kube_service_config = {
       additional_annotations = {
         "mpc.io/partner-tier" = "tier-1"
@@ -75,5 +75,5 @@ common_tags = {
 }
 
 additional_tags = {
-  "Project"     = "mpc-connectivity"
+  "Project" = "mpc-connectivity"
 }

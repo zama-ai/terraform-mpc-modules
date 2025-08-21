@@ -3,7 +3,7 @@ variable "network_environment" {
   description = "MPC network environment that determines region constraints"
   type        = string
   default     = "testnet"
-  
+
   validation {
     condition     = contains(["testnet", "mainnet"], var.network_environment)
     error_message = "Network environment must be either 'testnet' or 'mainnet'."
@@ -26,7 +26,7 @@ variable "enable_region_validation" {
 variable "party_name" {
   description = "Name of the MPC party (used for tagging and resource naming)"
   type        = string
-  
+
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.party_name))
     error_message = "Party name must contain only lowercase letters, numbers, and hyphens."
@@ -43,7 +43,7 @@ variable "environment" {
   description = "Environment name (e.g., dev, staging, prod)"
   type        = string
   default     = "dev"
-  
+
   validation {
     condition     = contains(["dev", "staging", "prod", "test"], var.environment)
     error_message = "Environment must be one of: dev, staging, prod, test."
@@ -55,7 +55,7 @@ variable "bucket_prefix" {
   description = "Prefix for S3 bucket names"
   type        = string
   default     = "mpc-vault"
-  
+
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.bucket_prefix))
     error_message = "Bucket prefix must contain only lowercase letters, numbers, and hyphens."
@@ -123,7 +123,7 @@ variable "owner" {
   description = "Owner of the resources for tagging purposes"
   type        = string
   default     = "mpc-team"
-} 
+}
 
 variable "create_nodegroup" {
   description = "Whether to create a nodegroup for the MPC party"
@@ -194,7 +194,7 @@ variable "nodegroup_source_security_group_ids" {
 variable "nodegroup_labels" {
   description = "Labels for the nodegroup"
   type        = map(string)
-  default     = {
+  default = {
     "nodepool" = "kms"
   }
 }
@@ -207,15 +207,15 @@ variable "nodegroup_enable_nitro_enclaves" {
 
 variable "nodegroup_taints" {
   description = "Taints for the nodegroup"
-  type        = map(object({
+  type = map(object({
     key    = string
     value  = string
     effect = string
   }))
-  default     = {
+  default = {
     dedicated = {
-      key = "kms_dedicated"
-      value = "true"
+      key    = "kms_dedicated"
+      value  = "true"
       effect = "NO_SCHEDULE"
     }
   }

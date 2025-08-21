@@ -40,18 +40,18 @@ locals {
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet.cidr_block
     if subnet.map_public_ip_on_launch == false
   ]
-  node_group_nitro_enclaves_enabled = var.kms_enabled_nitro_enclaves && var.nodegroup_enable_nitro_enclaves
-  node_group_nitro_enclaves_cpu_count = var.nitro_enclaves_override_cpu_count != null ? var.nitro_enclaves_override_cpu_count : floor(data.aws_ec2_instance_type.this[0].default_vcpus * 0.75)
+  node_group_nitro_enclaves_enabled    = var.kms_enabled_nitro_enclaves && var.nodegroup_enable_nitro_enclaves
+  node_group_nitro_enclaves_cpu_count  = var.nitro_enclaves_override_cpu_count != null ? var.nitro_enclaves_override_cpu_count : floor(data.aws_ec2_instance_type.this[0].default_vcpus * 0.75)
   node_group_nitro_enclaves_memory_mib = var.nitro_enclaves_override_memory_mib != null ? var.nitro_enclaves_override_memory_mib : floor(data.aws_ec2_instance_type.this[0].memory_size * 0.75)
 }
 
 # Create Kubernetes namespace (optional)
 resource "kubernetes_namespace" "mpc_party_namespace" {
   count = var.create_namespace ? 1 : 0
-  
+
   metadata {
     name = var.k8s_namespace
-    
+
     labels = merge({
       "app.kubernetes.io/name"       = "mpc-party"
       "app.kubernetes.io/component"  = "storage"
@@ -59,11 +59,11 @@ resource "kubernetes_namespace" "mpc_party_namespace" {
       "app.kubernetes.io/managed-by" = "terraform"
       "mpc.io/party-name"            = var.party_name
     }, var.namespace_labels)
-    
+
     annotations = merge({
-      "terraform.io/module"   = "mpc-party"
-      "mpc.io/party-name"     = var.party_name
-      "mpc.io/cluster"        = var.cluster_name
+      "terraform.io/module" = "mpc-party"
+      "mpc.io/party-name"   = var.party_name
+      "mpc.io/cluster"      = var.cluster_name
     }, var.namespace_annotations)
   }
 }
@@ -72,13 +72,13 @@ resource "kubernetes_namespace" "mpc_party_namespace" {
 #  S3 Buckets for Vault Public Storage
 # ***************************************
 resource "aws_s3_bucket" "vault_public_bucket" {
-  bucket = var.vault_public_bucket_name
+  bucket        = var.vault_public_bucket_name
   force_destroy = true
   tags = merge(var.common_tags, {
-    "Name"        = var.vault_public_bucket_name
-    "Type"        = "public-vault"
-    "Party"       = var.party_name
-    "Purpose"     = "mpc-public-storage"
+    "Name"    = var.vault_public_bucket_name
+    "Type"    = "public-vault"
+    "Party"   = var.party_name
+    "Purpose" = "mpc-public-storage"
   })
 }
 
@@ -145,12 +145,12 @@ resource "aws_s3_bucket_policy" "vault_public_bucket_policy" {
 # ***************************************
 resource "aws_s3_bucket" "vault_private_bucket" {
   force_destroy = true
-  bucket = var.vault_private_bucket_name
+  bucket        = var.vault_private_bucket_name
   tags = merge(var.common_tags, {
-    "Name"        = var.vault_private_bucket_name
-    "Type"        = "private-vault"
-    "Party"       = var.party_name
-    "Purpose"     = "mpc-private-storage"
+    "Name"    = var.vault_private_bucket_name
+    "Type"    = "private-vault"
+    "Party"   = var.party_name
+    "Purpose" = "mpc-private-storage"
   })
 }
 
@@ -169,7 +169,7 @@ resource "aws_s3_bucket_versioning" "vault_private_bucket" {
 }
 
 resource "aws_s3_bucket_public_access_block" "vault_private_bucket" {
-  bucket = aws_s3_bucket.vault_private_bucket.id
+  bucket              = aws_s3_bucket.vault_private_bucket.id
   block_public_policy = true
 }
 
@@ -177,29 +177,29 @@ resource "aws_s3_bucket_public_access_block" "vault_private_bucket" {
 #  IAM Policy for MPC Party
 # ***************************************
 resource "aws_iam_policy" "mpc_aws" {
-  name   = "mpc-${var.cluster_name}-${var.party_name}"
+  name = "mpc-${var.cluster_name}-${var.party_name}"
   policy = jsonencode({
-  Version = "2012-10-17"
-  Statement = [
-    {
-      Sid    = "AllowObjectActions"
-      Effect = "Allow"
-      Action = "s3:*Object"
-      Resource = [
-        "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}/*",
-        "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*"
-      ]
-    },
-    {
-      Sid    = "AllowListBucket"
-      Effect = "Allow"
-      Action = "s3:ListBucket"
-      Resource = [
-        "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
-        "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}"
-      ]
-    }
-  ]
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowObjectActions"
+        Effect = "Allow"
+        Action = "s3:*Object"
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}/*",
+          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*"
+        ]
+      },
+      {
+        Sid    = "AllowListBucket"
+        Effect = "Allow"
+        Action = "s3:ListBucket"
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
+          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}"
+        ]
+      }
+    ]
   })
 }
 
@@ -211,7 +211,7 @@ module "iam_assumable_role_mpc_party" {
   role_name                     = "mpc-${var.cluster_name}-${var.party_name}-nodegroup"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
   role_policy_arns              = [aws_iam_policy.mpc_aws.arn]
-  depends_on = [aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket, kubernetes_namespace.mpc_party_namespace]
+  depends_on                    = [aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket, kubernetes_namespace.mpc_party_namespace]
 }
 
 resource "kubernetes_service_account" "mpc_party_service_account" {
@@ -219,7 +219,7 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
   metadata {
     name      = var.k8s_service_account_name
     namespace = var.k8s_namespace
-    
+
     labels = merge({
       "app.kubernetes.io/name"       = "mpc-party"
       "app.kubernetes.io/component"  = "service-account"
@@ -227,10 +227,10 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
       "app.kubernetes.io/managed-by" = "terraform"
       "mpc.io/party-name"            = var.party_name
     }, var.service_account_labels)
-    
+
     annotations = merge({
-      "terraform.io/module"   = "mpc-party"
-      "mpc.io/party-name"     = var.party_name
+      "terraform.io/module"        = "mpc-party"
+      "mpc.io/party-name"          = var.party_name
       "eks.amazonaws.com/role-arn" = module.iam_assumable_role_mpc_party.iam_role_arn
     }, var.service_account_annotations)
   }
@@ -241,14 +241,14 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
 #  aws kms key for mpc party
 # ***************************************
 resource "aws_kms_key" "mpc_party" {
-  count = var.kms_enabled_nitro_enclaves ? 1 : 0
-  description = "KMS key for MPC Party"
-  key_usage = var.kms_key_usage
+  count                    = var.kms_enabled_nitro_enclaves ? 1 : 0
+  description              = "KMS key for MPC Party"
+  key_usage                = var.kms_key_usage
   customer_master_key_spec = var.kms_customer_master_key_spec
-  enable_key_rotation     = false
-  deletion_window_in_days = var.kms_deletion_window_in_days
+  enable_key_rotation      = false
+  deletion_window_in_days  = var.kms_deletion_window_in_days
   tags = merge(var.common_tags, {
-    "Name"        = "mpc-party"
+    "Name" = "mpc-party"
   })
   policy = jsonencode({
     Version = "2012-10-17"
@@ -259,46 +259,46 @@ resource "aws_kms_key" "mpc_party" {
           AWS = "arn:aws:iam::156692459989:role/zama-testnet-tkms-13-47ws8-7gcgq"
         },
         Action = [
-        "kms:Decrypt",
-        "kms:GenerateDataKey",
-        "kms:GetPublicKey"
-      ],
+          "kms:Decrypt",
+          "kms:GenerateDataKey",
+          "kms:GetPublicKey"
+        ],
         Resource = "*",
         Condition = {
           StringEqualsIgnoreCase = {
-          "kms:RecipientAttestation:ImageSha384": var.kms_image_attestation_sha
+            "kms:RecipientAttestation:ImageSha384" : var.kms_image_attestation_sha
+          }
         }
-      }
-    },
-    {
-      Effect = "Allow",
-      Principal = {
-        AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
       },
-      Action = [
-        "kms:Create*",
-        "kms:Describe*",
-        "kms:Enable*",
-        "kms:List*",
-        "kms:Put*",
-        "kms:Update*",
-        "kms:Revoke*",
-        "kms:Disable*",
-        "kms:Get*",
-        "kms:Delete*",
-        "kms:TagResource",
-        "kms:UntagResource",
-        "kms:ScheduleKeyDeletion",
-        "kms:CancelKeyDeletion"
-      ],
-      Resource = "*"
-    }
-  ]
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:TagResource",
+          "kms:UntagResource",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion"
+        ],
+        Resource = "*"
+      }
+    ]
   })
 }
 
 resource "aws_kms_alias" "mpc_party" {
-  count = var.kms_enabled_nitro_enclaves ? 1 : 0
+  count         = var.kms_enabled_nitro_enclaves ? 1 : 0
   name          = "alias/mpc-${var.party_name}"
   target_key_id = aws_kms_key.mpc_party[0].key_id
 }
@@ -308,11 +308,11 @@ resource "aws_kms_alias" "mpc_party" {
 # ***************************************
 resource "kubernetes_config_map" "mpc_party_config" {
   count = var.create_config_map ? 1 : 0
-  
+
   metadata {
     name      = var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}"
     namespace = var.k8s_namespace
-    
+
     labels = {
       "app.kubernetes.io/name"       = "mpc-party"
       "app.kubernetes.io/component"  = "config"
@@ -320,23 +320,23 @@ resource "kubernetes_config_map" "mpc_party_config" {
       "app.kubernetes.io/managed-by" = "terraform"
       "mpc.io/party-name"            = var.party_name
     }
-    
+
     annotations = {
       "terraform.io/module" = "mpc-party"
       "mpc.io/party-name"   = var.party_name
     }
   }
-  
+
   data = {
-    "CORE_CLIENT__S3_ENDPOINT" = "https://${aws_s3_bucket.vault_public_bucket.id}.s3.${aws_s3_bucket.vault_public_bucket.region}.amazonaws.com"
-    "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__BUCKET" = aws_s3_bucket.vault_private_bucket.id
-    "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__PREFIX" = ""
-    "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET" = aws_s3_bucket.vault_public_bucket.id
-    "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX" = ""
-    "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID" = var.kms_enabled_nitro_enclaves ? aws_kms_key.mpc_party[0].key_id : null
+    "CORE_CLIENT__S3_ENDPOINT"                                  = "https://${aws_s3_bucket.vault_public_bucket.id}.s3.${aws_s3_bucket.vault_public_bucket.region}.amazonaws.com"
+    "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__BUCKET"              = aws_s3_bucket.vault_private_bucket.id
+    "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__PREFIX"              = ""
+    "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"               = aws_s3_bucket.vault_public_bucket.id
+    "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX"               = ""
+    "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"   = var.kms_enabled_nitro_enclaves ? aws_kms_key.mpc_party[0].key_id : null
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC" = var.kms_enabled_nitro_enclaves ? "symm" : null
   }
-  
+
   depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]
 }
 
@@ -346,19 +346,19 @@ resource "kubernetes_config_map" "mpc_party_config" {
 
 data "aws_ec2_instance_type" "this" {
   instance_type = var.nodegroup_instance_types[0]
-  count = var.nodegroup_enable_nitro_enclaves ? 1 : 0
+  count         = var.nodegroup_enable_nitro_enclaves ? 1 : 0
 }
 
 module "eks_managed_node_group" {
-  count = var.create_nodegroup ? 1 : 0
-  source = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+  count   = var.create_nodegroup ? 1 : 0
+  source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   version = "21.0.6"
 
   name         = var.nodegroup_name
   cluster_name = var.cluster_name
 
-  kubernetes_version = data.aws_eks_cluster.cluster.version
-  ami_release_version = var.nodegroup_ami_release_version
+  kubernetes_version             = data.aws_eks_cluster.cluster.version
+  ami_release_version            = var.nodegroup_ami_release_version
   use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
 
   subnet_ids = local.private_subnet_ids
@@ -381,30 +381,30 @@ module "eks_managed_node_group" {
 
   # Metadata options for Nitro Enclaves
   metadata_options = local.node_group_nitro_enclaves_enabled ? {
-    http_endpoint = "enabled"
-    http_tokens   = "required"
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
     http_put_response_hop_limit = 2
   } : null
-  
+
   iam_role_additional_policies = merge({
-      AmazonEBSCSIDriverPolicy           = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-      AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-      AmazonEKS_CNI_Policy               = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-      AmazonEKSWorkerNodePolicy          = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    AmazonEBSCSIDriverPolicy           = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+    AmazonEC2ContainerRegistryReadOnly = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+    AmazonEKS_CNI_Policy               = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+    AmazonEKSWorkerNodePolicy          = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
     },
     var.nodegroup_enable_ssm_managed_instance ? {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore" # Disable SSM managed instance for mainnet
     } : {}
   )
-  
+
 
   # This script configures and launches the Nitro enclave allocator. The
   # CPU_COUNT and MEMORY_MIB variables indicate the resources available to
   # all enclaves running on the node. A rule of thumb for the kms-core is to
   # allocate 75% of the underlying instance capacity.
-  cloudinit_pre_nodeadm =  local.node_group_nitro_enclaves_enabled ? [{
-      content_type = "text/x-shellscript; charset=\"us-ascii\""
-      content      = <<-EOT
+  cloudinit_pre_nodeadm = local.node_group_nitro_enclaves_enabled ? [{
+    content_type = "text/x-shellscript; charset=\"us-ascii\""
+    content      = <<-EOT
         #!/usr/bin/env bash
 
         # Node resources that will be allocated for Nitro Enclaves
@@ -428,11 +428,11 @@ module "eks_managed_node_group" {
 
         echo "NE user data script has finished successfully."
       EOT
-    }] : null
-  
+  }] : null
+
   # Cluster service CIDR for user data
   cluster_service_cidr = data.aws_eks_cluster.cluster.kubernetes_network_config[0].service_ipv4_cidr
-  
+
   # Disk configuration (only when not using launch template)
   disk_size = var.nodegroup_disk_size
 
@@ -449,8 +449,8 @@ module "eks_managed_node_group" {
 
   taints = merge(var.nodegroup_taints, local.node_group_nitro_enclaves_enabled ? {
     "aws-nitro-enclaves" = {
-      key = "node.kubernetes.io/enclave-enabled"
-      value = "true"
+      key    = "node.kubernetes.io/enclave-enabled"
+      value  = "true"
       effect = "NO_SCHEDULE"
     }
   } : {})
@@ -466,7 +466,7 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
   count = local.node_group_nitro_enclaves_enabled ? 1 : 0
 
   metadata {
-    name = "aws-nitro-enclaves-k8s-device-plugin"
+    name      = "aws-nitro-enclaves-k8s-device-plugin"
     namespace = "kube-system"
     labels = {
       name = "aws-nitro-enclaves"
@@ -555,10 +555,10 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
         }
 
         toleration {
-          key = "node.kubernetes.io/enclave-enabled"
+          key      = "node.kubernetes.io/enclave-enabled"
           operator = "Equal"
-          value = "true"
-          effect = "NoSchedule"
+          value    = "true"
+          effect   = "NoSchedule"
         }
 
       }
@@ -578,14 +578,14 @@ locals {
 
 
 resource "random_password" "db_password" {
-  count = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
+  count            = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
   length           = 64
   special          = true
   override_special = local.allowed_special_chars
 }
 
 resource "random_password" "kms_connector_db_password" {
-  count = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
+  count            = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
   length           = 64
   special          = true
   override_special = local.allowed_special_chars
@@ -594,28 +594,28 @@ resource "random_password" "kms_connector_db_password" {
 # changes to the secret would trigger a replacement of the db
 # hence those local definitions
 locals {
-  app_name              = "${var.rds_db_name}"
+  app_name              = var.rds_db_name
   allowed_special_chars = "!#$%&*()-_=+[]{}<>:?"
 }
 
 module "rds_kms_connector_creds" {
-  source = "terraform-aws-modules/secrets-manager/aws"
+  source  = "terraform-aws-modules/secrets-manager/aws"
   version = "~> 1.3"
-  count = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
-  name = "${var.cluster_name}/app/${var.rds_db_name}"
+  count   = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
+  name    = "${var.cluster_name}/app/${var.rds_db_name}"
 
   secret_string = jsonencode({
-    DB_USER     = var.rds_username
-    DB_NAME     = var.rds_db_name
-    DB_PASSWORD = var.rds_manage_master_user_password ? random_password.db_password[0].result : ""
-    DB_HOST     = module.rds_instance[0].db_instance_endpoint
-    KMS_CONNECTOR_DB_PASSWORD  = random_password.kms_connector_db_password[0].result
+    DB_USER                   = var.rds_username
+    DB_NAME                   = var.rds_db_name
+    DB_PASSWORD               = var.rds_manage_master_user_password ? random_password.db_password[0].result : ""
+    DB_HOST                   = module.rds_instance[0].db_instance_endpoint
+    KMS_CONNECTOR_DB_PASSWORD = random_password.kms_connector_db_password[0].result
   })
   tags = var.tags
 }
 
 module "rds_instance" {
-  count = var.enable_rds ? 1 : 0
+  count   = var.enable_rds ? 1 : 0
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.10"
 
@@ -629,7 +629,7 @@ module "rds_instance" {
   allocated_storage     = var.rds_allocated_storage
   max_allocated_storage = var.rds_max_allocated_storage
   multi_az              = var.rds_multi_az
-  parameters = var.rds_parameters
+  parameters            = var.rds_parameters
 
   db_name  = var.rds_db_name
   username = var.rds_username
@@ -652,11 +652,11 @@ module "rds_instance" {
   vpc_security_group_ids = [module.rds_security_group[0].security_group_id]
 
   deletion_protection = true
-  tags = var.tags
+  tags                = var.tags
 }
 
 module "rds_security_group" {
-  count = var.enable_rds ? 1 : 0
+  count   = var.enable_rds ? 1 : 0
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.2"
 
@@ -676,8 +676,8 @@ resource "kubernetes_service" "externalname" {
   count = var.enable_rds && var.rds_create_externalname_service ? 1 : 0
 
   metadata {
-    name        = var.rds_externalname_service_name
-    namespace   = var.rds_externalname_service_namespace
+    name      = var.rds_externalname_service_name
+    namespace = var.rds_externalname_service_namespace
   }
   spec {
     type          = "ExternalName"
