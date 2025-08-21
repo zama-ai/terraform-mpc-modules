@@ -60,10 +60,10 @@ variable "kubeconfig_context" {
   default     = null
 }
 
-variable "eks_cluster_name" {
-  description = "Name of the EKS cluster for token authentication"
-  type        = string
-  default     = null
+variable "use_eks_cluster_authentication" {
+  description = "Whether to use EKS cluster authentication"
+  type        = bool
+  default     = false
 }
 
 variable "aws_region_for_eks" {

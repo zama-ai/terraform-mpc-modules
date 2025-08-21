@@ -56,6 +56,12 @@ variable "cluster_name" {
   default     = "zama-dev.tp.enix.io-zws-dev"
 }
 
+variable "use_eks_cluster_authentication" {
+  description = "Whether to use EKS cluster authentication"
+  type        = bool
+  default     = false
+}
+
 variable "namespace" {
   description = "Kubernetes namespace for MPC services"
   type        = string

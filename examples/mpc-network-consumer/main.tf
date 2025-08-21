@@ -12,7 +12,7 @@ module "vpc_endpoint_consumer" {
   party_services = var.party_services
 
   # Network configuration - now passed from root-level consumer variables
-  cluster_name       = var.eks_cluster_name != null ? var.eks_cluster_name : var.cluster_name
+  cluster_name       = var.cluster_name
   vpc_id             = var.vpc_id
   subnet_ids         = var.subnet_ids
   security_group_ids = var.security_group_ids

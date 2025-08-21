@@ -93,10 +93,10 @@ provider "kubernetes" {
   config_context = var.kubeconfig_context
   
   dynamic "exec" {
-    for_each = var.cluster_name != null ? [1] : []
+    for_each = var.use_eks_cluster_authentication ? [1] : []
     content {
       api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--profile", "${local.common_vars.inputs.aws_profile}"]
+      args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", "${local.common_vars.inputs.aws_region}", "--profile", "${local.common_vars.inputs.aws_profile}"]
       command     = "aws"
     }
   }

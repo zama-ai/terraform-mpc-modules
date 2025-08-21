@@ -14,6 +14,7 @@ owner        = "mpc-consumer-team"
 # IMPORTANT: Update these values for each consumer node
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"  # Set to specific context or null to use current
+use_eks_cluster_authentication = false
 
 # Partner Services Namespace
 namespace        = "kms-decentralized"

@@ -17,7 +17,7 @@ party_id = "1"
 # Option 1: Using kubeconfig context (current method)
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "arn:aws:eks:eu-west-3:767398008331:cluster/kms-development-v1"
-
+use_eks_cluster_authentication = true
 
 # VPC Endpoint Services Configuration
 # Indicate all aws accounts and regions from which the partner services will be consumed
