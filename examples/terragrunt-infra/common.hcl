@@ -7,19 +7,18 @@ locals {
   environment = try(regex(local.env_regex, get_original_terragrunt_dir())[0], "default")
   
   # Define environment-to-profile mapping
-  # Update these profile names to match your actual AWS profiles
   aws_profiles = {
     "kms-dev-v1" = {
-      profile             = "token-kms-dev"        # Replace with your actual profile name
+      profile             = "token-kms-dev"
       region              = "eu-west-3"
       account_id          = "767398008331"
-      terraform_state_bucket = "zama-terraform-kms-dev-v1-mpc-modules-tfstate"  # Custom bucket for kms-dev-v1
+      terraform_state_bucket = "zama-terraform-kms-dev-v1-mpc-modules-tfstate"
     }
     "zws-dev" = {
-      profile             = "token-zws-dev"        # Replace with your actual profile name
+      profile             = "token-zws-dev"
       region              = "eu-west-1"
-      account_id          = "715841358639"           # Replace with your actual account ID
-      terraform_state_bucket = "zama-terraform-mpc-modules-tfstate"  # Default bucket for zws-dev
+      account_id          = "715841358639"
+      terraform_state_bucket = "zama-terraform-mpc-modules-tfstate"
     }
   }
   

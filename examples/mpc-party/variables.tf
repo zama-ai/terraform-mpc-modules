@@ -131,6 +131,12 @@ variable "create_nodegroup" {
   default     = false
 }
 
+variable "nodegroup_name" {
+  description = "Name of the nodegroup"
+  type        = string
+  default     = "mpc-party-nodegroup"
+}
+
 variable "nodegroup_instance_types" {
   description = "Instance types for the nodegroup"
   type        = list(string)
@@ -205,6 +211,19 @@ variable "nodegroup_enable_nitro_enclaves" {
   default     = false
 }
 
+variable "nitro_enclaves_override_cpu_count" {
+  type        = number
+  description = "Override the CPU count for Nitro Enclaves"
+  default     = null
+}
+
+
+variable "nitro_enclaves_override_memory_mib" {
+  type        = number
+  description = "Override the memory for Nitro Enclaves"
+  default     = null
+}
+
 variable "nodegroup_taints" {
   description = "Taints for the nodegroup"
   type = map(object({
@@ -273,7 +292,19 @@ variable "enable_rds" {
 variable "rds_db_name" {
   description = "Name of the RDS database"
   type        = string
-  default     = "kms-connector"
+  default     = "kmsconnector"
+}
+
+variable "rds_prefix" {
+  description = "Your company prefix name"
+  type        = string
+  default     = "zama"
+}
+
+variable "rds_username" {
+  description = "Username for the RDS database"
+  type        = string
+  default     = "kmsconnector"
 }
 
 variable "rds_manage_master_user_password" {
@@ -333,7 +364,13 @@ variable "rds_maintenance_window" {
 variable "rds_monitoring_interval" {
   description = "Monitoring interval for the RDS database"
   type        = number
-  default     = 60
+  default     = 0
+}
+
+variable "rds_deletion_protection" {
+  description = "Whether to enable deletion protection for the RDS database"
+  type        = bool
+  default     = true
 }
 
 variable "rds_monitoring_role_arn" {

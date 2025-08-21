@@ -406,7 +406,7 @@ variable "rds_max_allocated_storage" {
 
 variable "rds_db_name" {
   type        = string
-  default     = null
+  default     = "kmsconnector"
   description = "Optional initial database name."
 }
 

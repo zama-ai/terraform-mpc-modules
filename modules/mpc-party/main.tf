@@ -208,7 +208,7 @@ module "iam_assumable_role_mpc_party" {
   version                       = "5.48.0"
   provider_url                  = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
   create_role                   = true
-  role_name                     = "mpc-${var.cluster_name}-${var.party_name}-nodegroup"
+  role_name                     = "mpc-${var.cluster_name}-${var.party_name}"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
   role_policy_arns              = [aws_iam_policy.mpc_aws.arn]
   depends_on                    = [aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket, kubernetes_namespace.mpc_party_namespace]
@@ -256,7 +256,7 @@ resource "aws_kms_key" "mpc_party" {
       {
         Effect = "Allow",
         Principal = {
-          AWS = "arn:aws:iam::156692459989:role/zama-testnet-tkms-13-47ws8-7gcgq"
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.iam_assumable_role_mpc_party.iam_role_name}"
         },
         Action = [
           "kms:Decrypt",
@@ -571,47 +571,15 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
 #  RDS Instance
 # ***************************************
 
+data "aws_iam_role" "rds_monitoring_role" {
+  count = var.enable_rds && var.rds_monitoring_role_arn == null ? 1 : 0
+  name  = "rds-monitoring-role"
+}
+
 locals {
-  external_name = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
-  db_identifier = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
-}
-
-
-resource "random_password" "db_password" {
-  count            = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
-  length           = 64
-  special          = true
-  override_special = local.allowed_special_chars
-}
-
-resource "random_password" "kms_connector_db_password" {
-  count            = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
-  length           = 64
-  special          = true
-  override_special = local.allowed_special_chars
-}
-
-# changes to the secret would trigger a replacement of the db
-# hence those local definitions
-locals {
-  app_name              = var.rds_db_name
-  allowed_special_chars = "!#$%&*()-_=+[]{}<>:?"
-}
-
-module "rds_kms_connector_creds" {
-  source  = "terraform-aws-modules/secrets-manager/aws"
-  version = "~> 1.3"
-  count   = var.enable_rds && var.rds_manage_master_user_password ? 1 : 0
-  name    = "${var.cluster_name}/app/${var.rds_db_name}"
-
-  secret_string = jsonencode({
-    DB_USER                   = var.rds_username
-    DB_NAME                   = var.rds_db_name
-    DB_PASSWORD               = var.rds_manage_master_user_password ? random_password.db_password[0].result : ""
-    DB_HOST                   = module.rds_instance[0].db_instance_endpoint
-    KMS_CONNECTOR_DB_PASSWORD = random_password.kms_connector_db_password[0].result
-  })
-  tags = var.tags
+  external_name           = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
+  db_identifier           = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
+  rds_monitoring_role_arn = var.rds_monitoring_role_arn != null ? var.rds_monitoring_role_arn : try(data.aws_iam_role.rds_monitoring_role[0].arn, null)
 }
 
 module "rds_instance" {
@@ -633,25 +601,24 @@ module "rds_instance" {
 
   db_name  = var.rds_db_name
   username = var.rds_username
-  password = var.rds_manage_master_user_password ? random_password.db_password[0].result : null
   port     = var.rds_port
 
-  manage_master_user_password = var.rds_manage_master_user_password
+  manage_master_user_password = true
 
-  iam_database_authentication_enabled = true
+  iam_database_authentication_enabled = false
 
   maintenance_window      = var.rds_maintenance_window
   backup_retention_period = var.rds_backup_retention_period
 
   monitoring_interval    = var.rds_monitoring_interval
-  create_monitoring_role = var.rds_monitoring_role_arn == null ? true : false
-  monitoring_role_arn    = var.rds_monitoring_role_arn
+  create_monitoring_role = local.rds_monitoring_role_arn == null
+  monitoring_role_arn    = local.rds_monitoring_role_arn
 
   create_db_subnet_group = true
   subnet_ids             = local.private_subnet_ids
   vpc_security_group_ids = [module.rds_security_group[0].security_group_id]
 
-  deletion_protection = true
+  deletion_protection = var.rds_deletion_protection
   tags                = var.tags
 }
 

@@ -61,21 +61,20 @@ module "mpc_party" {
   }
 
   # Node Group configuration
-  create_nodegroup                         = var.create_nodegroup
-  nodegroup_name                           = "mpc-party-nodegroup"
-  nodegroup_instance_types                 = var.nodegroup_instance_types
-  nodegroup_min_size                       = var.nodegroup_min_size
-  nodegroup_max_size                       = var.nodegroup_max_size
-  nodegroup_desired_size                   = var.nodegroup_desired_size
-  nodegroup_disk_size                      = var.nodegroup_disk_size
-  nodegroup_capacity_type                  = var.nodegroup_capacity_type
-  nodegroup_ami_type                       = var.nodegroup_ami_type
-  nodegroup_enable_remote_access           = var.nodegroup_enable_remote_access
-  nodegroup_ec2_ssh_key                    = var.nodegroup_ec2_ssh_key
-  nodegroup_labels                         = var.nodegroup_labels
-  nodegroup_taints                         = var.nodegroup_taints
-  nodegroup_enable_nitro_enclaves          = var.nodegroup_enable_nitro_enclaves
-  kms_enabled_nitro_enclaves               = var.kms_enabled_nitro_enclaves
+  create_nodegroup               = var.create_nodegroup
+  nodegroup_name                 = var.nodegroup_name
+  nodegroup_instance_types       = var.nodegroup_instance_types
+  nodegroup_min_size             = var.nodegroup_min_size
+  nodegroup_max_size             = var.nodegroup_max_size
+  nodegroup_desired_size         = var.nodegroup_desired_size
+  nodegroup_disk_size            = var.nodegroup_disk_size
+  nodegroup_capacity_type        = var.nodegroup_capacity_type
+  nodegroup_ami_type             = var.nodegroup_ami_type
+  nodegroup_enable_remote_access = var.nodegroup_enable_remote_access
+  nodegroup_ec2_ssh_key          = var.nodegroup_ec2_ssh_key
+  nodegroup_labels               = var.nodegroup_labels
+  nodegroup_taints               = var.nodegroup_taints
+
   kms_image_attestation_sha                = var.kms_image_attestation_sha
   kms_deletion_window_in_days              = var.kms_deletion_window_in_days
   nodegroup_additional_security_group_ids  = var.nodegroup_additional_security_group_ids
@@ -83,6 +82,11 @@ module "mpc_party" {
   nodegroup_use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
   nodegroup_ami_release_version            = var.nodegroup_ami_release_version
 
+  # Nitro Enclaves Configuration
+  kms_enabled_nitro_enclaves         = var.kms_enabled_nitro_enclaves
+  nodegroup_enable_nitro_enclaves    = var.nodegroup_enable_nitro_enclaves
+  nitro_enclaves_override_cpu_count  = var.nitro_enclaves_override_cpu_count
+  nitro_enclaves_override_memory_mib = var.nitro_enclaves_override_memory_mib
 
   # RDS Configuration
   enable_rds                                = var.enable_rds
@@ -110,6 +114,7 @@ module "mpc_party" {
   rds_allowed_cidr_blocks                   = var.rds_allowed_cidr_blocks
   rds_vpc_id                                = var.rds_vpc_id
   rds_subnet_ids                            = var.rds_subnet_ids
+  rds_deletion_protection                   = var.rds_deletion_protection
 
   # Tagging
   common_tags = merge(var.additional_tags, {
