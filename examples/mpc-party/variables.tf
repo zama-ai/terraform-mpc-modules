@@ -366,6 +366,12 @@ variable "rds_blue_green_update_enabled" {
   default     = false
 }
 
+variable "use_eks_cluster_authentication" {
+  description = "Whether to use EKS cluster authentication"
+  type        = bool
+  default     = false
+}
+
 variable "rds_parameters" {
   description = "Parameters for the RDS database"
   type        = list(map(string))

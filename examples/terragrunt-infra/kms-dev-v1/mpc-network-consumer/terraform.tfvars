@@ -14,6 +14,7 @@ owner        = "mpc-consumer-team"
 # IMPORTANT: Update these values for each consumer node
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "arn:aws:eks:eu-west-3:767398008331:cluster/kms-development-v1"  # Set to specific context or null to use current
+use_eks_cluster_authentication = true
 
 # Partner Services Namespace
 namespace        = "kms-decentralized"

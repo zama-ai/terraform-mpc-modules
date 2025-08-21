@@ -14,6 +14,7 @@ owner        = "zws-team"
 # Kubernetes Provider Configuration
 kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
+use_eks_cluster_authentication = false
 
 # MPC Party Configuration
 party_id = "2"
