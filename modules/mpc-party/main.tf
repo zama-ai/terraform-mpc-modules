@@ -14,6 +14,12 @@ data "aws_region" "current" {
 
 data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
+  lifecycle {
+    postcondition {
+      condition     = strcontains(var.nodegroup_ami_release_version, self.version)
+      error_message = "The EKS cluster version is not supported. Please use the recommended version that will be supported by the enclavenode group."
+    }
+  }
 }
 
 data "aws_subnet" "cluster_subnets" {
@@ -350,7 +356,10 @@ module "eks_managed_node_group" {
 
   name         = var.nodegroup_name
   cluster_name = var.cluster_name
+
   kubernetes_version = data.aws_eks_cluster.cluster.version
+  ami_release_version = var.nodegroup_ami_release_version
+  use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
 
   subnet_ids = local.private_subnet_ids
 
@@ -397,6 +406,7 @@ module "eks_managed_node_group" {
       content_type = "text/x-shellscript; charset=\"us-ascii\""
       content      = <<-EOT
         #!/usr/bin/env bash
+
         # Node resources that will be allocated for Nitro Enclaves
         readonly CPU_COUNT=${local.node_group_nitro_enclaves_cpu_count}
         readonly MEMORY_MIB=${local.node_group_nitro_enclaves_memory_mib}

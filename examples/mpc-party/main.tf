@@ -62,7 +62,7 @@ module "mpc_party" {
 
   # Node Group configuration
   create_nodegroup = var.create_nodegroup
-  nodegroup_name = "mpc-${substr(var.party_name, 0, 8)}-nodegroup"
+  nodegroup_name = "mpc-party-nodegroup"
   nodegroup_instance_types = var.nodegroup_instance_types
   nodegroup_min_size = var.nodegroup_min_size
   nodegroup_max_size = var.nodegroup_max_size
@@ -80,6 +80,8 @@ module "mpc_party" {
   kms_deletion_window_in_days = var.kms_deletion_window_in_days
   nodegroup_additional_security_group_ids = var.nodegroup_additional_security_group_ids
   nodegroup_enable_ssm_managed_instance = var.nodegroup_enable_ssm_managed_instance
+  nodegroup_use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
+  nodegroup_ami_release_version = var.nodegroup_ami_release_version
 
 
   # RDS Configuration
