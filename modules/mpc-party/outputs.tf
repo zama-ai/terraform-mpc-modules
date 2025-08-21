@@ -4,152 +4,88 @@ output "party_name" {
   value       = var.party_name
 }
 
-# S3 Storage Information
-output "vault_private_bucket_name" {
-  description = "Name of the private S3 bucket for MPC party storage"
-  value       = aws_s3_bucket.vault_private_bucket.id
-}
-
-output "vault_private_bucket_arn" {
-  description = "ARN of the private S3 bucket for MPC party storage"
-  value       = aws_s3_bucket.vault_private_bucket.arn
-}
-
-output "vault_private_bucket_domain_name" {
-  description = "Domain name of the private S3 bucket"
-  value       = aws_s3_bucket.vault_private_bucket.bucket_domain_name
-}
-
-output "vault_public_bucket_name" {
-  description = "Name of the public S3 bucket for MPC party storage"
-  value       = aws_s3_bucket.vault_public_bucket.id
-}
-
-output "vault_public_bucket_arn" {
-  description = "ARN of the public S3 bucket for MPC party storage"
-  value       = aws_s3_bucket.vault_public_bucket.arn
-}
-
-output "vault_public_bucket_url" {
-  description = "URL of the public S3 bucket for MPC party storage"
-  value       = "https://${aws_s3_bucket.vault_public_bucket.bucket_domain_name}"
-}
-
-output "vault_public_bucket_domain_name" {
-  description = "Domain name of the public S3 bucket"
-  value       = aws_s3_bucket.vault_public_bucket.bucket_domain_name
-}
-
-# IAM and Security Information
-output "irsa_role_arn" {
-  description = "ARN of the IRSA role for MPC party (null if create_irsa is false)"
-  value       = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
-}
-
-output "irsa_role_name" {
-  description = "Name of the IRSA role for MPC party (null if create_irsa is false)"
-  value       = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_name : null
-}
-
-output "irsa_enabled" {
-  description = "Whether IRSA is enabled for this MPC party"
-  value       = var.create_irsa
-}
-
-# Kubernetes Information
-output "k8s_namespace" {
-  description = "Kubernetes namespace for MPC party"
-  value       = var.k8s_namespace
-}
-
-output "k8s_namespace_created" {
-  description = "Whether the Kubernetes namespace was created by this module"
-  value       = var.create_namespace
-}
-
-output "k8s_service_account_name" {
-  description = "Name of the Kubernetes service account for MPC party"
-  value       = var.k8s_service_account_name
-}
-
-output "k8s_service_account_created" {
-  description = "Whether the Kubernetes service account was created by this module (excludes IRSA-created service accounts)"
-  value       = var.create_service_account && !var.create_irsa
-}
-
-# ConfigMap Information
-output "config_map_name" {
-  description = "Name of the ConfigMap containing S3 configuration (null if create_config_map is false)"
-  value       = var.create_config_map ? (var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}") : null
-}
-
-output "config_map_created" {
-  description = "Whether the ConfigMap was created by this module"
-  value       = var.create_config_map
-}
-
-# Environment Variables for Applications
-output "s3_environment_variables" {
-  description = "Environment variables for S3 configuration that applications can use"
-  value = {
-    KMS_CORE__PUBLIC_VAULT__STORAGE  = "s3://${aws_s3_bucket.vault_public_bucket.id}"
-    KMS_CORE__PRIVATE_VAULT__STORAGE = "s3://${aws_s3_bucket.vault_private_bucket.id}"
-  }
-}
-
 # Cluster Information
 output "cluster_name" {
   description = "Name of the EKS cluster"
   value       = var.cluster_name
 }
 
-# Comprehensive deployment summary
-output "deployment_summary" {
-  description = "Summary of the MPC party deployment"
+# Vault Bucket Information
+output "vault_bucket_storage_summary" {
+  description = "Summary of the vault buckets public and private storage"
   value = {
-    party_name   = var.party_name
-    cluster_name = var.cluster_name
-
-    storage = {
-      private_bucket = aws_s3_bucket.vault_private_bucket.id
-      public_bucket  = aws_s3_bucket.vault_public_bucket.id
-    }
-
-    kubernetes = {
-      namespace               = var.k8s_namespace
-      namespace_created       = var.create_namespace
-      service_account         = var.k8s_service_account_name
-      service_account_created = var.create_service_account && !var.create_irsa
-      config_map              = var.create_config_map ? (var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}") : null
-      config_map_created      = var.create_config_map
-    }
-
-    security = {
-      irsa_enabled  = var.create_irsa
-      irsa_role_arn = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
-    }
+    private_bucket_name        = aws_s3_bucket.vault_private_bucket.id
+    public_bucket_name         = aws_s3_bucket.vault_public_bucket.id
+    private_bucket_arn         = aws_s3_bucket.vault_private_bucket.arn
+    public_bucket_arn          = aws_s3_bucket.vault_public_bucket.arn
+    private_bucket_domain_name = aws_s3_bucket.vault_private_bucket.bucket_domain_name
+    public_bucket_domain_name  = aws_s3_bucket.vault_public_bucket.bucket_domain_name
+    private_bucket_url         = "https://${aws_s3_bucket.vault_private_bucket.bucket_domain_name}"
+    public_bucket_url          = "https://${aws_s3_bucket.vault_public_bucket.bucket_domain_name}"
   }
 }
 
-# ******************************************************
-# Outputs for RDS Information
-# ******************************************************
-output "rds_db_name" {
-  description = "Name of the RDS database (null if enable_rds is false)"
-  value       = var.enable_rds ? module.rds_instance[0].db_instance_name : null
+# IRSA Information
+output "irsa_summary" {
+  description = "Summary of the IRSA role for MPC party"
+  value = {
+    irsa_enabled   = var.create_irsa
+    irsa_role_arn  = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
+    irsa_role_name = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_name : null
+  }
 }
 
-output "rds_db_endpoint" {
-  description = "Endpoint of the RDS database (null if enable_rds is false)"
-  value       = var.enable_rds ? module.rds_instance[0].db_instance_endpoint : null
+# Kubernetes Service Account Information
+output "k8s_service_account_summary" {
+  description = "Summary of the Kubernetes service account for MPC party"
+  value = {
+    service_account_name              = var.k8s_service_account_name
+    service_account_created           = var.create_service_account && !var.create_irsa
+    service_account_namespace         = var.k8s_namespace
+    service_account_namespace_created = var.create_namespace
+    service_account_role_arn          = var.create_service_account && !var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
+  }
 }
 
-output "rds_db_port" {
-  description = "Port of the RDS database (null if enable_rds is false)"
-  value       = var.enable_rds ? module.rds_instance[0].db_instance_port : null
+# Kubernetes ConfigMap Information
+output "k8s_configmap_summary" {
+  description = "Summary of the Kubernetes ConfigMap for MPC party"
+  value = {
+    configmap_name    = var.create_config_map ? (var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}") : null
+    configmap_created = var.create_config_map
+    data              = var.create_config_map ? kubernetes_config_map.mpc_party_config[0].data : null
+  }
 }
 
-output "rds_db_username" {
-  description = "Username of the RDS database (null if enable_rds is false)"
-  value       = var.enable_rds ? module.rds_instance[0].db_instance_username : null
+# EKS Managed Node Group Information
+output "eks_managed_node_group_summary" {
+  description = "Summary of the EKS managed node group for MPC party"
+  value = var.create_nodegroup ? {
+    node_group_arn    = module.eks_managed_node_group[0].node_group_arn
+    node_group_status = module.eks_managed_node_group[0].node_group_status
+    node_group_taints = module.eks_managed_node_group[0].node_group_taints
+    } : {
+    node_group_arn    = null
+    node_group_status = null
+    node_group_taints = null
+  }
+}
+
+# RDS Information
+output "rds_summary" {
+  description = "Aggregated RDS database information"
+  value = var.enable_rds ? {
+    db_name  = module.rds_instance[0].db_instance_name
+    endpoint = module.rds_instance[0].db_instance_endpoint
+    port     = module.rds_instance[0].db_instance_port
+    username = module.rds_instance[0].db_instance_username
+    enabled  = true
+    } : {
+    db_name  = null
+    endpoint = null
+    port     = null
+    username = null
+    password = null
+    enabled  = false
+  }
 }

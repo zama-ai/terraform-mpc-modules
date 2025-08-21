@@ -120,7 +120,7 @@ module "mpc_party" {
   rds_max_allocated_storage    = 500
   rds_multi_az                 = true
   rds_backup_retention_period  = 14
-  rds_deletion_protection      = true
+  rds_deletion_protection      = false
   rds_storage_encrypted        = true
   rds_manage_master_user_password = true
   
@@ -298,7 +298,6 @@ The module can optionally create:
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.23 |
-| <a name="provider_random"></a> [random](#provider\_random) | >= 3.1 |
 
 ## Modules
 
@@ -307,7 +306,6 @@ The module can optionally create:
 | <a name="module_eks_managed_node_group"></a> [eks\_managed\_node\_group](#module\_eks\_managed\_node\_group) | terraform-aws-modules/eks/aws//modules/eks-managed-node-group | 21.0.6 |
 | <a name="module_iam_assumable_role_mpc_party"></a> [iam\_assumable\_role\_mpc\_party](#module\_iam\_assumable\_role\_mpc\_party) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_rds_instance"></a> [rds\_instance](#module\_rds\_instance) | terraform-aws-modules/rds/aws | ~> 6.10 |
-| <a name="module_rds_kms_connector_creds"></a> [rds\_kms\_connector\_creds](#module\_rds\_kms\_connector\_creds) | terraform-aws-modules/secrets-manager/aws | ~> 1.3 |
 | <a name="module_rds_security_group"></a> [rds\_security\_group](#module\_rds\_security\_group) | terraform-aws-modules/security-group/aws | ~> 5.2 |
 
 ## Resources
@@ -332,11 +330,10 @@ The module can optionally create:
 | [kubernetes_namespace.mpc_party_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_service.externalname](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
 | [kubernetes_service_account.mpc_party_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
-| [random_password.db_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [random_password.kms_connector_db_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ec2_instance_type.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_type) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
+| [aws_iam_role.rds_monitoring_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnet.cluster_subnets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 
@@ -396,7 +393,7 @@ The module can optionally create:
 | <a name="input_rds_backup_retention_period"></a> [rds\_backup\_retention\_period](#input\_rds\_backup\_retention\_period) | n/a | `number` | `7` | no |
 | <a name="input_rds_blue_green_update_enabled"></a> [rds\_blue\_green\_update\_enabled](#input\_rds\_blue\_green\_update\_enabled) | n/a | `bool` | `false` | no |
 | <a name="input_rds_create_externalname_service"></a> [rds\_create\_externalname\_service](#input\_rds\_create\_externalname\_service) | n/a | `bool` | `false` | no |
-| <a name="input_rds_db_name"></a> [rds\_db\_name](#input\_rds\_db\_name) | Optional initial database name. | `string` | `null` | no |
+| <a name="input_rds_db_name"></a> [rds\_db\_name](#input\_rds\_db\_name) | Optional initial database name. | `string` | `"kmsconnector"` | no |
 | <a name="input_rds_delete_automated_backups"></a> [rds\_delete\_automated\_backups](#input\_rds\_delete\_automated\_backups) | n/a | `bool` | `true` | no |
 | <a name="input_rds_deletion_protection"></a> [rds\_deletion\_protection](#input\_rds\_deletion\_protection) | n/a | `bool` | `false` | no |
 | <a name="input_rds_engine"></a> [rds\_engine](#input\_rds\_engine) | Engine name (e.g., postgres, mysql). | `string` | `"postgres"` | no |
@@ -441,29 +438,13 @@ The module can optionally create:
 | Name | Description |
 |------|-------------|
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Name of the EKS cluster |
-| <a name="output_config_map_created"></a> [config\_map\_created](#output\_config\_map\_created) | Whether the ConfigMap was created by this module |
-| <a name="output_config_map_name"></a> [config\_map\_name](#output\_config\_map\_name) | Name of the ConfigMap containing S3 configuration (null if create\_config\_map is false) |
-| <a name="output_deployment_summary"></a> [deployment\_summary](#output\_deployment\_summary) | Summary of the MPC party deployment |
-| <a name="output_irsa_enabled"></a> [irsa\_enabled](#output\_irsa\_enabled) | Whether IRSA is enabled for this MPC party |
-| <a name="output_irsa_role_arn"></a> [irsa\_role\_arn](#output\_irsa\_role\_arn) | ARN of the IRSA role for MPC party (null if create\_irsa is false) |
-| <a name="output_irsa_role_name"></a> [irsa\_role\_name](#output\_irsa\_role\_name) | Name of the IRSA role for MPC party (null if create\_irsa is false) |
-| <a name="output_k8s_namespace"></a> [k8s\_namespace](#output\_k8s\_namespace) | Kubernetes namespace for MPC party |
-| <a name="output_k8s_namespace_created"></a> [k8s\_namespace\_created](#output\_k8s\_namespace\_created) | Whether the Kubernetes namespace was created by this module |
-| <a name="output_k8s_service_account_created"></a> [k8s\_service\_account\_created](#output\_k8s\_service\_account\_created) | Whether the Kubernetes service account was created by this module (excludes IRSA-created service accounts) |
-| <a name="output_k8s_service_account_name"></a> [k8s\_service\_account\_name](#output\_k8s\_service\_account\_name) | Name of the Kubernetes service account for MPC party |
+| <a name="output_eks_managed_node_group_summary"></a> [eks\_managed\_node\_group\_summary](#output\_eks\_managed\_node\_group\_summary) | Summary of the EKS managed node group for MPC party |
+| <a name="output_irsa_summary"></a> [irsa\_summary](#output\_irsa\_summary) | Summary of the IRSA role for MPC party |
+| <a name="output_k8s_configmap_summary"></a> [k8s\_configmap\_summary](#output\_k8s\_configmap\_summary) | Summary of the Kubernetes ConfigMap for MPC party |
+| <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
 | <a name="output_party_name"></a> [party\_name](#output\_party\_name) | Name of the MPC party |
-| <a name="output_rds_db_endpoint"></a> [rds\_db\_endpoint](#output\_rds\_db\_endpoint) | Endpoint of the RDS database (null if enable\_rds is false) |
-| <a name="output_rds_db_name"></a> [rds\_db\_name](#output\_rds\_db\_name) | Name of the RDS database (null if enable\_rds is false) |
-| <a name="output_rds_db_port"></a> [rds\_db\_port](#output\_rds\_db\_port) | Port of the RDS database (null if enable\_rds is false) |
-| <a name="output_rds_db_username"></a> [rds\_db\_username](#output\_rds\_db\_username) | Username of the RDS database (null if enable\_rds is false) |
-| <a name="output_s3_environment_variables"></a> [s3\_environment\_variables](#output\_s3\_environment\_variables) | Environment variables for S3 configuration that applications can use |
-| <a name="output_vault_private_bucket_arn"></a> [vault\_private\_bucket\_arn](#output\_vault\_private\_bucket\_arn) | ARN of the private S3 bucket for MPC party storage |
-| <a name="output_vault_private_bucket_domain_name"></a> [vault\_private\_bucket\_domain\_name](#output\_vault\_private\_bucket\_domain\_name) | Domain name of the private S3 bucket |
-| <a name="output_vault_private_bucket_name"></a> [vault\_private\_bucket\_name](#output\_vault\_private\_bucket\_name) | Name of the private S3 bucket for MPC party storage |
-| <a name="output_vault_public_bucket_arn"></a> [vault\_public\_bucket\_arn](#output\_vault\_public\_bucket\_arn) | ARN of the public S3 bucket for MPC party storage |
-| <a name="output_vault_public_bucket_domain_name"></a> [vault\_public\_bucket\_domain\_name](#output\_vault\_public\_bucket\_domain\_name) | Domain name of the public S3 bucket |
-| <a name="output_vault_public_bucket_name"></a> [vault\_public\_bucket\_name](#output\_vault\_public\_bucket\_name) | Name of the public S3 bucket for MPC party storage |
-| <a name="output_vault_public_bucket_url"></a> [vault\_public\_bucket\_url](#output\_vault\_public\_bucket\_url) | URL of the public S3 bucket for MPC party storage |
+| <a name="output_rds_summary"></a> [rds\_summary](#output\_rds\_summary) | Aggregated RDS database information |
+| <a name="output_vault_bucket_storage_summary"></a> [vault\_bucket\_storage\_summary](#output\_vault\_bucket\_storage\_summary) | Summary of the vault buckets public and private storage |
 <!-- END_TF_DOCS -->
 
 ## Troubleshooting
