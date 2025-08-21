@@ -10,7 +10,7 @@ resource "random_id" "bucket_suffix" {
 
 # Deploy MPC Party infrastructure using the enhanced mpc-party module
 module "mpc_party" {
-  source = "../../modules/mpc-party"
+  source = "git::git@github.com:zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.0"
 
   # Network environment configuration
   network_environment      = var.network_environment
