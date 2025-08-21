@@ -2,7 +2,7 @@ variable "network_environment" {
   description = "MPC network environment that determines region constraints"
   type        = string
   default     = "testnet"
-  
+
   validation {
     condition     = contains(["testnet", "mainnet"], var.network_environment)
     error_message = "Network environment must be either 'testnet' or 'mainnet'."
@@ -15,7 +15,7 @@ variable "testnet_supported_regions" {
   default     = ["eu-west-1"]
 }
 
-variable "mainnet_supported_regions" { 
+variable "mainnet_supported_regions" {
   description = "AWS regions supported by the VPC endpoint service for mainnet"
   type        = list(string)
   default     = ["eu-west-1"]
@@ -49,7 +49,7 @@ variable "tags" {
   description = "A map of tags to assign to the VPC endpoint services"
   type        = map(string)
   default     = {}
-} 
+}
 
 variable "namespace" {
   description = "Kubernetes namespace where MPC services will be deployed"

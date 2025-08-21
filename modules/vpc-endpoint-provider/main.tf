@@ -27,7 +27,7 @@ resource "kubernetes_namespace" "mpc_namespace" {
 #  Create LoadBalancer services for MPC nodes 
 # ********************************************
 resource "kubernetes_service" "mpc_nlb" {
-  wait_for_load_balancer   = true
+  wait_for_load_balancer = true
   metadata {
     name      = "mpc-node-${var.party_id}"
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
@@ -51,8 +51,8 @@ resource "kubernetes_service" "mpc_nlb" {
   }
 
   spec {
-    type                        = "LoadBalancer"
-    load_balancer_class         = "service.k8s.aws/nlb"
+    type                = "LoadBalancer"
+    load_balancer_class = "service.k8s.aws/nlb"
 
     dynamic "port" {
       for_each = [
@@ -83,13 +83,13 @@ resource "kubernetes_service" "mpc_nlb" {
 # ***************************************
 locals {
   allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
-  hostname_parts = split("-", split(".", kubernetes_service.mpc_nlb.status[0].load_balancer[0].ingress[0].hostname)[0])
-  nlb_name = join("-", slice(local.hostname_parts, 0, length(local.hostname_parts) - 1))
+  hostname_parts  = split("-", split(".", kubernetes_service.mpc_nlb.status[0].load_balancer[0].ingress[0].hostname)[0])
+  nlb_name        = join("-", slice(local.hostname_parts, 0, length(local.hostname_parts) - 1))
 }
 
 # Look up the actual Network Load Balancers using AWS data sources
 data "aws_lb" "kubernetes_nlb" {
-  name  = local.nlb_name
+  name       = local.nlb_name
   depends_on = [kubernetes_service.mpc_nlb]
 }
 
@@ -109,10 +109,10 @@ data "external" "wait_nlb" {
 # Local values for creating VPC endpoint service details
 locals {
   nlb_details = {
-    arn      = data.aws_lb.kubernetes_nlb.arn
-    dns_name = data.aws_lb.kubernetes_nlb.dns_name
-    zone_id  = data.aws_lb.kubernetes_nlb.zone_id
-    vpc_id   = data.aws_lb.kubernetes_nlb.vpc_id
+    arn          = data.aws_lb.kubernetes_nlb.arn
+    dns_name     = data.aws_lb.kubernetes_nlb.dns_name
+    zone_id      = data.aws_lb.kubernetes_nlb.zone_id
+    vpc_id       = data.aws_lb.kubernetes_nlb.vpc_id
     display_name = "mpc-node-${var.party_id}"
   }
 }
@@ -124,13 +124,13 @@ resource "aws_vpc_endpoint_service" "mpc_nlb_service" {
 
   # Associate with the Network Load Balancer
   network_load_balancer_arns = [local.nlb_details.arn]
-  
+
   # Whether manual acceptance is required for connections
   acceptance_required = var.acceptance_required
-  
+
   # Which principals can connect to this service
   allowed_principals = var.allowed_principals
-  supported_regions = var.supported_regions
+  supported_regions  = var.supported_regions
 
   tags = merge(
     var.tags,

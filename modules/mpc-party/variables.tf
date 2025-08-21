@@ -14,7 +14,7 @@ variable "testnet_supported_regions" {
   default     = ["eu-west-1"]
 }
 
-variable "mainnet_supported_regions" { 
+variable "mainnet_supported_regions" {
   description = "AWS regions supported by the MPC party for mainnet"
   type        = list(string)
   default     = ["eu-west-1"]
@@ -41,7 +41,7 @@ variable "vault_public_bucket_name" {
 variable "party_name" {
   type        = string
   description = "The name of the MPC party (used for resource naming and tagging)"
-  
+
   validation {
     condition     = can(regex("^[a-z0-9-]+$", var.party_name))
     error_message = "Party name must contain only lowercase letters, numbers, and hyphens."
@@ -260,7 +260,7 @@ variable "nodegroup_labels" {
 }
 
 variable "nodegroup_taints" {
-  type        = map(object({
+  type = map(object({
     key    = string
     value  = string
     effect = string
@@ -374,110 +374,110 @@ variable "rds_allowed_cidr_blocks" {
   default     = []
 }
 
-variable "rds_engine" { 
-  type = string  
-  description = "Engine name (e.g., postgres, mysql)." 
-  default = "postgres"
+variable "rds_engine" {
+  type        = string
+  description = "Engine name (e.g., postgres, mysql)."
+  default     = "postgres"
 }
 
-variable "rds_engine_version" { 
-  type = string  
-  description = "Exact engine version string." 
-  default = "17.2"
+variable "rds_engine_version" {
+  type        = string
+  description = "Exact engine version string."
+  default     = "17.2"
 }
 
-variable "rds_instance_class" { 
-  type = string  
-  description = "DB instance class (e.g., db.t4g.medium)." 
-  default = "db.t4g.medium" 
+variable "rds_instance_class" {
+  type        = string
+  description = "DB instance class (e.g., db.t4g.medium)."
+  default     = "db.t4g.medium"
 }
 
-variable "rds_allocated_storage" { 
-  type = number  
-  description = "Allocated storage in GiB." 
-  default = 50
+variable "rds_allocated_storage" {
+  type        = number
+  description = "Allocated storage in GiB."
+  default     = 50
 }
 
-variable "rds_max_allocated_storage" { 
-  type = number 
-  description = "Max autoscaled storage in GiB." 
-  default = 100
+variable "rds_max_allocated_storage" {
+  type        = number
+  description = "Max autoscaled storage in GiB."
+  default     = 100
 }
 
-variable "rds_db_name" { 
-  type = string  
-  default = null 
-  description = "Optional initial database name." 
+variable "rds_db_name" {
+  type        = string
+  default     = null
+  description = "Optional initial database name."
 }
 
-variable "rds_backup_retention_period" { 
-  type = number 
-  default = 7 
+variable "rds_backup_retention_period" {
+  type    = number
+  default = 7
 }
 
-variable "rds_maintenance_window" { 
-  type = string 
-  default = null 
+variable "rds_maintenance_window" {
+  type    = string
+  default = null
 }
 
-variable "rds_multi_az" { 
-  type = bool  
-  default = false 
+variable "rds_multi_az" {
+  type    = bool
+  default = false
 }
 
-variable "rds_deletion_protection" { 
-  type = bool  
-  default = false 
+variable "rds_deletion_protection" {
+  type    = bool
+  default = false
 }
 
-variable "rds_delete_automated_backups" { 
-  type = bool 
-  default = true 
+variable "rds_delete_automated_backups" {
+  type    = bool
+  default = true
 }
 
-variable "rds_storage_encrypted" { 
-  type = bool  
-  default = true 
+variable "rds_storage_encrypted" {
+  type    = bool
+  default = true
 }
 
-variable "rds_storage_type" { 
-  type = string 
-  default = "gp3" 
+variable "rds_storage_type" {
+  type    = string
+  default = "gp3"
 }
 
-variable "rds_iops" { 
-  type = number 
-  default = null 
+variable "rds_iops" {
+  type    = number
+  default = null
 }
 
-variable "rds_monitoring_interval" { 
-  type = number 
-  default = 0 
+variable "rds_monitoring_interval" {
+  type    = number
+  default = 0
 }
 
-variable "rds_monitoring_role_arn" { 
-  type = string 
-  default = null 
+variable "rds_monitoring_role_arn" {
+  type    = string
+  default = null
 }
 
-variable "rds_performance_insights_enabled" { 
-  type = bool  
-  default = false 
+variable "rds_performance_insights_enabled" {
+  type    = bool
+  default = false
 }
 
-variable "rds_performance_insights_kms_key_id" { 
-  type = string 
-  default = null 
+variable "rds_performance_insights_kms_key_id" {
+  type    = string
+  default = null
 }
 
-variable "rds_performance_insights_retention_period" { 
-  type = number 
-  default = null 
+variable "rds_performance_insights_retention_period" {
+  type    = number
+  default = null
 }
 
-variable "rds_blue_green_update_enabled" { 
-  type = bool 
-  default = false 
+variable "rds_blue_green_update_enabled" {
+  type    = bool
+  default = false
 }
 
 # Parameter group
@@ -507,13 +507,13 @@ variable "rds_final_snapshot_enabled" {
 }
 
 # Secrets & Kubernetes
-variable "rds_k8s_secret_name"      { 
-  type = string 
-  default = "db-credentials" 
+variable "rds_k8s_secret_name" {
+  type    = string
+  default = "db-credentials"
 }
-variable "rds_k8s_secret_namespace" { 
-  type = string 
-  default = "default" 
+variable "rds_k8s_secret_namespace" {
+  type    = string
+  default = "default"
 }
 variable "rds_extra_secret_namespaces" {
   type        = list(string)
@@ -521,19 +521,19 @@ variable "rds_extra_secret_namespaces" {
   description = "Namespaces to replicate the DB secret into."
 }
 
-variable "rds_create_externalname_service" { 
-  type = bool  
-  default = false 
+variable "rds_create_externalname_service" {
+  type    = bool
+  default = false
 }
 
-variable "rds_externalname_service_name"   { 
-  type = string 
-  default = "kms-connector-db-external" 
+variable "rds_externalname_service_name" {
+  type    = string
+  default = "kms-connector-db-external"
 }
 
-variable "rds_externalname_service_namespace" { 
-  type = string 
-  default = "default" 
+variable "rds_externalname_service_namespace" {
+  type    = string
+  default = "default"
 }
 
 # Master password strategy

@@ -47,7 +47,7 @@ output "irsa_role_arn" {
 }
 
 output "irsa_role_name" {
-  description = "Name of the IRSA role for MPC party (null if create_irsa is false)" 
+  description = "Name of the IRSA role for MPC party (null if create_irsa is false)"
   value       = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_name : null
 }
 
@@ -107,25 +107,25 @@ output "cluster_name" {
 output "deployment_summary" {
   description = "Summary of the MPC party deployment"
   value = {
-    party_name = var.party_name
+    party_name   = var.party_name
     cluster_name = var.cluster_name
-    
+
     storage = {
       private_bucket = aws_s3_bucket.vault_private_bucket.id
       public_bucket  = aws_s3_bucket.vault_public_bucket.id
     }
-    
+
     kubernetes = {
-      namespace           = var.k8s_namespace
-      namespace_created   = var.create_namespace
-      service_account     = var.k8s_service_account_name
+      namespace               = var.k8s_namespace
+      namespace_created       = var.create_namespace
+      service_account         = var.k8s_service_account_name
       service_account_created = var.create_service_account && !var.create_irsa
-      config_map          = var.create_config_map ? (var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}") : null
-      config_map_created  = var.create_config_map
+      config_map              = var.create_config_map ? (var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}") : null
+      config_map_created      = var.create_config_map
     }
-    
+
     security = {
-      irsa_enabled = var.create_irsa
+      irsa_enabled  = var.create_irsa
       irsa_role_arn = var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
     }
   }

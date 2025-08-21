@@ -24,7 +24,7 @@ output "partner_service_details" {
     for i, endpoint in aws_vpc_endpoint.party_interface_endpoints : {
       service_name                 = var.party_services[i].name
       partner_region               = var.party_services[i].region
-      partner_account_id           = var.party_services[i].account_id  # Can be null
+      partner_account_id           = var.party_services[i].account_id # Can be null
       vpc_endpoint_service_name    = endpoint.service_name
       vpc_interface_endpoint_id    = endpoint.id
       vpc_interface_dns_name       = endpoint.dns_entry[0].dns_name
@@ -101,7 +101,7 @@ output "partner_connection_endpoints" {
       # Service details
       ports           = service.ports
       partner_region  = service.region
-      partner_account = service.account_id  # Can be null if not provided
+      partner_account = service.account_id   # Can be null if not provided
       partner_name    = service.partner_name # Can be null if not provided
       connection_type = "vpc-interface"
 

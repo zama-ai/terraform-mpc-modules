@@ -3,7 +3,7 @@ variable "network_environment" {
   description = "MPC network environment that determines region constraints"
   type        = string
   default     = "testnet"
-  
+
   validation {
     condition     = contains(["testnet", "mainnet"], var.network_environment)
     error_message = "Network environment must be either 'testnet' or 'mainnet'."
