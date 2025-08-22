@@ -4,6 +4,15 @@
 locals {
   # Load common configuration
   common_vars = read_terragrunt_config("${get_repo_root()}/examples/terragrunt-infra/common.hcl")
+  
+  # Load environment-specific version file if it exists, otherwise use root
+  current_env_dir = dirname(path_relative_to_include())
+  env_version_file = "${get_repo_root()}/examples/terragrunt-infra/${local.current_env_dir}/version.hcl"
+  root_version_file = "${get_repo_root()}/examples/terragrunt-infra/version.hcl"
+  version_vars = try(
+    read_terragrunt_config(local.env_version_file),
+    read_terragrunt_config(local.root_version_file)
+  )
 }
 
 # Remote state configuration with dynamic profile and region
@@ -47,28 +56,28 @@ generate "providers" {
 # AWS Profile: ${local.common_vars.inputs.aws_profile}
 
 terraform {
-  required_version = ">= 1.0"
+  required_version = "${local.version_vars.inputs.provider_versions.terraform_version}"
   
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0"
+      version = "${local.version_vars.inputs.provider_versions.aws_version}"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.23"
+      version = "${local.version_vars.inputs.provider_versions.kubernetes_version}"
     }
     random = {
       source  = "hashicorp/random"
-      version = ">= 3.1"
+      version = "${local.version_vars.inputs.provider_versions.random_version}"
     }
     kubectl = {
       source  = "gavinbunney/kubectl"
-      version = "1.19.0"
+      version = "${local.version_vars.inputs.provider_versions.kubectl_version}"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 2.17"
+      version = "${local.version_vars.inputs.provider_versions.helm_version}"
     }
   }
   backend "s3" {}
