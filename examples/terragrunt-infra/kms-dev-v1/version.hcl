@@ -5,7 +5,7 @@ locals {
   
   version_overrides = {
     # Example: Override AWS provider version for this environment if needed
-    # aws_version = "~> 5.30.0"
+    # aws_version = "~> 6.10"
 
     # Example: Pin kubectl to specific version for stability
     # kubectl_version = "~> 1.19.0"

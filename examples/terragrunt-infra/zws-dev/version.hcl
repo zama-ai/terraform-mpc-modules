@@ -5,7 +5,7 @@ locals {
   
   version_overrides = {
     # Example: Use latest AWS provider features in dev environment
-    # aws_version = "~> 5.40"
+    # aws_version = "~> 6.10"
     
     # Example: Use specific Kubernetes provider version for compatibility
     # kubernetes_version = "~> 2.25.0"
