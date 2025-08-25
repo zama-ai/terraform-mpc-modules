@@ -32,6 +32,19 @@ make run-on ENV=zws-dev MODULE=mpc-party CMD=apply  # Apply specific module
 make run-on ENV=zws-dev MODULE=mpc-network-provider CMD="init -reconfigure"  # Reconfigure specific module
 ```
 
+## Provider Version Management
+
+This infrastructure uses a centralized version management system through `version.hcl` files:
+
+### Version Hierarchy
+
+1. **Root Level** (`version.hcl`): Default provider versions for all environments
+2. **Environment Level** (`{environment}/version.hcl`): Environment-specific overrides
+
+### How It Works
+
+The system ensures  **provider versions** are parameterized through dedicated `version.hcl` files. The `root.hcl` configuration automatically detects and loads the appropriate `version.hcl` file for each environment, with environment-specific versions taking precedence over root defaults. All provider configurations are then generated dynamically using these version specifications within `root.hcl`.
+
 ## Adding New Environment
 
 1. **Update `common.hcl`**:
@@ -55,4 +68,10 @@ mkdir -p my-env/{mpc-party,mpc-network-provider,mpc-network-consumer}
 ```bash
 cp -r zws-dev/mpc-party/* my-env/mpc-party/
 # Edit terraform.tfvars as needed
+```
+
+4. **Create environment-specific version.hcl** (optional):
+```bash
+cp zws-dev/version.hcl my-env/version.hcl
+# Edit version overrides as needed
 ```
