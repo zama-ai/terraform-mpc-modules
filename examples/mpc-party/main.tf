@@ -11,8 +11,8 @@ module "mpc_party" {
   enable_region_validation = var.enable_region_validation
 
   # Party configuration
-  party_name                = var.party_name
-  bucket_prefix             = var.bucket_prefix
+  party_name    = var.party_name
+  bucket_prefix = var.bucket_prefix
 
   # EKS Cluster configuration
   cluster_name = var.cluster_name

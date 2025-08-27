@@ -4,17 +4,17 @@ network_environment = "testnet"
 enable_region_validation = false
 
 # MPC Party Configuration
-party_name  = "mpc-party-4"
+party_name = "mpc-party-4"
 
 # S3 Bucket Configuration
 bucket_prefix   = "zama-kms-decentralized-threshold-4"
 config_map_name = "mpc-party-4"
 
 # Kubernetes Configuration
-cluster_name         = "zws-dev"
+cluster_name             = "zws-dev"
 k8s_namespace            = "kms-decentralized"
 k8s_service_account_name = "mpc-party-4"
-create_namespace     = false
+create_namespace         = false
 
 # IRSA Configuration (recommended for production)
 create_irsa = true

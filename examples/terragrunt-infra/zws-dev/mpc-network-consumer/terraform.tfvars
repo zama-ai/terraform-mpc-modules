@@ -8,7 +8,7 @@ network_environment = "testnet"
 cluster_name = "zws-dev"
 
 # Partner Services Namespace
-namespace = "kms-decentralized"
+namespace        = "kms-decentralized"
 create_namespace = false
 
 

@@ -48,8 +48,8 @@ locals {
   node_group_nitro_enclaves_enabled    = var.kms_enabled_nitro_enclaves && var.nodegroup_enable_nitro_enclaves
   node_group_nitro_enclaves_cpu_count  = var.nitro_enclaves_override_cpu_count != null ? var.nitro_enclaves_override_cpu_count : floor(data.aws_ec2_instance_type.this[0].default_vcpus * 0.75)
   node_group_nitro_enclaves_memory_mib = var.nitro_enclaves_override_memory_mib != null ? var.nitro_enclaves_override_memory_mib : floor(data.aws_ec2_instance_type.this[0].memory_size * 0.75)
-  private_bucket_name = "${var.bucket_prefix}-private-${random_id.mpc_party_suffix.hex}"
-  public_bucket_name = "${var.bucket_prefix}-public-${random_id.mpc_party_suffix.hex}"
+  private_bucket_name                  = "${var.bucket_prefix}-private-${random_id.mpc_party_suffix.hex}"
+  public_bucket_name                   = "${var.bucket_prefix}-public-${random_id.mpc_party_suffix.hex}"
 }
 
 # Create Kubernetes namespace (optional)
@@ -254,7 +254,7 @@ resource "aws_kms_key" "mpc_party" {
   customer_master_key_spec = var.kms_customer_master_key_spec
   enable_key_rotation      = false
   deletion_window_in_days  = var.kms_deletion_window_in_days
-  tags = var.tags
+  tags                     = var.tags
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

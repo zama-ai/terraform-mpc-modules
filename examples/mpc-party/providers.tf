@@ -19,20 +19,20 @@ terraform {
 
 # Configure providers
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
   profile = var.aws_profile
 }
 
 data "aws_eks_cluster" "this_provider" {
-  count = var.use_eks_cluster_authentication ? 1 : 0
+  count  = var.use_eks_cluster_authentication ? 1 : 0
   region = var.aws_region
-  name = var.cluster_name
+  name   = var.cluster_name
 }
 
 provider "kubernetes" {
-  config_path    = var.use_eks_cluster_authentication ? null : var.kubeconfig_path
-  config_context = var.use_eks_cluster_authentication ? null : var.kubeconfig_context
-  host           = var.use_eks_cluster_authentication ? data.aws_eks_cluster.this_provider[0].endpoint : null
+  config_path            = var.use_eks_cluster_authentication ? null : var.kubeconfig_path
+  config_context         = var.use_eks_cluster_authentication ? null : var.kubeconfig_context
+  host                   = var.use_eks_cluster_authentication ? data.aws_eks_cluster.this_provider[0].endpoint : null
   cluster_ca_certificate = var.use_eks_cluster_authentication ? base64decode(data.aws_eks_cluster.this_provider[0].certificate_authority[0].data) : null
 
   exec {
