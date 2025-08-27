@@ -26,16 +26,12 @@ variable "enable_region_validation" {
   default     = true
 }
 
-# S3 Bucket Configuration
-variable "vault_private_bucket_name" {
+variable "bucket_prefix" {
   type        = string
-  description = "The name of the S3 bucket for private MPC party storage"
+  description = "The prefix for the S3 bucket names"
+  default     = "mpc-vault"
 }
 
-variable "vault_public_bucket_name" {
-  type        = string
-  description = "The name of the S3 bucket for public MPC party storage"
-}
 
 # MPC Party Configuration
 variable "party_name" {
@@ -128,16 +124,25 @@ variable "additional_config_data" {
   default     = {}
 }
 
-# Tagging
+# Deprecated Tagging
 variable "common_tags" {
   type        = map(string)
-  description = "Common tags to apply to all AWS resources"
+  description = "Deprecated common tags to apply to all AWS resources"
   default = {
     "terraform" = "true"
     "module"    = "mpc-party"
   }
 }
 
+# Tagging
+variable "tags" {
+  type        = map(string)
+  description = "A map of tags to assign to the resource"
+  default     = {
+    "terraform" = "true"
+    "module"    = "mpc-party"
+  }
+}
 
 # EKS Node Group Core Configuration
 variable "create_nodegroup" {
@@ -268,14 +273,6 @@ variable "nodegroup_taints" {
   description = "Map of Kubernetes taints to apply to the node group"
   default     = {}
 }
-
-# Tags
-variable "tags" {
-  type        = map(string)
-  description = "A map of tags to assign to the resource"
-  default     = {}
-}
-
 
 # Nitro Enclaves Configuration
 variable "nitro_enclaves_override_cpu_count" {
