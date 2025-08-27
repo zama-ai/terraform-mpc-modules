@@ -138,7 +138,7 @@ variable "common_tags" {
 variable "tags" {
   type        = map(string)
   description = "A map of tags to assign to the resource"
-  default     = {
+  default = {
     "terraform" = "true"
     "module"    = "mpc-party"
   }

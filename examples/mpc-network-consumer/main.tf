@@ -23,8 +23,8 @@ module "vpc_endpoint_consumer" {
   route_table_ids     = []
 
   # Naming and tagging
-  name_prefix     = var.name_prefix
-  tags     = var.common_tags
+  name_prefix = var.name_prefix
+  tags        = var.common_tags
 
   # Timeouts
   endpoint_create_timeout = var.endpoint_create_timeout
