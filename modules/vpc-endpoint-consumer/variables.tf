@@ -114,14 +114,8 @@ variable "name_prefix" {
   default     = "mpc-partner"
 }
 
-variable "common_tags" {
-  description = "Common tags to apply to all resources"
-  type        = map(string)
-  default     = {}
-}
-
-variable "additional_tags" {
-  description = "Additional tags to apply to VPC interface endpoint resources"
+variable "tags" {
+  description = "Tags to apply to VPC interface endpoint resources"
   type        = map(string)
   default     = {}
 }

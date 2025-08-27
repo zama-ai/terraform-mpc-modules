@@ -84,7 +84,7 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
   route_table_ids = var.route_table_ids
 
   tags = merge(
-    var.common_tags,
+    var.tags,
     {
       Name                  = "${var.name_prefix}-${var.party_services[count.index].name}-interface"
       "mpc:partner-service" = var.party_services[count.index].name
@@ -95,7 +95,6 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
     var.party_services[count.index].account_id != null ? {
       "mpc:partner-account" = var.party_services[count.index].account_id
     } : {},
-    var.additional_tags
   )
 
   timeouts {
