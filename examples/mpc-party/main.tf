@@ -2,12 +2,6 @@
 # This example demonstrates how to deploy only the MPC party infrastructure
 # using the enhanced mpc-party module that handles all Kubernetes resources
 
-
-# Random suffix for bucket names to ensure uniqueness
-resource "random_id" "bucket_suffix" {
-  byte_length = 4
-}
-
 # Deploy MPC Party infrastructure using the enhanced mpc-party module
 module "mpc_party" {
   source = "git::git@github.com:zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.1"
@@ -18,8 +12,7 @@ module "mpc_party" {
 
   # Party configuration
   party_name                = var.party_name
-  vault_private_bucket_name = "${var.bucket_prefix}-private-${random_id.bucket_suffix.hex}"
-  vault_public_bucket_name  = "${var.bucket_prefix}-public-${random_id.bucket_suffix.hex}"
+  bucket_prefix             = var.bucket_prefix
 
   # EKS Cluster configuration
   cluster_name = var.cluster_name
