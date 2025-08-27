@@ -17,23 +17,27 @@ terraform {
   }
 }
 
-# Configure AWS provider
+# Configure providers
 provider "aws" {
   region = var.aws_region
+  profile = var.aws_profile
 }
 
-# Configure Kubernetes provider
-provider "kubernetes" {
-  config_path    = var.kubeconfig_path
-  config_context = var.kubeconfig_context
+data "aws_eks_cluster" "this_provider" {
+  count = var.use_eks_cluster_authentication ? 1 : 0
+  region = var.aws_region
+  name = var.cluster_name
+}
 
-  # Optional: EKS cluster authentication via AWS CLI
-  dynamic "exec" {
-    for_each = var.use_eks_cluster_authentication ? [1] : []
-    content {
-      api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.aws_region]
-      command     = "aws"
-    }
+provider "kubernetes" {
+  config_path    = var.use_eks_cluster_authentication ? null : var.kubeconfig_path
+  config_context = var.use_eks_cluster_authentication ? null : var.kubeconfig_context
+  host           = var.use_eks_cluster_authentication ? data.aws_eks_cluster.this_provider[0].endpoint : null
+  cluster_ca_certificate = var.use_eks_cluster_authentication ? base64decode(data.aws_eks_cluster.this_provider[0].certificate_authority[0].data) : null
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", var.cluster_name, "--region", var.aws_region]
+    command     = "aws"
   }
 }

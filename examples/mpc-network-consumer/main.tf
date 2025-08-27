@@ -24,8 +24,7 @@ module "vpc_endpoint_consumer" {
 
   # Naming and tagging
   name_prefix     = var.name_prefix
-  common_tags     = var.common_tags
-  additional_tags = var.additional_tags
+  tags     = var.common_tags
 
   # Timeouts
   endpoint_create_timeout = var.endpoint_create_timeout
