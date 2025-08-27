@@ -1,13 +1,10 @@
 # Network Environment Configuration
 network_environment = "testnet"
 
-# AWS Configuration
-aws_region               = "eu-west-1"
 enable_region_validation = false
 
 # MPC Party Configuration
 party_name  = "mpc-party-2"
-environment = "dev"
 
 # S3 Bucket Configuration
 bucket_prefix   = "zama-kms-decentralized-threshold-2"
@@ -15,23 +12,21 @@ config_map_name = "mpc-party-2"
 
 # Kubernetes Configuration
 cluster_name         = "zws-dev"
-namespace            = "kms-decentralized"
-service_account_name = "mpc-party-2"
+k8s_namespace            = "kms-decentralized"
+k8s_service_account_name = "mpc-party-2"
 create_namespace     = false
 
 # IRSA Configuration (recommended for production)
 create_irsa = true
 
-# Kubernetes Provider Configuration
-kubeconfig_path    = "~/.kube/config"
-kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
-
 # Tagging
-owner = "mpc-team"
-additional_tags = {
+tags = {
+  "Environment" = "dev"
   "Project"     = "mpc-infrastructure"
-  "Team"        = "security"
-  "Cost-Center" = "engineering"
+  "Example"     = "mpc-party-only"
+  "Owner"       = "mpc-team"
+  "Terraform"   = "true"
+  "Party"       = "mpc-party-2"
 }
 
 # RDS Configuration
@@ -43,6 +38,7 @@ rds_deletion_protection = false # Allow deletion of RDS instance
 
 # Node Group Configuration
 create_nodegroup                         = true
+nodegroup_name                           = "mpc"
 nodegroup_instance_types                 = ["c7a.16xlarge"]
 nodegroup_min_size                       = 1
 nodegroup_max_size                       = 1
@@ -56,7 +52,6 @@ nodegroup_ami_release_version = "1.32.3-20250620"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
-nodegroup_taints                        = {}
 nodegroup_additional_security_group_ids = ["sg-04e41735e6bdc6007"]
 nodegroup_enable_nitro_enclaves         = true
 nodegroup_enable_ssm_managed_instance   = true
