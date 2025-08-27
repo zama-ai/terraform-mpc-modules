@@ -25,7 +25,6 @@ provider "aws" {
 
 data "aws_eks_cluster" "this_provider" {
   count  = var.use_eks_cluster_authentication ? 1 : 0
-  region = var.aws_region
   name   = var.cluster_name
 }
 

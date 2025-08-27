@@ -72,7 +72,6 @@ provider "aws" {
 
 data "aws_eks_cluster" "this_provider" {
   count = ${local.common_vars.inputs.use_eks_cluster_authentication ? 1 : 0 }
-  region = "${local.common_vars.inputs.aws_region}"
   name = "${local.common_vars.inputs.cluster_name}"
 }
 
