@@ -16,6 +16,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "aws_profile" {
+  description = "AWS profile to use for authentication"
+  type        = string
+  default     = "token-zws-dev"
+}
+
 variable "enable_region_validation" {
   type        = bool
   description = "Whether to enable region validation"

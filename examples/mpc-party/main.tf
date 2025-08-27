@@ -54,11 +54,6 @@ module "mpc_party" {
   # ConfigMap configuration
   create_config_map = true
   config_map_name   = var.config_map_name
-  additional_config_data = {
-    "PARTY_NAME"   = var.party_name
-    "ENVIRONMENT"  = var.environment
-    "CLUSTER_NAME" = var.cluster_name
-  }
 
   # Node Group configuration
   create_nodegroup               = var.create_nodegroup
@@ -92,6 +87,7 @@ module "mpc_party" {
   enable_rds                                = var.enable_rds
   rds_db_name                               = var.rds_db_name
   rds_manage_master_user_password           = var.rds_manage_master_user_password
+  rds_username                              = var.rds_username
   rds_engine                                = var.rds_engine
   rds_engine_version                        = var.rds_engine_version
   rds_instance_class                        = var.rds_instance_class

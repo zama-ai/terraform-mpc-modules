@@ -1,5 +1,4 @@
 # AWS Configuration
-aws_region               = "eu-west-1"
 enable_region_validation = false
 
 # Network Environment Configuration
@@ -7,17 +6,10 @@ network_environment = "testnet"
 
 # Cluster Configuration
 cluster_name = "zws-dev"
-environment  = "dev"
-owner        = "mpc-consumer-team"
-
-# Kubernetes Provider Configuration
-# IMPORTANT: Update these values for each consumer node
-kubeconfig_path                = "~/.kube/config"
-kubeconfig_context             = "tailscale-operator-zws-dev.diplodocus-boa.ts.net" # Set to specific context or null to use current
-use_eks_cluster_authentication = false
 
 # Partner Services Namespace
 namespace = "kms-decentralized"
+create_namespace = false
 
 
 # Optional: the following lines if using EKS cluster lookup
@@ -35,19 +27,19 @@ security_group_ids = ["sg-087debb93352a906a"]
 party_services = [
   # Example partner service configuration using default ports
   {
-    party_id                  = "1"
-    name                      = "mpc-node-1"
+    party_id                  = "4"
+    name                      = "mpc-node-4"
     region                    = "eu-west-3"
     account_id                = "767398008331"
-    partner_name              = "partner-1"
-    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0e13100b8fdc2f048"
+    partner_name              = "partner-4"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0c21caecf930e4d3a"
     create_kube_service       = true
     kube_service_config = {
       additional_annotations = {
         "mpc.io/partner-tier" = "tier-1"
       }
       labels = {
-        "partner-name" = "partner-1"
+        "partner-name" = "partner-4"
         "environment"  = "dev"
       }
       session_affinity = "None"
@@ -68,12 +60,12 @@ create_custom_dns_records = false
 private_zone_id           = ""
 
 # Tagging
-common_tags = {
+tags = {
   "terraform"   = "true"
-  "module"      = "partner-consumer-direct"
+  "module"      = "mpc-network-consumer"
   "environment" = "dev"
-}
-
-additional_tags = {
-  "Project" = "mpc-connectivity"
+  "ManagedBy"   = "terragrunt"
+  "Project"     = "mpc-connectivity"
+  "Example"     = "partner-consumer-direct"
+  "Owner"       = "zws-team"
 }

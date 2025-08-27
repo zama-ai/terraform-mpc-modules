@@ -30,6 +30,11 @@ data "aws_subnet" "cluster_subnets" {
 # ***************************************
 #  Local variables
 # ***************************************
+
+resource "random_id" "mpc_party_suffix" {
+  byte_length = 4
+}
+
 locals {
   allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
   private_subnet_ids = [
@@ -43,6 +48,8 @@ locals {
   node_group_nitro_enclaves_enabled    = var.kms_enabled_nitro_enclaves && var.nodegroup_enable_nitro_enclaves
   node_group_nitro_enclaves_cpu_count  = var.nitro_enclaves_override_cpu_count != null ? var.nitro_enclaves_override_cpu_count : floor(data.aws_ec2_instance_type.this[0].default_vcpus * 0.75)
   node_group_nitro_enclaves_memory_mib = var.nitro_enclaves_override_memory_mib != null ? var.nitro_enclaves_override_memory_mib : floor(data.aws_ec2_instance_type.this[0].memory_size * 0.75)
+  private_bucket_name = "${var.bucket_prefix}-private-${random_id.mpc_party_suffix.hex}"
+  public_bucket_name = "${var.bucket_prefix}-public-${random_id.mpc_party_suffix.hex}"
 }
 
 # Create Kubernetes namespace (optional)
@@ -72,10 +79,10 @@ resource "kubernetes_namespace" "mpc_party_namespace" {
 #  S3 Buckets for Vault Public Storage
 # ***************************************
 resource "aws_s3_bucket" "vault_public_bucket" {
-  bucket        = var.vault_public_bucket_name
+  bucket        = local.public_bucket_name
   force_destroy = true
   tags = merge(var.common_tags, {
-    "Name"    = var.vault_public_bucket_name
+    "Name"    = local.public_bucket_name
     "Type"    = "public-vault"
     "Party"   = var.party_name
     "Purpose" = "mpc-public-storage"
@@ -145,9 +152,9 @@ resource "aws_s3_bucket_policy" "vault_public_bucket_policy" {
 # ***************************************
 resource "aws_s3_bucket" "vault_private_bucket" {
   force_destroy = true
-  bucket        = var.vault_private_bucket_name
+  bucket        = local.private_bucket_name
   tags = merge(var.common_tags, {
-    "Name"    = var.vault_private_bucket_name
+    "Name"    = local.private_bucket_name
     "Type"    = "private-vault"
     "Party"   = var.party_name
     "Purpose" = "mpc-private-storage"
@@ -247,9 +254,7 @@ resource "aws_kms_key" "mpc_party" {
   customer_master_key_spec = var.kms_customer_master_key_spec
   enable_key_rotation      = false
   deletion_window_in_days  = var.kms_deletion_window_in_days
-  tags = merge(var.common_tags, {
-    "Name" = "mpc-party"
-  })
+  tags = var.tags
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [

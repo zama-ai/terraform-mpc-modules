@@ -28,6 +28,12 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
+variable "aws_profile" {
+  description = "AWS profile to use for authentication"
+  type        = string
+  default     = "token-zws-dev"
+}
+
 variable "aws_region_for_eks" {
   description = "AWS region where the EKS cluster is located (for provider configuration)"
   type        = string
