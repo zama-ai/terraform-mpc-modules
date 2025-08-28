@@ -575,16 +575,9 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
 # ***************************************
 #  RDS Instance
 # ***************************************
-
-data "aws_iam_role" "rds_monitoring_role" {
-  count = var.enable_rds && var.rds_monitoring_role_arn == null ? 1 : 0
-  name  = "rds-monitoring-role"
-}
-
 locals {
   external_name           = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
   db_identifier           = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
-  rds_monitoring_role_arn = var.rds_monitoring_role_arn != null ? var.rds_monitoring_role_arn : try(data.aws_iam_role.rds_monitoring_role[0].arn, null)
 }
 
 module "rds_instance" {
@@ -616,8 +609,8 @@ module "rds_instance" {
   backup_retention_period = var.rds_backup_retention_period
 
   monitoring_interval    = var.rds_monitoring_interval
-  create_monitoring_role = local.rds_monitoring_role_arn == null
-  monitoring_role_arn    = local.rds_monitoring_role_arn
+  create_monitoring_role = var.rds_create_monitoring_role
+  monitoring_role_arn    = var.rds_monitoring_role_arn
 
   create_db_subnet_group = true
   subnet_ids             = local.private_subnet_ids

@@ -558,3 +558,9 @@ variable "rds_username" {
   default     = "zws"
   description = "Username for the RDS instance"
 }
+
+variable "rds_create_monitoring_role" {
+  type        = bool
+  default     = true
+  description = "Whether to create the RDS monitoring role"
+}
