@@ -462,3 +462,9 @@ variable "rds_subnet_ids" {
   type        = list(string)
   default     = []
 }
+
+variable "rds_create_monitoring_role" {
+  description = "Whether to create the RDS monitoring role"
+  type        = bool
+  default     = true
+}

@@ -79,6 +79,7 @@ module "mpc_party" {
   # RDS Configuration
   enable_rds                                = var.enable_rds
   rds_db_name                               = var.rds_db_name
+  rds_create_monitoring_role                = var.rds_create_monitoring_role
   rds_manage_master_user_password           = var.rds_manage_master_user_password
   rds_username                              = var.rds_username
   rds_engine                                = var.rds_engine
