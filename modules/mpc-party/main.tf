@@ -576,8 +576,8 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
 #  RDS Instance
 # ***************************************
 locals {
-  external_name           = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
-  db_identifier           = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
+  external_name = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
+  db_identifier = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
 }
 
 module "rds_instance" {
