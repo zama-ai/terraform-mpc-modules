@@ -61,7 +61,6 @@ module "mpc_party" {
   nodegroup_enable_remote_access = var.nodegroup_enable_remote_access
   nodegroup_ec2_ssh_key          = var.nodegroup_ec2_ssh_key
   nodegroup_labels               = var.nodegroup_labels
-  nodegroup_taints               = var.nodegroup_taints
 
   kms_image_attestation_sha                = var.kms_image_attestation_sha
   kms_deletion_window_in_days              = var.kms_deletion_window_in_days
