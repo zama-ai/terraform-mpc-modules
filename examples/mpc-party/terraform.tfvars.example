@@ -56,7 +56,6 @@ nodegroup_ami_release_version = "1.32.3-20250620"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
-nodegroup_taints                        = {}
 nodegroup_additional_security_group_ids = ["sg-04e41735e6bdc6007"]
 nodegroup_enable_nitro_enclaves         = true
 nodegroup_enable_ssm_managed_instance   = true

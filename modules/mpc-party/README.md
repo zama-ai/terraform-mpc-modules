@@ -166,14 +166,6 @@ module "mpc_party" {
     "environment" = "production"
   }
   
-  nodegroup_taints = {
-    "mpc-dedicated" = {
-      key    = "mpc.io/dedicated"
-      value  = "true"
-      effect = "NO_SCHEDULE"
-    }
-  }
-
   # Nitro Enclaves Configuration
   nodegroup_enable_nitro_enclaves = true
   kms_enabled_nitro_enclaves      = true
@@ -386,7 +378,6 @@ The module can optionally create:
 | <a name="input_nodegroup_nitro_enclaves_image_repo"></a> [nodegroup\_nitro\_enclaves\_image\_repo](#input\_nodegroup\_nitro\_enclaves\_image\_repo) | Image repository for Nitro Enclaves | `string` | `"public.ecr.aws/aws-nitro-enclaves/aws-nitro-enclaves-k8s-device-plugin"` | no |
 | <a name="input_nodegroup_nitro_enclaves_image_tag"></a> [nodegroup\_nitro\_enclaves\_image\_tag](#input\_nodegroup\_nitro\_enclaves\_image\_tag) | Image tag for Nitro Enclaves | `string` | `"v0.3"` | no |
 | <a name="input_nodegroup_source_security_group_ids"></a> [nodegroup\_source\_security\_group\_ids](#input\_nodegroup\_source\_security\_group\_ids) | List of security group IDs allowed for remote access | `list(string)` | `[]` | no |
-| <a name="input_nodegroup_taints"></a> [nodegroup\_taints](#input\_nodegroup\_taints) | Map of Kubernetes taints to apply to the node group | <pre>map(object({<br/>    key    = string<br/>    value  = string<br/>    effect = string<br/>  }))</pre> | `{}` | no |
 | <a name="input_nodegroup_use_custom_launch_template"></a> [nodegroup\_use\_custom\_launch\_template](#input\_nodegroup\_use\_custom\_launch\_template) | Whether to use a custom launch template | `bool` | `true` | no |
 | <a name="input_nodegroup_use_latest_ami_release_version"></a> [nodegroup\_use\_latest\_ami\_release\_version](#input\_nodegroup\_use\_latest\_ami\_release\_version) | Whether to use the latest AMI release version | `bool` | `false` | no |
 | <a name="input_party_name"></a> [party\_name](#input\_party\_name) | The name of the MPC party (used for resource naming and tagging) | `string` | n/a | yes |
@@ -443,6 +434,7 @@ The module can optionally create:
 | <a name="output_irsa_summary"></a> [irsa\_summary](#output\_irsa\_summary) | Summary of the IRSA role for MPC party |
 | <a name="output_k8s_configmap_summary"></a> [k8s\_configmap\_summary](#output\_k8s\_configmap\_summary) | Summary of the Kubernetes ConfigMap for MPC party |
 | <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
+| <a name="output_node_group_tolerations"></a> [node\_group\_tolerations](#output\_node\_group\_tolerations) | Kubernetes tolerations derived from EKS node group taints |
 | <a name="output_party_name"></a> [party\_name](#output\_party\_name) | Name of the MPC party |
 | <a name="output_rds_summary"></a> [rds\_summary](#output\_rds\_summary) | Aggregated RDS database information |
 | <a name="output_vault_bucket_storage_summary"></a> [vault\_bucket\_storage\_summary](#output\_vault\_bucket\_storage\_summary) | Summary of the vault buckets public and private storage |

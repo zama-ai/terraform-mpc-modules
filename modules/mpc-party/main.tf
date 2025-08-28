@@ -50,6 +50,16 @@ locals {
   node_group_nitro_enclaves_memory_mib = var.nitro_enclaves_override_memory_mib != null ? var.nitro_enclaves_override_memory_mib : floor(data.aws_ec2_instance_type.this[0].memory_size * 0.75)
   private_bucket_name                  = "${var.bucket_prefix}-private-${random_id.mpc_party_suffix.hex}"
   public_bucket_name                   = "${var.bucket_prefix}-public-${random_id.mpc_party_suffix.hex}"
+
+  # Transform EKS node group taints into Kubernetes tolerations
+  node_group_tolerations = var.create_nodegroup ? [
+    for taint_key, taint_config in module.eks_managed_node_group[0].node_group_taints : {
+      key      = taint_config.key
+      operator = "Equal"
+      value    = taint_config.value
+      effect   = taint_config.effect == "NO_SCHEDULE" ? "NoSchedule" : taint_config.effect == "NO_EXECUTE" ? "NoExecute" : "PreferNoSchedule"
+    }
+  ] : []
 }
 
 # Create Kubernetes namespace (optional)
@@ -447,18 +457,18 @@ module "eks_managed_node_group" {
     source_security_group_ids = var.nodegroup_source_security_group_ids
   } : null
 
-  # Labels and Taints
+  # Labels
   labels = merge(var.nodegroup_labels, local.node_group_nitro_enclaves_enabled ? {
     "node.kubernetes.io/enclave-enabled" = "true"
   } : {})
 
-  taints = merge(var.nodegroup_taints, local.node_group_nitro_enclaves_enabled ? {
+  taints = local.node_group_nitro_enclaves_enabled ? {
     "aws-nitro-enclaves" = {
       key    = "node.kubernetes.io/enclave-enabled"
       value  = "true"
       effect = "NO_SCHEDULE"
     }
-  } : {})
+  } : {}
 
   # Tags
   tags = var.tags
@@ -559,13 +569,15 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
           host_path { path = "/sys" }
         }
 
-        toleration {
-          key      = "node.kubernetes.io/enclave-enabled"
-          operator = "Equal"
-          value    = "true"
-          effect   = "NoSchedule"
+        dynamic "toleration" {
+          for_each = local.node_group_tolerations
+          content {
+            key      = toleration.value.key
+            operator = toleration.value.operator
+            value    = toleration.value.value
+            effect   = toleration.value.effect
+          }
         }
-
       }
     }
   }

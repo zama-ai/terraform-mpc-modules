@@ -230,22 +230,6 @@ variable "nitro_enclaves_override_memory_mib" {
   default     = null
 }
 
-variable "nodegroup_taints" {
-  description = "Taints for the nodegroup"
-  type = map(object({
-    key    = string
-    value  = string
-    effect = string
-  }))
-  default = {
-    dedicated = {
-      key    = "kms_dedicated"
-      value  = "true"
-      effect = "NO_SCHEDULE"
-    }
-  }
-}
-
 variable "nodegroup_additional_security_group_ids" {
   description = "List of additional security group IDs to associate with the node group"
   type        = list(string)

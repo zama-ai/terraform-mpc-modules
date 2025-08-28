@@ -89,3 +89,9 @@ output "rds_summary" {
     enabled  = false
   }
 }
+
+# Node Group Tolerations
+output "node_group_tolerations" {
+  description = "Kubernetes tolerations derived from EKS node group taints"
+  value       = local.node_group_tolerations
+}

@@ -257,20 +257,10 @@ variable "nodegroup_additional_security_group_ids" {
   default     = []
 }
 
-# Labels and Taints
+# Labels
 variable "nodegroup_labels" {
   type        = map(string)
   description = "Key-value map of Kubernetes labels applied to the node group"
-  default     = {}
-}
-
-variable "nodegroup_taints" {
-  type = map(object({
-    key    = string
-    value  = string
-    effect = string
-  }))
-  description = "Map of Kubernetes taints to apply to the node group"
   default     = {}
 }
 
