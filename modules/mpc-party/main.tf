@@ -457,7 +457,7 @@ module "eks_managed_node_group" {
     source_security_group_ids = var.nodegroup_source_security_group_ids
   } : null
 
-  # Labels and Taints
+  # Labels
   labels = merge(var.nodegroup_labels, local.node_group_nitro_enclaves_enabled ? {
     "node.kubernetes.io/enclave-enabled" = "true"
   } : {})
@@ -569,13 +569,15 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
           host_path { path = "/sys" }
         }
 
-        toleration {
-          key      = "node.kubernetes.io/enclave-enabled"
-          operator = "Equal"
-          value    = "true"
-          effect   = "NoSchedule"
+        dynamic "toleration" {
+          for_each = local.node_group_tolerations
+          content {
+            key      = toleration.value.key
+            operator = toleration.value.operator
+            value    = toleration.value.value
+            effect   = toleration.value.effect
+          }
         }
-
       }
     }
   }
