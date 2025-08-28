@@ -11,9 +11,9 @@ include "common" {
   path = find_in_parent_folders("common.hcl")
 }
 
-# Reference the mpc-network-consumer example module
+# Reference the vpc-endpoint-consumer module
 terraform {
-  source = "../../../..//modules/vpc-endpoint-consumer"
+  source = "git::git@github.com:zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.2"
   
   extra_arguments "tfvars" {
     commands = get_terraform_commands_that_need_vars()

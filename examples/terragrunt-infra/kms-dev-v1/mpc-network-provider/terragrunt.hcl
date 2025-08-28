@@ -13,7 +13,7 @@ include "common" {
 
 # Reference the mpc-network-provider example module
 terraform {
-  source = "../../../..//modules/vpc-endpoint-provider"
+  source = "git::git@github.com:zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-provider?ref=v0.1.2"
   
   extra_arguments "tfvars" {
     commands = get_terraform_commands_that_need_vars()
