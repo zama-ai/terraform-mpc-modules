@@ -169,7 +169,7 @@ module "mpc_party" {
   # Nitro Enclaves Configuration
   nodegroup_enable_nitro_enclaves = true
   kms_enabled_nitro_enclaves      = true
-  kms_image_attestation_sha       = "fb386ef9ea16263dd1bba744c9b86eaa7a11401f13f6033e48b9b8e6c718bc71f3070ccafd9fab1535ec406975dff43d"
+  kms_image_attestation_sha       = "5292569b5945693afcde78e5a0045f4bf8c0a594d174baf1e6bccdf0e6338ebe46e89207054e0c48d0ec6deef80284ac"
   kms_deletion_window_in_days     = 30
 
   # Resource Overrides for Nitro Enclaves
