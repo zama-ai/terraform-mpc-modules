@@ -531,6 +531,11 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
             }
           }
 
+          env {
+            name = "ENCLAVE_CPU_ADVERTISEMENT"
+            value = "TRUE"
+          }
+
           resources {
             limits = {
               cpu    = "100m"
