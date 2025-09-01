@@ -1,7 +1,7 @@
 # Terragrunt Infrastructure Management
 # Makefile for easy environment management
 
-.PHONY: help plan-all apply-all destroy-all init-all validate-all output-all clean-cache clean-cache-env plan-all-provider apply-all-provider destroy-all-provider plan-all-consumer apply-all-consumer destroy-all-consumer output-all-provider output-all-consumer cmd output run-on show-output validate plan apply env-info help-examples
+.PHONY: help init plan-all apply-all destroy-all init-all validate-all output-all clean-cache clean-cache-env plan-all-provider apply-all-provider destroy-all-provider plan-all-consumer apply-all-consumer destroy-all-consumer output-all-provider output-all-consumer cmd output run-on show-output validate plan apply env-info help-examples
 
 # Default target
 help:
@@ -13,16 +13,6 @@ help:
 	@echo "  make init-all      - Initialize all environments"
 	@echo "  make validate-all  - Validate all environments"
 	@echo "  make clean-cache   - Clean all Terraform/Terragrunt cache"
-	@echo ""
-	@echo "Provider/Consumer specific commands:"
-	@echo "  make plan-all-provider    - Plan all provider modules"
-	@echo "  make apply-all-provider   - Apply all provider modules"
-	@echo "  make destroy-all-provider - Destroy all provider modules"
-	@echo "  make output-all-provider  - Output all provider modules"
-	@echo "  make plan-all-consumer    - Plan all consumer modules"
-	@echo "  make apply-all-consumer   - Apply all consumer modules"
-	@echo "  make destroy-all-consumer - Destroy all consumer modules"
-	@echo "  make output-all-consumer  - Output all consumer modules"
 	@echo ""
 	@echo "Dynamic commands:"
 	@echo "  make output ENV=<env>           - Get outputs from specific environment"
@@ -40,23 +30,35 @@ help:
 	@echo "  make help-examples                - Show usage examples"
 
 # All environments
+# Plan all environments
+# Usage: make plan-all
 plan-all:
-	terragrunt run-all plan
+	terragrunt plan --all
 
+# Apply all environments
+# Usage: make apply-all
 apply-all:
-	terragrunt run-all apply
+	terragrunt apply --all
 
+# Destroy all environments
+# Usage: make destroy-all
 destroy-all:
-	terragrunt run-all destroy
+	terragrunt destroy --all
 
+# Initialize all environments
+# Usage: make init-all
 init-all:
-	terragrunt run-all init -reconfigure
+	terragrunt init --all -reconfigure
 
+# Validate all environments
+# Usage: make validate-all
 validate-all:
-	terragrunt run-all validate
+	terragrunt validate --all
 
+# Output all environments
+# Usage: make output-all
 output-all:
-	terragrunt run-all output
+	terragrunt output --all
 
 # Clean cache commands
 clean-cache:
@@ -76,55 +78,25 @@ clean-cache-env:
 	find $(ENV) -name ".terraform.lock.hcl" -delete 2>/dev/null || true
 	@echo "✅ Cache cleanup completed for $(ENV) environment!"
 
-# plan all provider
-plan-all-provider:
-	terragrunt run-all plan --terragrunt-include-dir "**/mpc-network-provider"
-
-# apply all provider
-apply-all-provider:
-	terragrunt run-all apply --terragrunt-include-dir "**/mpc-network-provider"
-
-# destroy all provider
-destroy-all-provider:
-	terragrunt run-all destroy --terragrunt-include-dir "**/mpc-network-provider"
-
-# plan all consumer
-plan-all-consumer:
-	terragrunt run-all plan --terragrunt-include-dir "**/mpc-network-consumer"
-
-# apply all consumer
-apply-all-consumer:
-	terragrunt run-all apply --terragrunt-include-dir "**/mpc-network-consumer"
-
-# destroy all consumer
-destroy-all-consumer:
-	terragrunt run-all destroy --terragrunt-include-dir "**/mpc-network-consumer"
-
-# output all provider
-output-all-provider:
-	terragrunt run-all output --terragrunt-include-dir "**/mpc-network-provider"
-
-# output all consumer
-output-all-consumer:
-	terragrunt run-all output --terragrunt-include-dir "**/mpc-network-consumer/**"
-
-
-
-
-
 # Dynamic commands - Use variables to target specific environments/modules
 # Usage: make cmd ENV=<env> CMD=plan
 # Usage: make cmd ENV=<env> CMD=output
 cmd:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make cmd ENV=<env> CMD=plan"; exit 1; fi
 	@if [ -z "$(CMD)" ]; then echo "Error: CMD variable is required. Usage: make cmd ENV=<env> CMD=plan"; exit 1; fi
-	terragrunt run-all $(CMD) --terragrunt-include-dir "**/$(ENV)/**"
+	terragrunt $(CMD) --all --working-dir "$(ENV)"
+
+# Initialize specific environment
+# Usage: make init ENV=<env>
+init:
+	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make init ENV=<env>"; exit 1; fi
+	terragrunt init --all --working-dir "$(ENV)"
 
 # Dynamic output command - Get outputs from specific environment  
 # Usage: make output ENV=<env>
 output:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make output ENV=<env>"; exit 1; fi
-	terragrunt run-all output --terragrunt-include-dir "**/$(ENV)/**"
+	terragrunt output --all --working-dir "$(ENV)"
 
 # Run command on specific module within environment
 # Usage: make run-on ENV=<env> MODULE=<module> CMD=<cmd>
@@ -145,19 +117,19 @@ show-output:
 # Usage: make validate ENV=<env>
 validate:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make validate ENV=<env>"; exit 1; fi
-	terragrunt run-all validate --terragrunt-include-dir "**/$(ENV)/**"
+	terragrunt validate --all --working-dir "$(ENV)"
 
 # Plan specific environment  
 # Usage: make plan ENV=<env>
 plan:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make plan ENV=<env>"; exit 1; fi
-	terragrunt run-all plan --terragrunt-include-dir "**/$(ENV)/**"
+	terragrunt plan --all --working-dir "$(ENV)"
 
 # Apply specific environment
 # Usage: make apply ENV=<env>
 apply:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make apply ENV=<env>"; exit 1; fi
-	terragrunt run-all apply --terragrunt-include-dir "**/$(ENV)/**"
+	terragrunt apply --all --working-dir "$(ENV)"
 
 # Show current environment info
 # Usage: make env-info ENV=<env>
@@ -188,7 +160,5 @@ help-examples:
 	@echo "⚡ Quick Operations:"
 	@echo "  make output-all                   # Get outputs from all environments"
 	@echo "  make validate-all                 # Validate all environments"
-	@echo "  make output-all-provider          # Get outputs from all provider modules"
-	@echo "  make output-all-consumer          # Get outputs from all consumer modules"
 	@echo "  make clean-cache                  # Clean all Terraform/Terragrunt cache"
 	@echo "  make clean-cache-env ENV=<env>    # Clean cache for specific environment"
