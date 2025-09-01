@@ -78,7 +78,7 @@ output "rds_summary" {
     db_name  = module.rds_instance[0].db_instance_name
     endpoint = module.rds_instance[0].db_instance_endpoint
     port     = module.rds_instance[0].db_instance_port
-    username = module.rds_instance[0].db_instance_username
+    username = nonsensitive(module.rds_instance[0].db_instance_username)
     enabled  = true
     } : {
     db_name  = null
