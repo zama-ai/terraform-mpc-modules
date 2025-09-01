@@ -477,6 +477,12 @@ module "eks_managed_node_group" {
 # ***************************************
 #  Deploy Daemonset AWS Nitro Enclaves
 # ***************************************
+locals {
+  nitro_enclaves_daemonset_additional_envs = merge({
+    "ENCLAVE_CPU_ADVERTISEMENT" = "TRUE"
+  }, var.nodegroup_nitro_enclaves_daemonset_additional_envs)
+
+}
 resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
   count = local.node_group_nitro_enclaves_enabled ? 1 : 0
 
@@ -531,20 +537,17 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
             }
           }
 
-          env {
-            name = "ENCLAVE_CPU_ADVERTISEMENT"
-            value = "TRUE"
+          dynamic "env" {
+            for_each = local.nitro_enclaves_daemonset_additional_envs
+            content {
+              name = env.key
+              value = env.value
+            }
           }
 
           resources {
-            limits = {
-              cpu    = "100m"
-              memory = "30Mi"
-            }
-            requests = {
-              cpu    = "10m"
-              memory = "15Mi"
-            }
+            limits = var.nodegroup_nitro_enclaves_daemonset_resources.limits
+            requests = var.nodegroup_nitro_enclaves_daemonset_resources.requests
           }
 
           volume_mount {

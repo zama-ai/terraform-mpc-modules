@@ -281,6 +281,7 @@ variable "nodegroup_enable_nitro_enclaves" {
   type        = bool
   description = "Whether to enable Nitro Enclaves"
 }
+
 variable "nodegroup_nitro_enclaves_image_repo" {
   type        = string
   description = "Image repository for Nitro Enclaves"
@@ -292,6 +293,32 @@ variable "nodegroup_nitro_enclaves_image_tag" {
   description = "Image tag for Nitro Enclaves"
   default     = "v0.3"
 }
+
+variable "nodegroup_nitro_enclaves_daemonset_additional_envs" {
+  type        = map(string)
+  description = "Additional environment variables to add to the Nitro Enclaves daemonset"
+  default     = {}
+}
+
+variable "nodegroup_nitro_enclaves_daemonset_resources" {
+  type = object({
+    limits   = map(string)
+    requests = map(string)
+  })
+  description = "Resources for the Nitro Enclaves daemonset"
+  default     = {
+    limits = {
+      cpu    = "100m"
+      memory = "30Mi"
+    }
+    requests = {
+      cpu    = "10m"
+      memory = "15Mi"
+    }
+  }
+}
+
+
 
 # kms configuration
 variable "kms_enabled_nitro_enclaves" {
