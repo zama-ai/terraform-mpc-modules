@@ -43,7 +43,7 @@ output "k8s_service_account_summary" {
     service_account_created           = var.create_service_account && !var.create_irsa
     service_account_namespace         = var.k8s_namespace
     service_account_namespace_created = var.create_namespace
-    service_account_role_arn          = var.create_service_account && !var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
+    service_account_role_arn          = var.create_service_account && var.create_irsa ? module.iam_assumable_role_mpc_party.iam_role_arn : null
   }
 }
 
@@ -64,11 +64,18 @@ output "eks_managed_node_group_summary" {
     node_group_arn    = module.eks_managed_node_group[0].node_group_arn
     node_group_status = module.eks_managed_node_group[0].node_group_status
     node_group_taints = module.eks_managed_node_group[0].node_group_taints
-    } : {
-    node_group_arn    = null
-    node_group_status = null
-    node_group_taints = null
-  }
+    } : null
+}
+
+# Nitro Enclaves Information
+output "nitro_enclaves_summary" {
+  description = "Summary of the Nitro Enclaves for MPC party"
+  value = var.create_nodegroup && var.nodegroup_enable_nitro_enclaves ? {
+    nitro_enclaves_total_allocated_resources = {
+      cpu_count = local.node_group_nitro_enclaves_cpu_count
+      memory_mib = local.node_group_nitro_enclaves_memory_mib
+    }
+  } : null
 }
 
 # RDS Information
@@ -79,15 +86,7 @@ output "rds_summary" {
     endpoint = module.rds_instance[0].db_instance_endpoint
     port     = module.rds_instance[0].db_instance_port
     username = nonsensitive(module.rds_instance[0].db_instance_username)
-    enabled  = true
-    } : {
-    db_name  = null
-    endpoint = null
-    port     = null
-    username = null
-    password = null
-    enabled  = false
-  }
+  } : null
 }
 
 # Node Group Tolerations
