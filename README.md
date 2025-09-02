@@ -56,7 +56,7 @@ graph TB
             A_NLB["⚖️ Network LB<br/>(AWS Managed)"]
             A_S3["🗄️ S3 Storage<br/>Key Materials"]
             A_PROVIDER["🌉 VPC Endpoint Service<br/>(Expose to Bob)"]
-            A_CONSUMER["🔌 VPC Interface Endpoint<br/>(Connect to Bob)"]
+            A_CONSUMER["🔌 VPC Endpoint Interface<br/>(Connect to Bob)"]
             
             A_K8S_SVC --> A_NLB
             A_NLB --> A_PROVIDER
@@ -79,7 +79,7 @@ graph TB
             B_NLB["⚖️ Network LB<br/>(AWS Managed)"]
             B_S3["🗄️ S3 Storage<br/>Key Materials"]
             B_PROVIDER["🌉 VPC Endpoint Service<br/>(Expose to Alice)"]
-            B_CONSUMER["🔌 VPC Interface Endpoint<br/>(Connect to Alice)"]
+            B_CONSUMER["🔌 VPC Endpoint Interface<br/>(Connect to Alice)"]
             
             B_K8S_SVC --> B_NLB
             B_NLB --> B_PROVIDER
