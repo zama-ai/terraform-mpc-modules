@@ -361,6 +361,40 @@ resource "kubernetes_config_map" "mpc_party_config" {
 # ***************************************
 #  EKS Managed Node Group
 # ***************************************
+module "eks_node_group_sg" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 5.0"
+
+  name        = var.nodegroup_security_group_custom_name
+  description = "Security group for EKS nodes"
+  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+
+  # typical default
+  egress_rules = var.nodegroup_security_group_custom_egress_rules
+
+  # ---- Node-to-node (use self as the source) ----
+  # CoreDNS (TCP/UDP 53) + TCP ephemeral range 1025–6553
+  ingress_with_self = [
+    for sg_rule in var.nodegroup_sg_ingress_with_self :
+    { for k, v in sg_rule : k => v if v != null }
+  ]
+
+  # ---- From Cluster API SG to nodes ----
+  ingress_with_source_security_group_id = [
+    for sg_rule in var.nodegroup_sg_ingress_with_source_sg : merge(
+      sg_rule.rule != null ? { rule = sg_rule.rule } : {},
+      sg_rule.from_port != null ? { from_port = sg_rule.from_port } : {},
+      sg_rule.to_port != null ? { to_port = sg_rule.to_port } : {},
+      sg_rule.protocol != null ? { protocol = sg_rule.protocol } : {},
+      sg_rule.description != null ? { description = sg_rule.description } : {},
+      { source_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id }
+    )
+  ]
+
+  tags = merge(var.tags, {
+    "Name" = var.nodegroup_security_group_custom_name
+  })
+}
 
 data "aws_ec2_instance_type" "this" {
   instance_type = var.nodegroup_instance_types[0]
@@ -382,7 +416,7 @@ module "eks_managed_node_group" {
   subnet_ids = local.private_subnet_ids
 
   cluster_primary_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
-  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids)
+  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [module.eks_node_group_sg.security_group_id])
 
   # Scaling Configuration
   min_size     = var.nodegroup_min_size
