@@ -306,7 +306,7 @@ variable "nodegroup_nitro_enclaves_daemonset_resources" {
     requests = map(string)
   })
   description = "Resources for the Nitro Enclaves daemonset"
-  default     = {
+  default = {
     limits = {
       cpu    = "100m"
       memory = "30Mi"
@@ -420,8 +420,8 @@ variable "kms_key_usage" {
 }
 
 variable "kms_customer_master_key_spec" {
-  type        = string
-  default     = "SYMMETRIC_DEFAULT"
+  type    = string
+  default = "SYMMETRIC_DEFAULT"
 }
 
 variable "kms_image_attestation_sha" {

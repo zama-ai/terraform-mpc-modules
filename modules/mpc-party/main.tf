@@ -577,13 +577,13 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
           dynamic "env" {
             for_each = local.nitro_enclaves_daemonset_additional_envs
             content {
-              name = env.key
+              name  = env.key
               value = env.value
             }
           }
 
           resources {
-            limits = var.nodegroup_nitro_enclaves_daemonset_resources.limits
+            limits   = var.nodegroup_nitro_enclaves_daemonset_resources.limits
             requests = var.nodegroup_nitro_enclaves_daemonset_resources.requests
           }
 

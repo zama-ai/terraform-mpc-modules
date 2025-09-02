@@ -25,8 +25,8 @@ provider "aws" {
 }
 
 data "aws_eks_cluster" "this_provider" {
-  count  = var.use_eks_cluster_authentication ? 1 : 0
-  name   = var.cluster_name
+  count = var.use_eks_cluster_authentication ? 1 : 0
+  name  = var.cluster_name
 }
 
 provider "kubernetes" {

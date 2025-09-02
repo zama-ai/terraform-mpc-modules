@@ -64,7 +64,7 @@ output "eks_managed_node_group_summary" {
     node_group_arn    = module.eks_managed_node_group[0].node_group_arn
     node_group_status = module.eks_managed_node_group[0].node_group_status
     node_group_taints = module.eks_managed_node_group[0].node_group_taints
-    } : null
+  } : null
 }
 
 # Nitro Enclaves Information
@@ -72,7 +72,7 @@ output "nitro_enclaves_summary" {
   description = "Summary of the Nitro Enclaves for MPC party"
   value = var.create_nodegroup && var.nodegroup_enable_nitro_enclaves ? {
     nitro_enclaves_total_allocated_resources = {
-      cpu_count = local.node_group_nitro_enclaves_cpu_count
+      cpu_count  = local.node_group_nitro_enclaves_cpu_count
       memory_mib = local.node_group_nitro_enclaves_memory_mib
     }
   } : null
