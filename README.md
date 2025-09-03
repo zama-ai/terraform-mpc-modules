@@ -247,7 +247,7 @@ terraform apply
 
 ## 📝 License
 
-This project is licensed under the MIT License.
+This software is distributed under the **BSD-3-Clause-Clear** license. Read [this](LICENSE) for more details.
 
 ## 🆘 Support
 
