@@ -39,7 +39,7 @@ resource "kubernetes_service" "mpc_nlb" {
       "service.beta.kubernetes.io/aws-load-balancer-backend-protocol"                  = "tcp"
       "service.beta.kubernetes.io/aws-load-balancer-internal"                          = "true"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                   = "ip"
-      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags"          = join(",", concat([
+      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = join(",", concat([
         "mpc-node=node-${var.party_id}",
         "environment=${var.network_environment}"
       ], [for k, v in var.tags : "${k}=${v}"]))
