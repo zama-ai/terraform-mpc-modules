@@ -186,7 +186,7 @@ resource "aws_s3_bucket_versioning" "vault_private_bucket" {
 }
 
 resource "aws_s3_bucket_public_access_block" "vault_private_bucket" {
-  bucket              = aws_s3_bucket.vault_private_bucket.id
+  bucket                  = aws_s3_bucket.vault_private_bucket.id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
