@@ -207,7 +207,7 @@ resource "aws_iam_policy" "mpc_aws" {
         Action = "s3:*Object"
         Resource = [
           "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}/*",
-          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*"
+          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*",
         ]
       },
       {
@@ -216,7 +216,7 @@ resource "aws_iam_policy" "mpc_aws" {
         Action = "s3:ListBucket"
         Resource = [
           "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}"
+          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
         ]
       }
     ]
@@ -319,6 +319,72 @@ resource "aws_kms_alias" "mpc_party" {
   count         = var.kms_enabled_nitro_enclaves ? 1 : 0
   name          = "alias/mpc-${var.party_name}"
   target_key_id = aws_kms_key.mpc_party[0].key_id
+}
+
+# ***************************************
+#  BACKUP VAULT Storage for MPC Party
+# ***************************************
+resource "aws_s3_bucket" "mpc_party_backup_bucket" {
+  count         = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  bucket        = "mpc-${var.party_name}-backup"
+  force_destroy = true
+}
+
+resource "aws_s3_bucket_policy" "mpc_party_backup_bucket_policy" {
+  count  = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  bucket = aws_s3_bucket.mpc_party_backup_bucket[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = var.kms_backup_vault_arn
+        },
+      },
+    ]
+  })
+}
+
+
+# ***************************************
+#  ASYMMETRIC KMS Key Backup for MPC Party
+# ***************************************
+resource "aws_kms_key" "mpc_party_backup" {
+  count                    = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  description              = "Asymmetric KMS key backup for MPC Party"
+  key_usage                = var.kms_backup_vault_key_usage
+  customer_master_key_spec = var.kms_backup_vault_customer_master_key_spec
+  enable_key_rotation      = false
+  deletion_window_in_days  = var.kms_deletion_window_in_days
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = var.kms_backup_vault_arn
+        },
+        Action = [
+          "kms:Encrypt",
+          "kms:GetPublicKey",
+          "kms:DescribeKey"
+        ],
+        Resource = "*"
+      },
+
+    ]
+  })
+  tags = var.tags
+}
+
+# ***************************************
+#  KMS Key Alias for MPC Party Backup
+# ***************************************
+resource "aws_kms_alias" "mpc_party_backup" {
+  count         = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  name          = "alias/mpc-${var.party_name}-backup"
+  target_key_id = aws_kms_key.mpc_party_backup[0].key_id
 }
 
 # ***************************************
