@@ -435,6 +435,42 @@ variable "kms_deletion_window_in_days" {
   default     = 30
 }
 
+variable "kms_enable_backup_vault" {
+  type        = bool
+  description = "Whether to enable the backup vault for the KMS key"
+  default     = false
+}
+
+variable "kms_backup_external_role_arn" {
+  type        = string
+  description = "ARN of the backup vault for the KMS key"
+}
+
+variable "kms_backup_vault_deletion_window_in_days" {
+  type        = number
+  description = "Deletion window in days for the backup vault"
+  default     = 30
+}
+
+variable "kms_backup_vault_enable_key_rotation" {
+  type        = bool
+  description = "Whether to enable key rotation for the backup vault"
+  default     = false
+}
+
+variable "kms_backup_vault_key_usage" {
+  type        = string
+  description = "Key usage for the backup vault"
+  default     = "ENCRYPT_DECRYPT"
+}
+
+variable "kms_backup_vault_customer_master_key_spec" {
+  type        = string
+  description = "Key spec for the backup vault"
+  default     = "ASYMMETRIC_DEFAULT"
+}
+
+
 variable "nodegroup_enable_ssm_managed_instance" {
   type        = bool
   description = "Whether to enable SSM managed instance"
