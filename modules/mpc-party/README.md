@@ -297,7 +297,7 @@ The module can optionally create:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_eks_managed_node_group"></a> [eks\_managed\_node\_group](#module\_eks\_managed\_node\_group) | terraform-aws-modules/eks/aws//modules/eks-managed-node-group | 21.0.6 |
-| <a name="module_eks_nodes_sg"></a> [eks\_nodes\_sg](#module\_eks\_nodes\_sg) | terraform-aws-modules/security-group/aws | ~> 5.0 |
+| <a name="module_eks_node_group_sg"></a> [eks\_node\_group\_sg](#module\_eks\_node\_group\_sg) | terraform-aws-modules/security-group/aws | ~> 5.0 |
 | <a name="module_iam_assumable_role_mpc_party"></a> [iam\_assumable\_role\_mpc\_party](#module\_iam\_assumable\_role\_mpc\_party) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_rds_instance"></a> [rds\_instance](#module\_rds\_instance) | terraform-aws-modules/rds/aws | ~> 6.10 |
 | <a name="module_rds_security_group"></a> [rds\_security\_group](#module\_rds\_security\_group) | terraform-aws-modules/security-group/aws | ~> 5.2 |
@@ -308,12 +308,16 @@ The module can optionally create:
 |------|------|
 | [aws_iam_policy.mpc_aws](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_kms_alias.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
+| [aws_kms_alias.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_key.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
+| [aws_kms_key.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
+| [aws_s3_bucket.mpc_party_backup_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.vault_private_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.vault_public_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_cors_configuration.vault_public_bucket_cors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_cors_configuration) | resource |
 | [aws_s3_bucket_ownership_controls.vault_private_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
 | [aws_s3_bucket_ownership_controls.vault_public_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
+| [aws_s3_bucket_policy.mpc_party_backup_bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_policy.vault_public_bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.vault_private_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
 | [aws_s3_bucket_public_access_block.vault_public_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
@@ -349,8 +353,14 @@ The module can optionally create:
 | <a name="input_enable_region_validation"></a> [enable\_region\_validation](#input\_enable\_region\_validation) | Whether to enable region validation | `bool` | `true` | no |
 | <a name="input_k8s_namespace"></a> [k8s\_namespace](#input\_k8s\_namespace) | The Kubernetes namespace for MPC party resources | `string` | n/a | yes |
 | <a name="input_k8s_service_account_name"></a> [k8s\_service\_account\_name](#input\_k8s\_service\_account\_name) | The name of the Kubernetes service account for MPC party | `string` | n/a | yes |
+| <a name="input_kms_backup_vault_arn"></a> [kms\_backup\_vault\_arn](#input\_kms\_backup\_vault\_arn) | ARN of the backup vault for the KMS key | `string` | n/a | yes |
+| <a name="input_kms_backup_vault_customer_master_key_spec"></a> [kms\_backup\_vault\_customer\_master\_key\_spec](#input\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"ASYMMETRIC_DEFAULT"` | no |
+| <a name="input_kms_backup_vault_deletion_window_in_days"></a> [kms\_backup\_vault\_deletion\_window\_in\_days](#input\_kms\_backup\_vault\_deletion\_window\_in\_days) | Deletion window in days for the backup vault | `number` | `30` | no |
+| <a name="input_kms_backup_vault_enable_key_rotation"></a> [kms\_backup\_vault\_enable\_key\_rotation](#input\_kms\_backup\_vault\_enable\_key\_rotation) | Whether to enable key rotation for the backup vault | `bool` | `false` | no |
+| <a name="input_kms_backup_vault_key_usage"></a> [kms\_backup\_vault\_key\_usage](#input\_kms\_backup\_vault\_key\_usage) | Key usage for the backup vault | `string` | `"ENCRYPT_DECRYPT"` | no |
 | <a name="input_kms_customer_master_key_spec"></a> [kms\_customer\_master\_key\_spec](#input\_kms\_customer\_master\_key\_spec) | n/a | `string` | `"SYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_deletion_window_in_days"></a> [kms\_deletion\_window\_in\_days](#input\_kms\_deletion\_window\_in\_days) | Deletion window in days for KMS key | `number` | `30` | no |
+| <a name="input_kms_enable_backup_vault"></a> [kms\_enable\_backup\_vault](#input\_kms\_enable\_backup\_vault) | Whether to enable the backup vault for the KMS key | `bool` | `false` | no |
 | <a name="input_kms_enabled_nitro_enclaves"></a> [kms\_enabled\_nitro\_enclaves](#input\_kms\_enabled\_nitro\_enclaves) | Whether to enable KMS for Nitro Enclaves | `bool` | n/a | yes |
 | <a name="input_kms_image_attestation_sha"></a> [kms\_image\_attestation\_sha](#input\_kms\_image\_attestation\_sha) | Attestation SHA for KMS image | `string` | n/a | yes |
 | <a name="input_kms_key_usage"></a> [kms\_key\_usage](#input\_kms\_key\_usage) | Key usage for KMS | `string` | `"ENCRYPT_DECRYPT"` | no |
