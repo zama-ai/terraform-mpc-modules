@@ -654,6 +654,9 @@ module "rds_instance" {
   multi_az              = var.rds_multi_az
   parameters            = var.rds_parameters
 
+  storage_type = var.rds_storage_type
+  iops         = var.rds_iops
+
   db_name  = var.rds_db_name
   username = var.rds_username
   port     = var.rds_port
