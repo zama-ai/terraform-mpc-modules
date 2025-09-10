@@ -207,7 +207,7 @@ resource "aws_iam_policy" "mpc_aws" {
         Action = "s3:*Object"
         Resource = [
           "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}/*",
-          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*"
+          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*",
         ]
       },
       {
@@ -216,7 +216,7 @@ resource "aws_iam_policy" "mpc_aws" {
         Action = "s3:ListBucket"
         Resource = [
           "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}"
+          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
         ]
       }
     ]
@@ -322,6 +322,84 @@ resource "aws_kms_alias" "mpc_party" {
 }
 
 # ***************************************
+#  ASYMMETRIC KMS Key Backup for MPC Party
+# ***************************************
+resource "aws_kms_key" "mpc_party_backup" {
+  count                    = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  description              = "Asymmetric KMS key backup for MPC Party"
+  key_usage                = var.kms_backup_vault_key_usage
+  customer_master_key_spec = var.kms_backup_vault_customer_master_key_spec
+  enable_key_rotation      = false
+  deletion_window_in_days  = var.kms_deletion_window_in_days
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = var.kms_backup_external_role_arn
+        },
+        Action = [
+          "kms:GetPublicKey",
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.iam_assumable_role_mpc_party.iam_role_name}"
+        },
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey",
+          "kms:GetPublicKey"
+        ],
+        Resource = "*",
+        Condition = {
+          StringEqualsIgnoreCase = {
+            "kms:RecipientAttestation:ImageSha384" : var.kms_image_attestation_sha
+          }
+        }
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:TagResource",
+          "kms:UntagResource",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion"
+        ],
+        Resource = "*"
+      }
+
+    ]
+  })
+  tags = var.tags
+}
+
+# ***************************************
+#  KMS Key Alias for MPC Party Backup
+# ***************************************
+resource "aws_kms_alias" "mpc_party_backup" {
+  count         = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  name          = "alias/mpc-${var.party_name}-backup"
+  target_key_id = aws_kms_key.mpc_party_backup[0].key_id
+}
+
+# ***************************************
 #  ConfigMap for MPC Party
 # ***************************************
 resource "kubernetes_config_map" "mpc_party_config" {
@@ -361,44 +439,76 @@ resource "kubernetes_config_map" "mpc_party_config" {
 # ***************************************
 #  EKS Managed Node Group
 # ***************************************
-module "eks_node_group_sg" {
-  source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.0"
-
-  name        = var.nodegroup_security_group_custom_name
-  description = "Security group for EKS nodes"
-  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-
-  # typical default
-  egress_rules = var.nodegroup_security_group_custom_egress_rules
-
-  # ---- Node-to-node (use self as the source) ----
-  # CoreDNS (TCP/UDP 53) + TCP ephemeral range 1025–6553
-  ingress_with_self = [
-    for sg_rule in var.nodegroup_sg_ingress_with_self :
-    { for k, v in sg_rule : k => v if v != null }
-  ]
-
-  # ---- From Cluster API SG to nodes ----
-  ingress_with_source_security_group_id = [
-    for sg_rule in var.nodegroup_sg_ingress_with_source_sg : merge(
-      sg_rule.rule != null ? { rule = sg_rule.rule } : {},
-      sg_rule.from_port != null ? { from_port = sg_rule.from_port } : {},
-      sg_rule.to_port != null ? { to_port = sg_rule.to_port } : {},
-      sg_rule.protocol != null ? { protocol = sg_rule.protocol } : {},
-      sg_rule.description != null ? { description = sg_rule.description } : {},
-      { source_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id }
-    )
-  ]
-
-  tags = merge(var.tags, {
-    "Name" = var.nodegroup_security_group_custom_name
-  })
-}
-
 data "aws_ec2_instance_type" "this" {
   instance_type = var.nodegroup_instance_types[0]
   count         = var.nodegroup_enable_nitro_enclaves ? 1 : 0
+}
+
+locals {
+  cluster_security_group_id = var.nodegroup_auto_assign_security_group ? tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0] : null
+}
+
+data "aws_security_group" "cluster" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  id    = tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0]
+}
+
+# Get all rule IDs on the cluster SG (ingress and egress)
+data "aws_vpc_security_group_rules" "cluster_rules" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  filter {
+    name   = "group-id"
+    values = [local.cluster_security_group_id]
+  }
+}
+
+# Read each rule to find which ones reference another SG
+data "aws_vpc_security_group_rule" "cluster_sg_rules_by_id" {
+  for_each               = toset(try(data.aws_vpc_security_group_rules.cluster_rules[0].ids, []))
+  security_group_rule_id = each.value
+}
+
+# Collect the referenced SG IDs and filter by ingress rules for the cluster SG to confirm the auto resolved node group SG is valid
+locals {
+  sgs_referenced_by_cluster = var.nodegroup_auto_assign_security_group ? distinct(compact([
+    for r in values(data.aws_vpc_security_group_rule.cluster_sg_rules_by_id) : r.referenced_security_group_id
+    if r.referenced_security_group_id != null && r.from_port == 443 && r.is_egress == false
+  ])) : null
+
+  auto_resolved_node_sg = try(local.sgs_referenced_by_cluster[0], null)
+}
+
+data "aws_vpc_security_group_rules" "node_group_sg_rules" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  filter {
+    name   = "group-id"
+    values = [local.auto_resolved_node_sg]
+  }
+}
+
+data "aws_vpc_security_group_rule" "node_group_sg_rules_by_id" {
+  for_each               = toset(try(data.aws_vpc_security_group_rules.node_group_sg_rules[0].ids, []))
+  security_group_rule_id = each.value
+}
+
+locals {
+  sgs_referenced_by_cluster_sg = var.nodegroup_auto_assign_security_group ? distinct(compact([
+    for r in values(data.aws_vpc_security_group_rule.node_group_sg_rules_by_id) : r.referenced_security_group_id
+    if r.referenced_security_group_id == local.cluster_security_group_id && r.from_port == 443 && r.is_egress == false
+  ])) : null
+  auto_resolved_cluster_sg = try(local.sgs_referenced_by_cluster_sg[0], null)
+}
+
+resource "null_resource" "validate_auto_resolved_node_sg" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  lifecycle {
+    precondition {
+      # Ensure the auto resolved node group SG is valid
+      condition     = local.auto_resolved_node_sg != null && local.auto_resolved_cluster_sg != null
+      error_message = "Failed to auto-resolve node security group. Please check the cluster security group rules contains a ingress rule that allow traffic from the node group to the cluster API."
+    }
+  }
+  depends_on = [data.aws_vpc_security_group_rule.cluster_sg_rules_by_id, data.aws_vpc_security_group_rule.node_group_sg_rules_by_id]
 }
 
 module "eks_managed_node_group" {
@@ -416,12 +526,13 @@ module "eks_managed_node_group" {
   subnet_ids = local.private_subnet_ids
 
   cluster_primary_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
-  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [module.eks_node_group_sg.security_group_id])
+  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [var.nodegroup_auto_assign_security_group ? local.auto_resolved_node_sg : null])
 
   # Scaling Configuration
-  min_size     = var.nodegroup_min_size
-  max_size     = var.nodegroup_max_size
-  desired_size = var.nodegroup_desired_size
+  min_size      = var.nodegroup_min_size
+  max_size      = var.nodegroup_max_size
+  desired_size  = var.nodegroup_desired_size
+  update_config = var.nodegroup_update_config
 
   # Instance Configuration (only when not using launch template)
   instance_types = var.nodegroup_instance_types
@@ -680,7 +791,7 @@ module "rds_instance" {
 module "rds_security_group" {
   count   = var.enable_rds ? 1 : 0
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.2"
+  version = "~> 5.3.0"
 
   name        = var.rds_db_name != null ? var.rds_db_name : "rds-sg"
   description = "Security group for ${var.rds_db_name != null ? var.rds_db_name : "RDS"} RDS Postgres opened port within VPC"

@@ -30,7 +30,7 @@ tags = {
 }
 
 # RDS Configuration
-enable_rds              = true
+enable_rds              = false
 rds_prefix              = "zama" # Use your organization prefix here
 rds_db_name             = "kmsconnector"
 rds_username            = "kmsconnector"
@@ -39,7 +39,7 @@ rds_deletion_protection = false # Allow deletion of RDS instance
 # Node Group Configuration
 create_nodegroup                         = true
 nodegroup_name                           = "mpc"
-nodegroup_instance_types                 = ["c7a.16xlarge"]
+nodegroup_instance_types                 = ["m5.2xlarge"]
 nodegroup_min_size                       = 1
 nodegroup_max_size                       = 1
 nodegroup_desired_size                   = 1

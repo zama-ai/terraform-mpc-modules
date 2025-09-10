@@ -23,12 +23,5 @@ terraform {
   }
 }
 
-# Environment-specific inputs and overrides
 inputs = {
-  # Common variables are automatically injected from common.hcl
-  # Environment-specific overrides can be added here if needed
-  
-  # Most configuration comes from the local terraform.tfvars file
-  # AWS profile and region are automatically set based on environment (kms-dev-v1)
-  # Custom S3 bucket for this environment: zama-terraform-kms-dev-v1-mpc-modules-tfstate
 } 
