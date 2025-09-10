@@ -318,93 +318,23 @@ variable "nodegroup_nitro_enclaves_daemonset_resources" {
   }
 }
 
-variable "nodegroup_security_group_custom_name" {
-  type        = string
-  description = "Name of the custom security group for the node group"
-  default     = "mpc-party-node-group"
+variable "nodegroup_auto_resolve_security_group" {
+  type        = bool
+  description = "Whether to auto resolve the security group, it work with terraform-aws-modules/eks/aws"
+  default     = true
 }
 
-variable "nodegroup_security_group_custom_egress_rules" {
-  type        = list(string)
-  description = "Egress rules for the custom security group for the node group"
-  default     = ["all-all"]
+variable "nodegroup_update_config" {
+  type = object({
+    max_unavailable            = optional(number)
+    max_unavailable_percentage = optional(number)
+  })
+  description = "Update config for the node group"
+  default = {
+    max_unavailable            = 1
+    max_unavailable_percentage = null
+  }
 }
-
-variable "nodegroup_sg_ingress_with_self" {
-  description = "Ingress-with-self rules for the node group security group"
-  type = list(object({
-    rule        = optional(string)
-    from_port   = optional(number)
-    to_port     = optional(number)
-    protocol    = optional(string)
-    description = optional(string)
-  }))
-  default = [
-    {
-      rule        = "dns-tcp"
-      description = "Allow dns-tcp"
-    },
-    {
-      rule        = "dns-udp"
-      description = "Allow dns-udp"
-    },
-    {
-      from_port   = 1025
-      to_port     = 6553
-      protocol    = "tcp"
-      description = "Node to node ingress on ephemeral range"
-    }
-  ]
-}
-
-variable "nodegroup_sg_ingress_with_source_sg" {
-  description = "Ingress rules that require a source security group; the actual source SG id will be injected"
-  type = list(object({
-    rule        = optional(string)
-    from_port   = optional(number)
-    to_port     = optional(number)
-    protocol    = optional(string)
-    description = optional(string)
-  }))
-  default = [
-    {
-      rule        = "https-443-tcp"
-      description = "Cluster API to node groups"
-    },
-    {
-      from_port   = 6443
-      to_port     = 6443
-      protocol    = "tcp"
-      description = "Cluster API to node 6443/tcp"
-    },
-    {
-      from_port   = 8443
-      to_port     = 8443
-      protocol    = "tcp"
-      description = "Cluster API to node 8443/tcp"
-    },
-    {
-      from_port   = 9443
-      to_port     = 9443
-      protocol    = "tcp"
-      description = "Cluster API to node 9443/tcp"
-    },
-    {
-      from_port   = 4443
-      to_port     = 4443
-      protocol    = "tcp"
-      description = "Cluster API to node 4443/tcp"
-    },
-    {
-      from_port   = 10250
-      to_port     = 10250
-      protocol    = "tcp"
-      description = "Cluster API to kubelets (10250/tcp)"
-    }
-  ]
-}
-
-// Intentionally no override: source SG is always the EKS cluster security group
 
 
 # kms configuration
@@ -444,6 +374,7 @@ variable "kms_enable_backup_vault" {
 variable "kms_backup_external_role_arn" {
   type        = string
   description = "ARN of the backup vault for the KMS key"
+  default     = null
 }
 
 variable "kms_backup_vault_deletion_window_in_days" {
