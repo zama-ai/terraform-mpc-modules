@@ -30,7 +30,7 @@ tags = {
 }
 
 # RDS Configuration
-enable_rds              = true
+enable_rds              = false
 rds_prefix              = "zama" # Use your organization prefix here
 rds_db_name             = "kmsconnector"
 rds_username            = "kmsconnector"
@@ -52,9 +52,9 @@ nodegroup_ami_release_version = "1.32.3-20250620"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
-nodegroup_additional_security_group_ids = ["sg-04e41735e6bdc6007"]
-nodegroup_enable_nitro_enclaves         = true
-nodegroup_enable_ssm_managed_instance   = true
+nodegroup_auto_assign_security_group  = true
+nodegroup_enable_nitro_enclaves       = true
+nodegroup_enable_ssm_managed_instance = true
 # Nitro Enclaves Configuration for MPC Party
 kms_enabled_nitro_enclaves = true
 # This image attestation SHA must be updated for each KMS enclave release image.
