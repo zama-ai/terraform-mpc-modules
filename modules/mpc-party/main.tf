@@ -219,7 +219,7 @@ resource "aws_iam_policy" "mpc_aws" {
           "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
         ]
       }
-    ], var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? [
+      ], var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? [
       {
         Sid    = "AllowToUseKMSBackupKey"
         Effect = "Allow"
@@ -448,44 +448,18 @@ resource "kubernetes_config_map" "mpc_party_config" {
 # ***************************************
 #  EKS Managed Node Group
 # ***************************************
-module "eks_node_group_sg" {
-  source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 5.0"
-
-  name        = var.nodegroup_security_group_custom_name
-  description = "Security group for EKS nodes"
-  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-
-  # typical default
-  egress_rules = var.nodegroup_security_group_custom_egress_rules
-
-  # ---- Node-to-node (use self as the source) ----
-  # CoreDNS (TCP/UDP 53) + TCP ephemeral range 1025–6553
-  ingress_with_self = [
-    for sg_rule in var.nodegroup_sg_ingress_with_self :
-    { for k, v in sg_rule : k => v if v != null }
-  ]
-
-  # ---- From Cluster API SG to nodes ----
-  ingress_with_source_security_group_id = [
-    for sg_rule in var.nodegroup_sg_ingress_with_source_sg : merge(
-      sg_rule.rule != null ? { rule = sg_rule.rule } : {},
-      sg_rule.from_port != null ? { from_port = sg_rule.from_port } : {},
-      sg_rule.to_port != null ? { to_port = sg_rule.to_port } : {},
-      sg_rule.protocol != null ? { protocol = sg_rule.protocol } : {},
-      sg_rule.description != null ? { description = sg_rule.description } : {},
-      { source_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id }
-    )
-  ]
-
-  tags = merge(var.tags, {
-    "Name" = var.nodegroup_security_group_custom_name
-  })
-}
-
 data "aws_ec2_instance_type" "this" {
   instance_type = var.nodegroup_instance_types[0]
   count         = var.nodegroup_enable_nitro_enclaves ? 1 : 0
+}
+
+locals {
+  cluster_security_group_id = var.nodegroup_auto_resolve_security_group ? data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id : null
+}
+data "aws_vpc_security_group_rule" "cluster" {
+  count = var.nodegroup_auto_resolve_security_group ? 1 : 0
+  security_group_id = local.cluster_security_group_id
+  depends_on = [ data.aws_eks_cluster.cluster ]
 }
 
 module "eks_managed_node_group" {
@@ -503,12 +477,13 @@ module "eks_managed_node_group" {
   subnet_ids = local.private_subnet_ids
 
   cluster_primary_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
-  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [module.eks_node_group_sg.security_group_id])
+  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [var.nodegroup_auto_resolve_security_group ? data.aws_vpc_security_group_rule.cluster[0].referenced_security_group_id : null])
 
   # Scaling Configuration
-  min_size     = var.nodegroup_min_size
-  max_size     = var.nodegroup_max_size
-  desired_size = var.nodegroup_desired_size
+  min_size      = var.nodegroup_min_size
+  max_size      = var.nodegroup_max_size
+  desired_size  = var.nodegroup_desired_size
+  update_config = var.nodegroup_update_config
 
   # Instance Configuration (only when not using launch template)
   instance_types = var.nodegroup_instance_types
@@ -767,7 +742,7 @@ module "rds_instance" {
 module "rds_security_group" {
   count   = var.enable_rds ? 1 : 0
   source  = "terraform-aws-modules/security-group/aws"
-  version = "~> 6.5.5"
+  version = "~> 5.3.0"
 
   name        = var.rds_db_name != null ? var.rds_db_name : "rds-sg"
   description = "Security group for ${var.rds_db_name != null ? var.rds_db_name : "RDS"} RDS Postgres opened port within VPC"
