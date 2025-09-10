@@ -94,3 +94,13 @@ output "node_group_tolerations" {
   description = "Kubernetes tolerations derived from EKS node group taints"
   value       = local.node_group_tolerations
 }
+
+# Node Group Auto Resolve Security Group Summary
+output "nodegroup_auto_assign_security_group_summary" {
+  description = "Summary of the auto resolved security group"
+  value = var.nodegroup_auto_assign_security_group ? {
+    auto_resolved_node_sg    = local.auto_resolved_node_sg
+    auto_resolved_cluster_sg = local.auto_resolved_cluster_sg
+    sg_rules_ids             = data.aws_vpc_security_group_rules.cluster_rules[0].ids
+  } : null
+}
