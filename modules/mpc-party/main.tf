@@ -219,16 +219,8 @@ resource "aws_iam_policy" "mpc_aws" {
           "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
         ]
       }
-      ], var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? [
-      {
-        Sid    = "AllowToUseKMSBackupKey"
-        Effect = "Allow"
-        Action = "kms:GetPublicKey"
-        Resource = [
-          "arn:aws:kms:${data.aws_region.current.name}:${var.kms_backup_external_role_arn}:key/${aws_kms_key.mpc_party_backup[0].key_id}",
-        ]
-      }
-    ] : [])
+      ]
+    )
   })
 }
 
@@ -454,12 +446,70 @@ data "aws_ec2_instance_type" "this" {
 }
 
 locals {
-  cluster_security_group_id = var.nodegroup_auto_resolve_security_group ? data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id : null
+  cluster_security_group_id = var.nodegroup_auto_assign_security_group ? tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0] : null
 }
-data "aws_vpc_security_group_rule" "cluster" {
-  count = var.nodegroup_auto_resolve_security_group ? 1 : 0
-  security_group_id = local.cluster_security_group_id
-  depends_on = [ data.aws_eks_cluster.cluster ]
+
+data "aws_security_group" "cluster" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  id    = tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0]
+}
+
+# Get all rule IDs on the cluster SG (ingress and egress)
+data "aws_vpc_security_group_rules" "cluster_rules" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  filter {
+    name   = "group-id"
+    values = [local.cluster_security_group_id]
+  }
+}
+
+# Read each rule to find which ones reference another SG
+data "aws_vpc_security_group_rule" "cluster_sg_rules_by_id" {
+  for_each               = toset(try(data.aws_vpc_security_group_rules.cluster_rules[0].ids, []))
+  security_group_rule_id = each.value
+}
+
+# Collect the referenced SG IDs and filter by ingress rules for the cluster SG to confirm the auto resolved node group SG is valid
+locals {
+  sgs_referenced_by_cluster = var.nodegroup_auto_assign_security_group ? distinct(compact([
+    for r in values(data.aws_vpc_security_group_rule.cluster_sg_rules_by_id) : r.referenced_security_group_id
+    if r.referenced_security_group_id != null && r.from_port == 443 && r.is_egress == false
+  ])) : null
+
+  auto_resolved_node_sg = try(local.sgs_referenced_by_cluster[0], null)
+}
+
+data "aws_vpc_security_group_rules" "node_group_sg_rules" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  filter {
+    name   = "group-id"
+    values = [local.auto_resolved_node_sg]
+  }
+}
+
+data "aws_vpc_security_group_rule" "node_group_sg_rules_by_id" {
+  for_each               = toset(try(data.aws_vpc_security_group_rules.node_group_sg_rules[0].ids, []))
+  security_group_rule_id = each.value
+}
+
+locals {
+  sgs_referenced_by_cluster_sg = var.nodegroup_auto_assign_security_group ? distinct(compact([
+    for r in values(data.aws_vpc_security_group_rule.node_group_sg_rules_by_id) : r.referenced_security_group_id
+    if r.referenced_security_group_id == local.cluster_security_group_id && r.from_port == 443 && r.is_egress == false
+  ])) : null
+  auto_resolved_cluster_sg = try(local.sgs_referenced_by_cluster_sg[0], null)
+}
+
+resource "null_resource" "validate_auto_resolved_node_sg" {
+  count = var.nodegroup_auto_assign_security_group ? 1 : 0
+  lifecycle {
+    precondition {
+      # Ensure the auto resolved node group SG is valid
+      condition     = local.auto_resolved_node_sg != null && local.auto_resolved_cluster_sg != null
+      error_message = "Failed to auto-resolve node security group. Please check the cluster security group rules contains a ingress rule that allow traffic from the node group to the cluster API."
+    }
+  }
+  depends_on = [data.aws_vpc_security_group_rule.cluster_sg_rules_by_id, data.aws_vpc_security_group_rule.node_group_sg_rules_by_id]
 }
 
 module "eks_managed_node_group" {
@@ -477,7 +527,7 @@ module "eks_managed_node_group" {
   subnet_ids = local.private_subnet_ids
 
   cluster_primary_security_group_id = data.aws_eks_cluster.cluster.vpc_config[0].cluster_security_group_id
-  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [var.nodegroup_auto_resolve_security_group ? data.aws_vpc_security_group_rule.cluster[0].referenced_security_group_id : null])
+  vpc_security_group_ids            = concat(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids), var.nodegroup_additional_security_group_ids, [var.nodegroup_auto_assign_security_group ? local.auto_resolved_node_sg : null])
 
   # Scaling Configuration
   min_size      = var.nodegroup_min_size

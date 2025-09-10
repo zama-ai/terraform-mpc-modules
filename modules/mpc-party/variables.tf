@@ -318,9 +318,9 @@ variable "nodegroup_nitro_enclaves_daemonset_resources" {
   }
 }
 
-variable "nodegroup_auto_resolve_security_group" {
+variable "nodegroup_auto_assign_security_group" {
   type        = bool
-  description = "Whether to auto resolve the security group, it work with terraform-aws-modules/eks/aws"
+  description = "The auto-resolver retrieves the node group security group from the cluster security group and checks whether it contains an ingress rule that allows traffic between the node group and the cluster API."
   default     = true
 }
 

@@ -290,6 +290,7 @@ The module can optionally create:
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.23 |
+| <a name="provider_null"></a> [null](#provider\_null) | n/a |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 3.1 |
 
 ## Modules
@@ -297,7 +298,6 @@ The module can optionally create:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_eks_managed_node_group"></a> [eks\_managed\_node\_group](#module\_eks\_managed\_node\_group) | terraform-aws-modules/eks/aws//modules/eks-managed-node-group | 21.0.6 |
-| <a name="module_eks_node_group_sg"></a> [eks\_node\_group\_sg](#module\_eks\_node\_group\_sg) | terraform-aws-modules/security-group/aws | ~> 5.3.0 |
 | <a name="module_iam_assumable_role_mpc_party"></a> [iam\_assumable\_role\_mpc\_party](#module\_iam\_assumable\_role\_mpc\_party) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_rds_instance"></a> [rds\_instance](#module\_rds\_instance) | terraform-aws-modules/rds/aws | ~> 6.10 |
 | <a name="module_rds_security_group"></a> [rds\_security\_group](#module\_rds\_security\_group) | terraform-aws-modules/security-group/aws | ~> 5.3.0 |
@@ -326,12 +326,18 @@ The module can optionally create:
 | [kubernetes_namespace.mpc_party_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_service.externalname](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
 | [kubernetes_service_account.mpc_party_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
+| [null_resource.validate_auto_resolved_node_sg](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [random_id.mpc_party_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ec2_instance_type.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ec2_instance_type) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+| [aws_security_group.cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_subnet.cluster_subnets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
+| [aws_vpc_security_group_rule.cluster_sg_rules_by_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc_security_group_rule) | data source |
+| [aws_vpc_security_group_rule.node_group_sg_rules_by_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc_security_group_rule) | data source |
+| [aws_vpc_security_group_rules.cluster_rules](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc_security_group_rules) | data source |
+| [aws_vpc_security_group_rules.node_group_sg_rules](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc_security_group_rules) | data source |
 
 ## Inputs
 
@@ -372,8 +378,8 @@ The module can optionally create:
 | <a name="input_nodegroup_additional_security_group_ids"></a> [nodegroup\_additional\_security\_group\_ids](#input\_nodegroup\_additional\_security\_group\_ids) | List of additional security group IDs to associate with the node group | `list(string)` | `[]` | no |
 | <a name="input_nodegroup_ami_release_version"></a> [nodegroup\_ami\_release\_version](#input\_nodegroup\_ami\_release\_version) | AMI release version for the node group | `string` | `"1.32.3-20250620"` | no |
 | <a name="input_nodegroup_ami_type"></a> [nodegroup\_ami\_type](#input\_nodegroup\_ami\_type) | Type of Amazon Machine Image (AMI) associated with the EKS Node Group | `string` | `"AL2_x86_64"` | no |
+| <a name="input_nodegroup_auto_assign_security_group"></a> [nodegroup\_auto\_resolve\_security\_group](#input\_nodegroup\_auto\_resolve\_security\_group) | The auto-resolver retrieves the node group security group from the cluster security group and checks whether it contains an ingress rule that allows traffic between the node group and the cluster API. | `bool` | `true` | no |
 | <a name="input_nodegroup_capacity_type"></a> [nodegroup\_capacity\_type](#input\_nodegroup\_capacity\_type) | Type of capacity associated with the EKS Node Group. Valid values: ON\_DEMAND, SPOT | `string` | `"ON_DEMAND"` | no |
-| <a name="input_nodegroup_create_default_security_group"></a> [nodegroup\_create\_default\_security\_group](#input\_nodegroup\_create\_default\_security\_group) | Whether to create a default security group on based on the node group security group rules, it work with terraform-aws-modules/eks/aws | `bool` | `true` | no |
 | <a name="input_nodegroup_desired_size"></a> [nodegroup\_desired\_size](#input\_nodegroup\_desired\_size) | Desired number of instances in the node group | `number` | `1` | no |
 | <a name="input_nodegroup_disk_size"></a> [nodegroup\_disk\_size](#input\_nodegroup\_disk\_size) | Disk size in GiB for worker nodes | `number` | `20` | no |
 | <a name="input_nodegroup_ec2_ssh_key"></a> [nodegroup\_ec2\_ssh\_key](#input\_nodegroup\_ec2\_ssh\_key) | EC2 Key Pair name that provides access for SSH communication with the worker nodes | `string` | `null` | no |
@@ -390,12 +396,8 @@ The module can optionally create:
 | <a name="input_nodegroup_nitro_enclaves_image_repo"></a> [nodegroup\_nitro\_enclaves\_image\_repo](#input\_nodegroup\_nitro\_enclaves\_image\_repo) | Image repository for Nitro Enclaves | `string` | `"public.ecr.aws/aws-nitro-enclaves/aws-nitro-enclaves-k8s-device-plugin"` | no |
 | <a name="input_nodegroup_nitro_enclaves_image_tag"></a> [nodegroup\_nitro\_enclaves\_image\_tag](#input\_nodegroup\_nitro\_enclaves\_image\_tag) | Image tag for Nitro Enclaves | `string` | `"v0.3"` | no |
 | <a name="input_nodegroup_security_group_custom"></a> [nodegroup\_security\_group\_custom](#input\_nodegroup\_security\_group\_custom) | List of security group IDs to associate with the node group | `list(string)` | `[]` | no |
-| <a name="input_nodegroup_security_group_custom_egress_rules"></a> [nodegroup\_security\_group\_custom\_egress\_rules](#input\_nodegroup\_security\_group\_custom\_egress\_rules) | Egress rules for the custom security group for the node group | `list(string)` | <pre>[<br/>  "all-all"<br/>]</pre> | no |
-| <a name="input_nodegroup_security_group_custom_name"></a> [nodegroup\_security\_group\_custom\_name](#input\_nodegroup\_security\_group\_custom\_name) | Name of the custom security group for the node group | `string` | `"mpc-party-node-group"` | no |
-| <a name="input_nodegroup_sg_ingress_with_self"></a> [nodegroup\_sg\_ingress\_with\_self](#input\_nodegroup\_sg\_ingress\_with\_self) | Ingress-with-self rules for the node group security group | <pre>list(object({<br/>    rule        = optional(string)<br/>    from_port   = optional(number)<br/>    to_port     = optional(number)<br/>    protocol    = optional(string)<br/>    description = optional(string)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow dns-tcp",<br/>    "rule": "dns-tcp"<br/>  },<br/>  {<br/>    "description": "Allow dns-udp",<br/>    "rule": "dns-udp"<br/>  },<br/>  {<br/>    "description": "Node to node ingress on ephemeral range",<br/>    "from_port": 1025,<br/>    "protocol": "tcp",<br/>    "to_port": 65535<br/>  }<br/>]</pre> | no |
-| <a name="input_nodegroup_sg_ingress_with_source_sg"></a> [nodegroup\_sg\_ingress\_with\_source\_sg](#input\_nodegroup\_sg\_ingress\_with\_source\_sg) | Ingress rules that require a source security group; the actual source SG id will be injected | <pre>list(object({<br/>    rule        = optional(string)<br/>    from_port   = optional(number)<br/>    to_port     = optional(number)<br/>    protocol    = optional(string)<br/>    description = optional(string)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Cluster API to node groups",<br/>    "rule": "https-443-tcp"<br/>  },<br/>  {<br/>    "description": "Cluster API to node 6443/tcp",<br/>    "from_port": 6443,<br/>    "protocol": "tcp",<br/>    "to_port": 6443<br/>  },<br/>  {<br/>    "description": "Cluster API to node 8443/tcp",<br/>    "from_port": 8443,<br/>    "protocol": "tcp",<br/>    "to_port": 8443<br/>  },<br/>  {<br/>    "description": "Cluster API to node 9443/tcp",<br/>    "from_port": 9443,<br/>    "protocol": "tcp",<br/>    "to_port": 9443<br/>  },<br/>  {<br/>    "description": "Cluster API to node 4443/tcp",<br/>    "from_port": 4443,<br/>    "protocol": "tcp",<br/>    "to_port": 4443<br/>  },<br/>  {<br/>    "description": "Cluster API to kubelets (10250/tcp)",<br/>    "from_port": 10250,<br/>    "protocol": "tcp",<br/>    "to_port": 10250<br/>  }<br/>]</pre> | no |
 | <a name="input_nodegroup_source_security_group_ids"></a> [nodegroup\_source\_security\_group\_ids](#input\_nodegroup\_source\_security\_group\_ids) | List of security group IDs allowed for remote access | `list(string)` | `[]` | no |
-| <a name="input_nodegroup_update_config"></a> [nodegroup\_update\_config](#input\_nodegroup\_update\_config) | Update config for the node group | <pre>object({<br/>    max_unavailable = optional(number)<br/>    max_unavailable_percentage = optional(number)<br/>  })</pre> | <pre>{<br/>  "max_unavailable": 1,<br/>  "max_unavailable_percentage": null<br/>}</pre> | no |
+| <a name="input_nodegroup_update_config"></a> [nodegroup\_update\_config](#input\_nodegroup\_update\_config) | Update config for the node group | <pre>object({<br/>    max_unavailable            = optional(number)<br/>    max_unavailable_percentage = optional(number)<br/>  })</pre> | <pre>{<br/>  "max_unavailable": 1,<br/>  "max_unavailable_percentage": null<br/>}</pre> | no |
 | <a name="input_nodegroup_use_custom_launch_template"></a> [nodegroup\_use\_custom\_launch\_template](#input\_nodegroup\_use\_custom\_launch\_template) | Whether to use a custom launch template | `bool` | `true` | no |
 | <a name="input_nodegroup_use_latest_ami_release_version"></a> [nodegroup\_use\_latest\_ami\_release\_version](#input\_nodegroup\_use\_latest\_ami\_release\_version) | Whether to use the latest AMI release version | `bool` | `false` | no |
 | <a name="input_party_name"></a> [party\_name](#input\_party\_name) | The name of the MPC party (used for resource naming and tagging) | `string` | n/a | yes |
@@ -454,6 +456,7 @@ The module can optionally create:
 | <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
 | <a name="output_nitro_enclaves_summary"></a> [nitro\_enclaves\_summary](#output\_nitro\_enclaves\_summary) | Summary of the Nitro Enclaves for MPC party |
 | <a name="output_node_group_tolerations"></a> [node\_group\_tolerations](#output\_node\_group\_tolerations) | Kubernetes tolerations derived from EKS node group taints |
+| <a name="output_nodegroup_auto_assign_security_group_summary"></a> [nodegroup\_auto\_resolve\_security\_group\_summary](#output\_nodegroup\_auto\_resolve\_security\_group\_summary) | Summary of the auto resolved security group |
 | <a name="output_party_name"></a> [party\_name](#output\_party\_name) | Name of the MPC party |
 | <a name="output_rds_summary"></a> [rds\_summary](#output\_rds\_summary) | Aggregated RDS database information |
 | <a name="output_vault_bucket_storage_summary"></a> [vault\_bucket\_storage\_summary](#output\_vault\_bucket\_storage\_summary) | Summary of the vault buckets public and private storage |
