@@ -147,11 +147,13 @@ resource "kubernetes_service" "party_services" {
     session_affinity = var.party_services[count.index].kube_service_config.session_affinity
 
     dynamic "port" {
-      for_each = [
-        var.default_mpc_ports.grpc,
-        var.default_mpc_ports.peer,
-        var.default_mpc_ports.metrics
-      ]
+      for_each = concat(
+        var.enable_grpc_port ? [var.default_mpc_ports.grpc] : [],
+        [
+          var.default_mpc_ports.peer,
+          var.default_mpc_ports.metrics
+        ]
+      )
       content {
         name        = port.value.name
         port        = port.value.port

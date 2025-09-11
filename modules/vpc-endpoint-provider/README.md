@@ -40,11 +40,13 @@ No modules.
 | <a name="input_allowed_principals"></a> [allowed\_principals](#input\_allowed\_principals) | List of AWS principal ARNs allowed to discover and connect to the endpoint service. Use ['*'] to allow all principals | `list(string)` | `[]` | no |
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Whether to create the namespace if it doesn't exist | `bool` | `true` | no |
 | <a name="input_default_mpc_ports"></a> [default\_mpc\_ports](#input\_default\_mpc\_ports) | Default port configurations for MPC services. These can be overridden per service in mpc\_services configuration. | <pre>object({<br/>    grpc = object({<br/>      name        = string<br/>      port        = number<br/>      target_port = any<br/>      protocol    = string<br/>    })<br/>    peer = object({<br/>      name        = string<br/>      port        = number<br/>      target_port = any<br/>      protocol    = string<br/>    })<br/>    metrics = object({<br/>      name        = string<br/>      port        = number<br/>      target_port = any<br/>      protocol    = string<br/>    })<br/>  })</pre> | <pre>{<br/>  "grpc": {<br/>    "name": "grpc",<br/>    "port": 50100,<br/>    "protocol": "TCP",<br/>    "target_port": 50100<br/>  },<br/>  "metrics": {<br/>    "name": "metrics",<br/>    "port": 9646,<br/>    "protocol": "TCP",<br/>    "target_port": 9646<br/>  },<br/>  "peer": {<br/>    "name": "peer",<br/>    "port": 50001,<br/>    "protocol": "TCP",<br/>    "target_port": 50001<br/>  }<br/>}</pre> | no |
+| <a name="input_enable_grpc_port"></a> [enable\_grpc\_port](#input\_enable\_grpc\_port) | Whether to enable and expose the gRPC port in the load balancer service | `bool` | `true` | no |
 | <a name="input_enable_region_validation"></a> [enable\_region\_validation](#input\_enable\_region\_validation) | Whether to enable region validation | `bool` | `true` | no |
 | <a name="input_kubernetes_nlb_extra_labels"></a> [kubernetes\_nlb\_extra\_labels](#input\_kubernetes\_nlb\_extra\_labels) | Extra labels to add to the Kubernetes NLB | `map(string)` | `{}` | no |
 | <a name="input_mainnet_supported_regions"></a> [mainnet\_supported\_regions](#input\_mainnet\_supported\_regions) | AWS regions supported by the VPC endpoint service for mainnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where MPC services will be deployed | `string` | `"mpc-cluster"` | no |
 | <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
+| <a name="input_partner_name"></a> [partner\_name](#input\_partner\_name) | Partner name for the MPC service | `string` | n/a | yes |
 | <a name="input_party_id"></a> [party\_id](#input\_party\_id) | Party ID for the MPC service | `string` | n/a | yes |
 | <a name="input_service_create_timeout"></a> [service\_create\_timeout](#input\_service\_create\_timeout) | Timeout for creating Kubernetes services | `string` | `"10m"` | no |
 | <a name="input_supported_regions"></a> [supported\_regions](#input\_supported\_regions) | List of AWS regions supported by the VPC endpoint service | `list(string)` | `[]` | no |
@@ -55,6 +57,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_configuration_for_consumer"></a> [configuration\_for\_consumer](#output\_configuration\_for\_consumer) | Configuration for the consumer to use the VPC endpoint service |
 | <a name="output_nlb_details"></a> [nlb\_details](#output\_nlb\_details) | Detailed information about the looked up NLBs |
 | <a name="output_service_details"></a> [service\_details](#output\_service\_details) | Detailed information about the created VPC endpoint services |
 | <a name="output_vpc_endpoint_service_arn"></a> [vpc\_endpoint\_service\_arn](#output\_vpc\_endpoint\_service\_arn) | ARNs of the created VPC endpoint services |

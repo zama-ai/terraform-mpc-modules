@@ -68,6 +68,11 @@ variable "party_id" {
   type        = string
 }
 
+variable "partner_name" {
+  description = "Partner name for the MPC service"
+  type        = string
+}
+
 # Default MPC Port Configurations
 variable "default_mpc_ports" {
   description = "Default port configurations for MPC services. These can be overridden per service in mpc_services configuration."
@@ -123,4 +128,10 @@ variable "kubernetes_nlb_extra_labels" {
   description = "Extra labels to add to the Kubernetes NLB"
   type        = map(string)
   default     = {}
+}
+
+variable "enable_grpc_port" {
+  description = "Whether to enable and expose the gRPC port in the load balancer service"
+  type        = bool
+  default     = true
 }

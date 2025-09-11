@@ -378,7 +378,7 @@ The module can optionally create:
 | <a name="input_nodegroup_additional_security_group_ids"></a> [nodegroup\_additional\_security\_group\_ids](#input\_nodegroup\_additional\_security\_group\_ids) | List of additional security group IDs to associate with the node group | `list(string)` | `[]` | no |
 | <a name="input_nodegroup_ami_release_version"></a> [nodegroup\_ami\_release\_version](#input\_nodegroup\_ami\_release\_version) | AMI release version for the node group | `string` | `"1.32.3-20250620"` | no |
 | <a name="input_nodegroup_ami_type"></a> [nodegroup\_ami\_type](#input\_nodegroup\_ami\_type) | Type of Amazon Machine Image (AMI) associated with the EKS Node Group | `string` | `"AL2_x86_64"` | no |
-| <a name="input_nodegroup_auto_assign_security_group"></a> [nodegroup\_auto\_resolve\_security\_group](#input\_nodegroup\_auto\_resolve\_security\_group) | The auto-resolver retrieves the node group security group from the cluster security group and checks whether it contains an ingress rule that allows traffic between the node group and the cluster API. | `bool` | `true` | no |
+| <a name="input_nodegroup_auto_assign_security_group"></a> [nodegroup\_auto\_assign\_security\_group](#input\_nodegroup\_auto\_assign\_security\_group) | The auto-resolver retrieves the node group security group from the cluster security group and checks whether it contains an ingress rule that allows traffic between the node group and the cluster API. | `bool` | `true` | no |
 | <a name="input_nodegroup_capacity_type"></a> [nodegroup\_capacity\_type](#input\_nodegroup\_capacity\_type) | Type of capacity associated with the EKS Node Group. Valid values: ON\_DEMAND, SPOT | `string` | `"ON_DEMAND"` | no |
 | <a name="input_nodegroup_desired_size"></a> [nodegroup\_desired\_size](#input\_nodegroup\_desired\_size) | Desired number of instances in the node group | `number` | `1` | no |
 | <a name="input_nodegroup_disk_size"></a> [nodegroup\_disk\_size](#input\_nodegroup\_disk\_size) | Disk size in GiB for worker nodes | `number` | `20` | no |
@@ -456,7 +456,7 @@ The module can optionally create:
 | <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
 | <a name="output_nitro_enclaves_summary"></a> [nitro\_enclaves\_summary](#output\_nitro\_enclaves\_summary) | Summary of the Nitro Enclaves for MPC party |
 | <a name="output_node_group_tolerations"></a> [node\_group\_tolerations](#output\_node\_group\_tolerations) | Kubernetes tolerations derived from EKS node group taints |
-| <a name="output_nodegroup_auto_assign_security_group_summary"></a> [nodegroup\_auto\_resolve\_security\_group\_summary](#output\_nodegroup\_auto\_resolve\_security\_group\_summary) | Summary of the auto resolved security group |
+| <a name="output_nodegroup_auto_assign_security_group_summary"></a> [nodegroup\_auto\_assign\_security\_group\_summary](#output\_nodegroup\_auto\_assign\_security\_group\_summary) | Summary of the auto resolved security group |
 | <a name="output_party_name"></a> [party\_name](#output\_party\_name) | Name of the MPC party |
 | <a name="output_rds_summary"></a> [rds\_summary](#output\_rds\_summary) | Aggregated RDS database information |
 | <a name="output_vault_bucket_storage_summary"></a> [vault\_bucket\_storage\_summary](#output\_vault\_bucket\_storage\_summary) | Summary of the vault buckets public and private storage |
