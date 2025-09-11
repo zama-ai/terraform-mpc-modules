@@ -8,7 +8,7 @@ party_name = "mpc-party-2"
 
 # S3 Bucket Configuration
 bucket_prefix   = "zama-kms-decentralized-threshold-2"
-config_map_name = "mpc-party-2"
+config_map_name = "mpc-party"
 
 # Kubernetes Configuration
 cluster_name             = "zws-dev"
