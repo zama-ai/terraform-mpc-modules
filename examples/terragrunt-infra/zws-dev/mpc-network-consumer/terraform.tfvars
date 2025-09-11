@@ -50,6 +50,7 @@ party_services = [
 # VPC Endpoint Configuration
 private_dns_enabled = false
 name_prefix         = "mpc-partner"
+enable_grpc_port    = false
 
 # Timeouts
 endpoint_create_timeout = "15m"
