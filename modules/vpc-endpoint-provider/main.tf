@@ -58,11 +58,13 @@ resource "kubernetes_service" "mpc_nlb" {
     load_balancer_class = "service.k8s.aws/nlb"
 
     dynamic "port" {
-      for_each = [
-        var.default_mpc_ports.grpc,
-        var.default_mpc_ports.peer,
-        var.default_mpc_ports.metrics
-      ]
+      for_each = concat(
+        var.enable_grpc_port ? [var.default_mpc_ports.grpc] : [],
+        [
+          var.default_mpc_ports.peer,
+          var.default_mpc_ports.metrics
+        ]
+      )
       content {
         name        = port.value.name
         port        = port.value.port
