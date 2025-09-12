@@ -326,13 +326,13 @@ variable "nodegroup_auto_assign_security_group" {
 
 variable "nodegroup_update_config" {
   type = object({
-    max_unavailable            = optional(number)
-    max_unavailable_percentage = optional(number)
+    max_unavailable            = optional(number, 1)
+    max_unavailable_percentage = optional(number, 50)
   })
   description = "Update config for the node group"
   default = {
     max_unavailable            = 1
-    max_unavailable_percentage = null
+    max_unavailable_percentage = 50
   }
 }
 
