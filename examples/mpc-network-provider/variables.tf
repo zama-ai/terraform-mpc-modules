@@ -16,6 +16,11 @@ variable "party_id" {
   type        = string
 }
 
+variable "partner_name" {
+  description = "Partner name for the MPC service"
+  type        = string
+}
+
 variable "enable_region_validation" {
   type        = bool
   description = "Whether to enable region validation"
@@ -80,11 +85,6 @@ variable "environment" {
   default     = "zws-dev"
 }
 
-variable "owner" {
-  description = "Owner of the resources for tagging purposes"
-  type        = string
-  default     = "zws-team"
-}
 
 # VPC Endpoint Services Configuration
 variable "allowed_vpc_endpoint_principals" {

@@ -8,10 +8,10 @@ enable_region_validation = false
 cluster_name = "kms-development-v1"
 namespace    = "kms-decentralized"
 environment  = "dev"
-owner        = "zws-team"
 
 # Party Configuration
 party_id = "1"
+partner_name = "zws-team"
 
 # Kubernetes Provider Configuration
 # Option 1: Using kubeconfig context (current method)
