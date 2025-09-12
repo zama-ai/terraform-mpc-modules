@@ -27,21 +27,28 @@ data "aws_subnet" "cluster_subnets" {
   id       = each.value
 }
 
+data "aws_subnet" "cluster_subnets_custom" {
+  for_each = toset(var.nodegroup_custom_subnet_ids)
+  id       = each.value
+}
+
 # ***************************************
 #  Local variables
 # ***************************************
-
 resource "random_id" "mpc_party_suffix" {
   byte_length = 4
 }
 
 locals {
   allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
-  private_subnet_ids = [
+  private_subnet_ids = var.nodegroup_custom_subnet_ids != [] ? var.nodegroup_custom_subnet_ids : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
   ]
-  private_subnet_cidr_blocks = [
+  private_subnet_cidr_blocks = var.nodegroup_custom_subnet_ids != [] ? [
+    for subnet_id, subnet in data.aws_subnet.cluster_subnets_custom : subnet.cidr_block
+    if subnet.map_public_ip_on_launch == false
+    ] : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet.cidr_block
     if subnet.map_public_ip_on_launch == false
   ]

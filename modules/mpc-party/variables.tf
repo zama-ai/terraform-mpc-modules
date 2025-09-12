@@ -230,6 +230,12 @@ variable "nodegroup_use_custom_launch_template" {
   default     = true
 }
 
+variable "nodegroup_custom_subnet_ids" {
+  type        = list(string)
+  description = "List of subnet IDs to use for the node group"
+  default     = []
+}
+
 
 # Remote Access Configuration
 variable "nodegroup_enable_remote_access" {
