@@ -11,7 +11,8 @@ module "vpc_endpoint_provider" {
   enable_region_validation = var.enable_region_validation
 
   # Party Configuration
-  party_id = var.party_id
+  party_id     = var.party_id
+  partner_name = var.partner_name
 
   namespace        = var.namespace
   create_namespace = false
