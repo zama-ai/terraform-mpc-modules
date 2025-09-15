@@ -771,6 +771,7 @@ module "rds_instance" {
   port     = var.rds_port
 
   manage_master_user_password = true
+  manage_master_user_password_rotation = false
 
   iam_database_authentication_enabled = false
 
