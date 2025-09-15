@@ -98,7 +98,7 @@ output "node_group_tolerations" {
 # Node Group Auto Resolve Security Group Summary
 output "nodegroup_auto_assign_security_group_summary" {
   description = "Summary of the auto resolved security group"
-  value = var.nodegroup_auto_assign_security_group ? {
+  value = var.nodegroup_auto_assign_security_group && local.auto_resolved_node_sg != null ? {
     auto_resolved_node_sg    = local.auto_resolved_node_sg
     auto_resolved_cluster_sg = local.auto_resolved_cluster_sg
     sg_rules_ids             = data.aws_vpc_security_group_rules.cluster_rules[0].ids

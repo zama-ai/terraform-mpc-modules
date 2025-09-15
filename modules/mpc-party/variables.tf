@@ -320,7 +320,7 @@ variable "nodegroup_nitro_enclaves_daemonset_resources" {
 
 variable "nodegroup_auto_assign_security_group" {
   type        = bool
-  description = "The auto-resolver retrieves the node group security group from the cluster security group and checks whether it contains an ingress rule that allows traffic between the node group and the cluster API."
+  description = "The auto-resolver retrieves the node group security group from the cluster security group and assigns it to the node group. This variable is can be used if the cluster have additional security groups that allow traffic from the node group to the cluster API server on port 443(created by the EKS module https://registry.terraform.io/modules/terraform-aws-modules/eks)."
   default     = true
 }
 
