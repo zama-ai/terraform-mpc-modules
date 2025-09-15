@@ -11,6 +11,7 @@ module "mpc_party" {
   enable_region_validation = var.enable_region_validation
 
   # Party configuration
+  party_id     = var.party_id
   party_name    = var.party_name
   bucket_prefix = var.bucket_prefix
 

@@ -34,6 +34,11 @@ variable "bucket_prefix" {
 
 
 # MPC Party Configuration
+variable "party_id" {
+  description = "Party ID for the MPC service"
+  type        = string
+}
+
 variable "party_name" {
   type        = string
   description = "The name of the MPC party (used for resource naming and tagging)"
