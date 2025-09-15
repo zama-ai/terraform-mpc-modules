@@ -34,6 +34,11 @@ variable "bucket_prefix" {
 
 
 # MPC Party Configuration
+variable "party_id" {
+  description = "Party ID for the MPC service"
+  type        = string
+}
+
 variable "party_name" {
   type        = string
   description = "The name of the MPC party (used for resource naming and tagging)"
@@ -114,8 +119,8 @@ variable "create_config_map" {
 
 variable "config_map_name" {
   type        = string
-  description = "Name of the ConfigMap (defaults to 'mpc-party-config-{party_name}' if not provided)"
-  default     = null
+  description = "Name of the ConfigMap"
+  default     = "mpc-party"
 }
 
 variable "additional_config_data" {
@@ -189,7 +194,7 @@ variable "nodegroup_min_size" {
 variable "nodegroup_max_size" {
   type        = number
   description = "Maximum number of instances in the node group"
-  default     = 10
+  default     = 2
 }
 
 variable "nodegroup_desired_size" {
@@ -329,7 +334,7 @@ variable "nodegroup_update_config" {
     max_unavailable            = optional(number)
     max_unavailable_percentage = optional(number)
   })
-  description = "Update config for the node group"
+  description = "Update config for the node group (use either max_unavailable or max_unavailable_percentage as they are mutually exclusive)"
   default = {
     max_unavailable            = 1
     max_unavailable_percentage = null
@@ -560,10 +565,15 @@ variable "rds_parameter_group_family" {
   description = "DB parameter group family (e.g., postgres16). If null, no parameter group will be created."
 }
 
+
 variable "rds_parameters" {
   description = "List of DB parameter maps for the parameter group."
   type        = list(map(string))
-  default     = []
+  # Required by KMS-Connector which currently lacks ssl certificates
+  default     = [{
+    name  = "rds.force_ssl"
+    value = "0"
+  }]
 }
 
 # Snapshots / restore

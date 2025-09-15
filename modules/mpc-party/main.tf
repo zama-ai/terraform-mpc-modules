@@ -406,7 +406,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
   count = var.create_config_map ? 1 : 0
 
   metadata {
-    name      = var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}"
+    name      = var.config_map_name
     namespace = var.k8s_namespace
 
     labels = {
@@ -425,6 +425,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
 
   data = {
     "CORE_CLIENT__S3_ENDPOINT"                                  = "https://${aws_s3_bucket.vault_public_bucket.id}.s3.${aws_s3_bucket.vault_public_bucket.region}.amazonaws.com"
+    "KMS_CORE__THRESHOLD__MY_ID"                                = var.party_id
     "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__BUCKET"              = aws_s3_bucket.vault_private_bucket.id
     "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__PREFIX"              = ""
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"               = aws_s3_bucket.vault_public_bucket.id

@@ -29,6 +29,11 @@ variable "enable_region_validation" {
 }
 
 # MPC Party Configuration
+variable "party_id" {
+  description = "Party ID for the MPC service"
+  type        = number
+}
+
 variable "party_name" {
   description = "Name of the MPC party (used for tagging and resource naming)"
   type        = string
@@ -40,7 +45,7 @@ variable "party_name" {
 }
 
 variable "config_map_name" {
-  description = "Name of the ConfigMap (defaults to 'mpc-party-config-{party_name}' if not provided)"
+  description = "Name of the ConfigMap"
   type        = string
   default     = null
 }
