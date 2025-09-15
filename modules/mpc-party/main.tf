@@ -744,7 +744,23 @@ resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
 # ***************************************
 #  RDS Instance
 # ***************************************
+ephemeral "random_password" "rds_password" {
+  length           = 16
+  override_special = ""
+}
+
+resource "aws_secretsmanager_secret" "example" {
+  name = "example"
+}
+
+resource "aws_secretsmanager_secret_version" "example" {
+  secret_id                = aws_secretsmanager_secret.example.id
+  secret_string_wo         = ephemeral.random_password.example.result
+  secret_string_wo_version = local.secret_version
+}
+
 locals {
+  secret_version = 1
   external_name = var.rds_db_name != null ? substr(lower(replace("${var.rds_prefix}-${var.network_environment}-${var.rds_db_name}", "/[^a-z0-9-]/", "-")), 0, 63) : "${var.rds_prefix}-${var.network_environment}-rds"
   db_identifier = var.rds_identifier_override != null ? var.rds_identifier_override : local.external_name
 }
@@ -770,8 +786,9 @@ module "rds_instance" {
   username = var.rds_username
   port     = var.rds_port
 
-  manage_master_user_password = true
+  manage_master_user_password = false
   manage_master_user_password_rotation = false
+  password = ephemeral.random_password.rds_password.result
 
   iam_database_authentication_enabled = false
 
@@ -789,6 +806,8 @@ module "rds_instance" {
   deletion_protection = var.rds_deletion_protection
   tags                = var.tags
 }
+
+
 
 module "rds_security_group" {
   count   = var.enable_rds ? 1 : 0
