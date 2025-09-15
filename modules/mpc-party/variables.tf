@@ -189,7 +189,7 @@ variable "nodegroup_min_size" {
 variable "nodegroup_max_size" {
   type        = number
   description = "Maximum number of instances in the node group"
-  default     = 10
+  default     = 2
 }
 
 variable "nodegroup_desired_size" {
@@ -329,7 +329,7 @@ variable "nodegroup_update_config" {
     max_unavailable            = optional(number)
     max_unavailable_percentage = optional(number)
   })
-  description = "Update config for the node group"
+  description = "Update config for the node group (use either max_unavailable or max_unavailable_percentage as they are mutually exclusive)"
   default = {
     max_unavailable            = 1
     max_unavailable_percentage = null
