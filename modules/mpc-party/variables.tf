@@ -114,8 +114,8 @@ variable "create_config_map" {
 
 variable "config_map_name" {
   type        = string
-  description = "Name of the ConfigMap (defaults to 'mpc-party-config-{party_name}' if not provided)"
-  default     = null
+  description = "Name of the ConfigMap"
+  default     = "mpc-party"
 }
 
 variable "additional_config_data" {

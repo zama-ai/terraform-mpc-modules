@@ -40,7 +40,7 @@ variable "party_name" {
 }
 
 variable "config_map_name" {
-  description = "Name of the ConfigMap (defaults to 'mpc-party-config-{party_name}' if not provided)"
+  description = "Name of the ConfigMap"
   type        = string
   default     = null
 }

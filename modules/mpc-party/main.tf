@@ -406,7 +406,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
   count = var.create_config_map ? 1 : 0
 
   metadata {
-    name      = var.config_map_name != null ? var.config_map_name : "mpc-party-config-${var.party_name}"
+    name      = var.config_map_name
     namespace = var.k8s_namespace
 
     labels = {
