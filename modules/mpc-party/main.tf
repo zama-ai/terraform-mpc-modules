@@ -749,13 +749,13 @@ ephemeral "random_password" "rds_password" {
   override_special = ""
 }
 
-resource "aws_secretsmanager_secret" "example" {
-  name = "example"
+resource "aws_secretsmanager_secret" "rds_secret_name" {
+  name = "${var.network_environment}/rds"
 }
 
-resource "aws_secretsmanager_secret_version" "example" {
-  secret_id                = aws_secretsmanager_secret.example.id
-  secret_string_wo         = ephemeral.random_password.example.result
+resource "aws_secretsmanager_secret_version" "rds_secret_name" {
+  secret_id                = aws_secretsmanager_secret.rds_secret_name.id
+  secret_string_wo         = ephemeral.random_password.rds_password.result
   secret_string_wo_version = local.secret_version
 }
 
