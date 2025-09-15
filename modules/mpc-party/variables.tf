@@ -560,10 +560,15 @@ variable "rds_parameter_group_family" {
   description = "DB parameter group family (e.g., postgres16). If null, no parameter group will be created."
 }
 
+
 variable "rds_parameters" {
   description = "List of DB parameter maps for the parameter group."
   type        = list(map(string))
-  default     = []
+  # Required by KMS-Connector which currently lacks ssl certificates
+  default     = [{
+    name  = "rds.force_ssl"
+    value = "0"
+  }]
 }
 
 # Snapshots / restore
