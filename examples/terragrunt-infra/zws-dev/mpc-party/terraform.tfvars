@@ -4,6 +4,7 @@ network_environment = "testnet"
 enable_region_validation = false
 
 # MPC Party Configuration
+party_id   = 2
 party_name = "mpc-party-2"
 
 # S3 Bucket Configuration
