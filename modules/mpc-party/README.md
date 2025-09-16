@@ -409,7 +409,7 @@ The module can optionally create:
 | <a name="input_rds_create_externalname_service"></a> [rds\_create\_externalname\_service](#input\_rds\_create\_externalname\_service) | n/a | `bool` | `false` | no |
 | <a name="input_rds_create_monitoring_role"></a> [rds\_create\_monitoring\_role](#input\_rds\_create\_monitoring\_role) | Whether to create the RDS monitoring role | `bool` | `true` | no |
 | <a name="input_rds_db_name"></a> [rds\_db\_name](#input\_rds\_db\_name) | Optional initial database name. | `string` | `"kmsconnector"` | no |
-| <a name="input_rds_db_password"></a> [rds\_db\_password](#input\_rds\_db\_password) | RDS password to be set from inputs, will disable RDS automatic SecretManager password | `string` | `null` | no |
+| <a name="input_rds_db_password"></a> [rds\_db\_password](#input\_rds\_db\_password) | RDS password to be set from inputs (must be longer than 8 chars), will disable RDS automatic SecretManager password | `string` | `null` | no |
 | <a name="input_rds_delete_automated_backups"></a> [rds\_delete\_automated\_backups](#input\_rds\_delete\_automated\_backups) | n/a | `bool` | `true` | no |
 | <a name="input_rds_deletion_protection"></a> [rds\_deletion\_protection](#input\_rds\_deletion\_protection) | n/a | `bool` | `false` | no |
 | <a name="input_rds_enable_master_password_rotation"></a> [rds\_enable\_master\_password\_rotation](#input\_rds\_enable\_master\_password\_rotation) | Whether to manage the master user password rotation. By default, false on creation, rotation is managed by RDS. There is not currently no way to disable this on initial creation even when set to false. Setting this value to false after previously having been set to true will disable automatic rotation. | `bool` | `true` | no |

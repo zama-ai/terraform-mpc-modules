@@ -503,7 +503,7 @@ variable "rds_deletion_protection" {
 }
 
 variable "rds_db_password" {
-  description = "RDS password to be set from inputs, will disable RDS automatic SecretManager password"
+  description = "RDS password to be set from inputs (must be longer than 8 chars), will disable RDS automatic SecretManager password"
   type = string
   default = null
 }
