@@ -515,9 +515,9 @@ variable "rds_enable_master_password_rotation" {
 }
 
 variable "rds_master_password_rotation_days" {
-  description = "Number of days between automatic scheduled rotations of the secret, default is set to a large number not to rotate password if rotation is not desired but not yet disabled"
+  description = "Number of days between automatic scheduled rotations of the secret, default is set to the maximum allowed value of 1000 days"
   type = number
-  default = 1000000000
+  default = 1000
 }
 
 variable "rds_delete_automated_backups" {
