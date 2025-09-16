@@ -440,12 +440,6 @@ variable "rds_vpc_id" {
   default     = null
 }
 
-variable "rds_subnet_ids" {
-  description = "Private subnet IDs for the DB subnet group."
-  type        = list(string)
-  default     = []
-}
-
 variable "rds_allowed_cidr_blocks" {
   description = "CIDR blocks allowed to reach the database port."
   type        = list(string)
@@ -506,6 +500,24 @@ variable "rds_multi_az" {
 variable "rds_deletion_protection" {
   type    = bool
   default = false
+}
+
+variable "rds_db_password" {
+  description = "RDS password to be set from inputs, will disable RDS automatic SecretManager password"
+  type = string
+  default = null
+}
+
+variable "rds_enable_master_password_rotation" {
+  description = "Whether to manage the master user password rotation. By default, false on creation, rotation is managed by RDS. There is not currently no way to disable this on initial creation even when set to false. Setting this value to false after previously having been set to true will disable automatic rotation."
+  type = bool
+  default = true
+}
+
+variable "rds_master_password_rotation_days" {
+  description = "Number of days between automatic scheduled rotations of the secret, default is set to a large number not to rotate password if rotation is not desired but not yet disabled"
+  type = number
+  default = 1000000000
 }
 
 variable "rds_delete_automated_backups" {
