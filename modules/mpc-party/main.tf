@@ -770,7 +770,10 @@ module "rds_instance" {
   username = var.rds_username
   port     = var.rds_port
 
-  manage_master_user_password = true
+  password = var.rds_db_password
+  manage_master_user_password = var.rds_db_password != null ? false : true
+  manage_master_user_password_rotation = var.rds_enable_master_password_rotation
+  master_user_password_rotation_automatically_after_days = var.rds_master_password_rotation_days
 
   iam_database_authentication_enabled = false
 

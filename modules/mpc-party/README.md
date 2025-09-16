@@ -347,7 +347,7 @@ The module can optionally create:
 | <a name="input_bucket_prefix"></a> [bucket\_prefix](#input\_bucket\_prefix) | The prefix for the S3 bucket names | `string` | `"mpc-vault"` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the EKS cluster for IRSA configuration | `string` | n/a | yes |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Deprecated common tags to apply to all AWS resources | `map(string)` | <pre>{<br/>  "module": "mpc-party",<br/>  "terraform": "true"<br/>}</pre> | no |
-| <a name="input_config_map_name"></a> [config\_map\_name](#input\_config\_map\_name) | Name of the ConfigMap (defaults to 'mpc-party-config-{party\_name}' if not provided) | `string` | `null` | no |
+| <a name="input_config_map_name"></a> [config\_map\_name](#input\_config\_map\_name) | Name of the ConfigMap | `string` | `"mpc-party"` | no |
 | <a name="input_create_config_map"></a> [create\_config\_map](#input\_create\_config\_map) | Whether to create a ConfigMap with S3 bucket environment variables | `bool` | `true` | no |
 | <a name="input_create_irsa"></a> [create\_irsa](#input\_create\_irsa) | Whether to create IRSA (IAM Roles for Service Accounts) role for secure AWS access | `bool` | `true` | no |
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Whether to create the Kubernetes namespace | `bool` | `true` | no |
@@ -388,7 +388,7 @@ The module can optionally create:
 | <a name="input_nodegroup_enable_ssm_managed_instance"></a> [nodegroup\_enable\_ssm\_managed\_instance](#input\_nodegroup\_enable\_ssm\_managed\_instance) | Whether to enable SSM managed instance | `bool` | `false` | no |
 | <a name="input_nodegroup_instance_types"></a> [nodegroup\_instance\_types](#input\_nodegroup\_instance\_types) | List of instance types for the node group | `list(string)` | <pre>[<br/>  "t3.large"<br/>]</pre> | no |
 | <a name="input_nodegroup_labels"></a> [nodegroup\_labels](#input\_nodegroup\_labels) | Key-value map of Kubernetes labels applied to the node group | `map(string)` | `{}` | no |
-| <a name="input_nodegroup_max_size"></a> [nodegroup\_max\_size](#input\_nodegroup\_max\_size) | Maximum number of instances in the node group | `number` | `10` | no |
+| <a name="input_nodegroup_max_size"></a> [nodegroup\_max\_size](#input\_nodegroup\_max\_size) | Maximum number of instances in the node group | `number` | `2` | no |
 | <a name="input_nodegroup_min_size"></a> [nodegroup\_min\_size](#input\_nodegroup\_min\_size) | Minimum number of instances in the node group | `number` | `1` | no |
 | <a name="input_nodegroup_name"></a> [nodegroup\_name](#input\_nodegroup\_name) | Name of the EKS managed node group | `string` | n/a | yes |
 | <a name="input_nodegroup_nitro_enclaves_daemonset_additional_envs"></a> [nodegroup\_nitro\_enclaves\_daemonset\_additional\_envs](#input\_nodegroup\_nitro\_enclaves\_daemonset\_additional\_envs) | Additional environment variables to add to the Nitro Enclaves daemonset | `map(string)` | `{}` | no |
@@ -397,9 +397,10 @@ The module can optionally create:
 | <a name="input_nodegroup_nitro_enclaves_image_tag"></a> [nodegroup\_nitro\_enclaves\_image\_tag](#input\_nodegroup\_nitro\_enclaves\_image\_tag) | Image tag for Nitro Enclaves | `string` | `"v0.3"` | no |
 | <a name="input_nodegroup_security_group_custom"></a> [nodegroup\_security\_group\_custom](#input\_nodegroup\_security\_group\_custom) | List of security group IDs to associate with the node group | `list(string)` | `[]` | no |
 | <a name="input_nodegroup_source_security_group_ids"></a> [nodegroup\_source\_security\_group\_ids](#input\_nodegroup\_source\_security\_group\_ids) | List of security group IDs allowed for remote access | `list(string)` | `[]` | no |
-| <a name="input_nodegroup_update_config"></a> [nodegroup\_update\_config](#input\_nodegroup\_update\_config) | Update config for the node group | <pre>object({<br/>    max_unavailable            = optional(number)<br/>    max_unavailable_percentage = optional(number)<br/>  })</pre> | <pre>{<br/>  "max_unavailable": 1,<br/>  "max_unavailable_percentage": null<br/>}</pre> | no |
+| <a name="input_nodegroup_update_config"></a> [nodegroup\_update\_config](#input\_nodegroup\_update\_config) | Update config for the node group (use either max\_unavailable or max\_unavailable\_percentage as they are mutually exclusive) | <pre>object({<br/>    max_unavailable            = optional(number)<br/>    max_unavailable_percentage = optional(number)<br/>  })</pre> | <pre>{<br/>  "max_unavailable": 1,<br/>  "max_unavailable_percentage": null<br/>}</pre> | no |
 | <a name="input_nodegroup_use_custom_launch_template"></a> [nodegroup\_use\_custom\_launch\_template](#input\_nodegroup\_use\_custom\_launch\_template) | Whether to use a custom launch template | `bool` | `true` | no |
 | <a name="input_nodegroup_use_latest_ami_release_version"></a> [nodegroup\_use\_latest\_ami\_release\_version](#input\_nodegroup\_use\_latest\_ami\_release\_version) | Whether to use the latest AMI release version | `bool` | `false` | no |
+| <a name="input_party_id"></a> [party\_id](#input\_party\_id) | Party ID for the MPC service | `string` | n/a | yes |
 | <a name="input_party_name"></a> [party\_name](#input\_party\_name) | The name of the MPC party (used for resource naming and tagging) | `string` | n/a | yes |
 | <a name="input_rds_allocated_storage"></a> [rds\_allocated\_storage](#input\_rds\_allocated\_storage) | Allocated storage in GiB. | `number` | `50` | no |
 | <a name="input_rds_allowed_cidr_blocks"></a> [rds\_allowed\_cidr\_blocks](#input\_rds\_allowed\_cidr\_blocks) | CIDR blocks allowed to reach the database port. | `list(string)` | `[]` | no |
@@ -408,8 +409,10 @@ The module can optionally create:
 | <a name="input_rds_create_externalname_service"></a> [rds\_create\_externalname\_service](#input\_rds\_create\_externalname\_service) | n/a | `bool` | `false` | no |
 | <a name="input_rds_create_monitoring_role"></a> [rds\_create\_monitoring\_role](#input\_rds\_create\_monitoring\_role) | Whether to create the RDS monitoring role | `bool` | `true` | no |
 | <a name="input_rds_db_name"></a> [rds\_db\_name](#input\_rds\_db\_name) | Optional initial database name. | `string` | `"kmsconnector"` | no |
+| <a name="input_rds_db_password"></a> [rds\_db\_password](#input\_rds\_db\_password) | RDS password to be set from inputs (must be longer than 8 chars), will disable RDS automatic SecretManager password | `string` | `null` | no |
 | <a name="input_rds_delete_automated_backups"></a> [rds\_delete\_automated\_backups](#input\_rds\_delete\_automated\_backups) | n/a | `bool` | `true` | no |
 | <a name="input_rds_deletion_protection"></a> [rds\_deletion\_protection](#input\_rds\_deletion\_protection) | n/a | `bool` | `false` | no |
+| <a name="input_rds_enable_master_password_rotation"></a> [rds\_enable\_master\_password\_rotation](#input\_rds\_enable\_master\_password\_rotation) | Whether to manage the master user password rotation. By default, false on creation, rotation is managed by RDS. There is not currently no way to disable this on initial creation even when set to false. Setting this value to false after previously having been set to true will disable automatic rotation. | `bool` | `true` | no |
 | <a name="input_rds_engine"></a> [rds\_engine](#input\_rds\_engine) | Engine name (e.g., postgres, mysql). | `string` | `"postgres"` | no |
 | <a name="input_rds_engine_version"></a> [rds\_engine\_version](#input\_rds\_engine\_version) | Exact engine version string. | `string` | `"17.2"` | no |
 | <a name="input_rds_externalname_service_name"></a> [rds\_externalname\_service\_name](#input\_rds\_externalname\_service\_name) | n/a | `string` | `"kms-connector-db-external"` | no |
@@ -423,12 +426,13 @@ The module can optionally create:
 | <a name="input_rds_k8s_secret_namespace"></a> [rds\_k8s\_secret\_namespace](#input\_rds\_k8s\_secret\_namespace) | n/a | `string` | `"default"` | no |
 | <a name="input_rds_maintenance_window"></a> [rds\_maintenance\_window](#input\_rds\_maintenance\_window) | n/a | `string` | `null` | no |
 | <a name="input_rds_manage_master_user_password"></a> [rds\_manage\_master\_user\_password](#input\_rds\_manage\_master\_user\_password) | If true, let AWS Secrets Manager manage the master user password. If false, a random\_password will be generated and stored to K8s secrets. | `bool` | `false` | no |
+| <a name="input_rds_master_password_rotation_days"></a> [rds\_master\_password\_rotation\_days](#input\_rds\_master\_password\_rotation\_days) | Number of days between automatic scheduled rotations of the secret, default is set to a large number not to rotate password if rotation is not desired but not yet disabled | `number` | `1000000000` | no |
 | <a name="input_rds_max_allocated_storage"></a> [rds\_max\_allocated\_storage](#input\_rds\_max\_allocated\_storage) | Max autoscaled storage in GiB. | `number` | `100` | no |
 | <a name="input_rds_monitoring_interval"></a> [rds\_monitoring\_interval](#input\_rds\_monitoring\_interval) | n/a | `number` | `0` | no |
 | <a name="input_rds_monitoring_role_arn"></a> [rds\_monitoring\_role\_arn](#input\_rds\_monitoring\_role\_arn) | n/a | `string` | `null` | no |
 | <a name="input_rds_multi_az"></a> [rds\_multi\_az](#input\_rds\_multi\_az) | n/a | `bool` | `false` | no |
 | <a name="input_rds_parameter_group_family"></a> [rds\_parameter\_group\_family](#input\_rds\_parameter\_group\_family) | DB parameter group family (e.g., postgres16). If null, no parameter group will be created. | `string` | `null` | no |
-| <a name="input_rds_parameters"></a> [rds\_parameters](#input\_rds\_parameters) | List of DB parameter maps for the parameter group. | `list(map(string))` | `[]` | no |
+| <a name="input_rds_parameters"></a> [rds\_parameters](#input\_rds\_parameters) | List of DB parameter maps for the parameter group. | `list(map(string))` | <pre>[<br/>  {<br/>    "name": "rds.force_ssl",<br/>    "value": "0"<br/>  }<br/>]</pre> | no |
 | <a name="input_rds_performance_insights_enabled"></a> [rds\_performance\_insights\_enabled](#input\_rds\_performance\_insights\_enabled) | n/a | `bool` | `false` | no |
 | <a name="input_rds_performance_insights_kms_key_id"></a> [rds\_performance\_insights\_kms\_key\_id](#input\_rds\_performance\_insights\_kms\_key\_id) | n/a | `string` | `null` | no |
 | <a name="input_rds_performance_insights_retention_period"></a> [rds\_performance\_insights\_retention\_period](#input\_rds\_performance\_insights\_retention\_period) | n/a | `number` | `null` | no |
@@ -437,7 +441,6 @@ The module can optionally create:
 | <a name="input_rds_snapshot_identifier"></a> [rds\_snapshot\_identifier](#input\_rds\_snapshot\_identifier) | If set, restore from this snapshot instead of creating a fresh DB. | `string` | `null` | no |
 | <a name="input_rds_storage_encrypted"></a> [rds\_storage\_encrypted](#input\_rds\_storage\_encrypted) | n/a | `bool` | `true` | no |
 | <a name="input_rds_storage_type"></a> [rds\_storage\_type](#input\_rds\_storage\_type) | n/a | `string` | `"gp3"` | no |
-| <a name="input_rds_subnet_ids"></a> [rds\_subnet\_ids](#input\_rds\_subnet\_ids) | Private subnet IDs for the DB subnet group. | `list(string)` | `[]` | no |
 | <a name="input_rds_username"></a> [rds\_username](#input\_rds\_username) | Username for the RDS instance | `string` | `"zws"` | no |
 | <a name="input_rds_vpc_id"></a> [rds\_vpc\_id](#input\_rds\_vpc\_id) | VPC ID hosting the RDS instance. | `string` | `null` | no |
 | <a name="input_service_account_annotations"></a> [service\_account\_annotations](#input\_service\_account\_annotations) | Additional annotations to apply to the service account (excluding IRSA annotations which are handled automatically) | `map(string)` | `{}` | no |
