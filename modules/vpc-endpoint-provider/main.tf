@@ -122,6 +122,18 @@ locals {
   }
 }
 
+
+# data subnet for each subnet in the NLB
+data "aws_subnet" "nlb_subnet" {
+  for_each = toset(data.aws_lb.kubernetes_nlb.subnets)
+  id       = each.value
+}
+
+# Get all availability zones from the NLB subnets
+locals {
+  availability_zones = [for subnet in data.aws_subnet.nlb_subnet : subnet.availability_zone]
+}
+
 # **************************************************************
 #  Create VPC endpoint services to expose NLBs via PrivateLink 
 # **************************************************************

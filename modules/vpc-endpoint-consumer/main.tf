@@ -44,7 +44,6 @@ locals {
     for service in var.party_services : service.vpc_endpoint_service_name
   ]
 
-
   # Create a map for easy reference with default ports fallback
   partner_service_map = {
     for i, service in var.party_services : "${service.name}-${i}" => {
@@ -70,10 +69,13 @@ locals {
 resource "aws_vpc_endpoint" "party_interface_endpoints" {
   count = length(var.party_services)
 
-  vpc_id             = local.vpc_id
-  service_name       = local.vpc_endpoint_service_names[count.index]
-  vpc_endpoint_type  = "Interface"
-  subnet_ids         = local.subnet_ids
+  vpc_id            = local.vpc_id
+  service_name      = local.vpc_endpoint_service_names[count.index]
+  vpc_endpoint_type = "Interface"
+  subnet_ids = length(coalesce(var.party_services[count.index].availability_zones, [])) > 0 && var.cluster_name != null ? [
+    for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
+    if subnet.map_public_ip_on_launch == false && contains(var.party_services[count.index].availability_zones, subnet.availability_zone)
+  ] : local.subnet_ids
   security_group_ids = local.security_group_ids
   service_region     = var.party_services[count.index].region
 

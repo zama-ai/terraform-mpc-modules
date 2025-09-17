@@ -68,6 +68,7 @@ variable "party_services" {
       target_port = number
       protocol    = string
     })), null)
+    availability_zones  = optional(list(string), null)
     create_kube_service = optional(bool, true)
     kube_service_config = optional(object({
       additional_annotations = optional(map(string), {})

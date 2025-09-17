@@ -504,20 +504,20 @@ variable "rds_deletion_protection" {
 
 variable "rds_db_password" {
   description = "RDS password to be set from inputs (must be longer than 8 chars), will disable RDS automatic SecretManager password"
-  type = string
-  default = null
+  type        = string
+  default     = null
 }
 
 variable "rds_enable_master_password_rotation" {
   description = "Whether to manage the master user password rotation. By default, false on creation, rotation is managed by RDS. There is not currently no way to disable this on initial creation even when set to false. Setting this value to false after previously having been set to true will disable automatic rotation."
-  type = bool
-  default = true
+  type        = bool
+  default     = true
 }
 
 variable "rds_master_password_rotation_days" {
   description = "Number of days between automatic scheduled rotations of the secret, default is set to the maximum allowed value of 1000 days"
-  type = number
-  default = 1000
+  type        = number
+  default     = 1000
 }
 
 variable "rds_delete_automated_backups" {
@@ -582,7 +582,7 @@ variable "rds_parameters" {
   description = "List of DB parameter maps for the parameter group."
   type        = list(map(string))
   # Required by KMS-Connector which currently lacks ssl certificates
-  default     = [{
+  default = [{
     name  = "rds.force_ssl"
     value = "0"
   }]

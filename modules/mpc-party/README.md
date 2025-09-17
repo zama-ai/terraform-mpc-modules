@@ -426,7 +426,7 @@ The module can optionally create:
 | <a name="input_rds_k8s_secret_namespace"></a> [rds\_k8s\_secret\_namespace](#input\_rds\_k8s\_secret\_namespace) | n/a | `string` | `"default"` | no |
 | <a name="input_rds_maintenance_window"></a> [rds\_maintenance\_window](#input\_rds\_maintenance\_window) | n/a | `string` | `null` | no |
 | <a name="input_rds_manage_master_user_password"></a> [rds\_manage\_master\_user\_password](#input\_rds\_manage\_master\_user\_password) | If true, let AWS Secrets Manager manage the master user password. If false, a random\_password will be generated and stored to K8s secrets. | `bool` | `false` | no |
-| <a name="input_rds_master_password_rotation_days"></a> [rds\_master\_password\_rotation\_days](#input\_rds\_master\_password\_rotation\_days) | Number of days between automatic scheduled rotations of the secret, default is set to a large number not to rotate password if rotation is not desired but not yet disabled | `number` | `1000000000` | no |
+| <a name="input_rds_master_password_rotation_days"></a> [rds\_master\_password\_rotation\_days](#input\_rds\_master\_password\_rotation\_days) | Number of days between automatic scheduled rotations of the secret, default is set to the maximum allowed value of 1000 days | `number` | `1000` | no |
 | <a name="input_rds_max_allocated_storage"></a> [rds\_max\_allocated\_storage](#input\_rds\_max\_allocated\_storage) | Max autoscaled storage in GiB. | `number` | `100` | no |
 | <a name="input_rds_monitoring_interval"></a> [rds\_monitoring\_interval](#input\_rds\_monitoring\_interval) | n/a | `number` | `0` | no |
 | <a name="input_rds_monitoring_role_arn"></a> [rds\_monitoring\_role\_arn](#input\_rds\_monitoring\_role\_arn) | n/a | `string` | `null` | no |
