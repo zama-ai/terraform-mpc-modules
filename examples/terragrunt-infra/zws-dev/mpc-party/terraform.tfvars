@@ -30,12 +30,12 @@ tags = {
 }
 
 # RDS Configuration
-enable_rds              = false
-rds_prefix              = "zama" # Use your organization prefix here
-rds_db_name             = "kmsconnector"
-rds_username            = "kmsconnector"
-rds_enable_master_password_rotation = true # To change to 'false' on second apply only (there is a bug when initializing the value to 'false')
-rds_deletion_protection = false # Allow deletion of RDS instance
+enable_rds                          = false
+rds_prefix                          = "zama" # Use your organization prefix here
+rds_db_name                         = "kmsconnector"
+rds_username                        = "kmsconnector"
+rds_enable_master_password_rotation = true  # To change to 'false' on second apply only (there is a bug when initializing the value to 'false')
+rds_deletion_protection             = false # Allow deletion of RDS instance
 
 # Node Group Configuration
 create_nodegroup                         = true
