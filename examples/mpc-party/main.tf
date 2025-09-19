@@ -65,7 +65,7 @@ module "mpc_party" {
 
   kms_image_attestation_sha                = var.kms_image_attestation_sha
   kms_deletion_window_in_days              = var.kms_deletion_window_in_days
-  nodegroup_source_security_group_ids = var.nodegroup_source_security_group_ids
+  nodegroup_source_security_group_ids      = var.nodegroup_source_security_group_ids
   nodegroup_additional_security_group_ids  = var.nodegroup_additional_security_group_ids
   nodegroup_enable_ssm_managed_instance    = var.nodegroup_enable_ssm_managed_instance
   nodegroup_use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
