@@ -117,12 +117,6 @@ variable "kubeconfig_context" {
   default     = null
 }
 
-variable "eks_cluster_name" {
-  description = "EKS cluster name for automatic token authentication (optional, used for exec auth)"
-  type        = string
-  default     = null
-}
-
 # Tagging
 variable "additional_tags" {
   description = "Additional tags to apply to all resources"
@@ -444,12 +438,6 @@ variable "rds_vpc_id" {
   description = "VPC ID for the RDS database"
   type        = string
   default     = null
-}
-
-variable "rds_subnet_ids" {
-  description = "Subnet IDs for the RDS database"
-  type        = list(string)
-  default     = []
 }
 
 variable "rds_create_monitoring_role" {

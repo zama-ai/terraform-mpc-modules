@@ -6,6 +6,7 @@ aws_region               = "eu-west-1"
 enable_region_validation = false
 
 # MPC Party Configuration
+party_id = 1
 party_name  = "mpc-party-2"
 environment = "dev"
 
