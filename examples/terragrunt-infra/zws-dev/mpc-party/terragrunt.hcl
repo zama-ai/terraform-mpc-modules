@@ -14,7 +14,7 @@ include "common" {
 # Reference the mpc-network-provider example module
 terraform {
   source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.6"
-  
+
   extra_arguments "tfvars" {
     commands = get_terraform_commands_that_need_vars()
     arguments = [
@@ -23,12 +23,5 @@ terraform {
   }
 }
 
-# Environment-specific inputs and overrides
 inputs = {
-  # Common variables are automatically injected from common.hcl
-  # Environment-specific overrides can be added here if needed
-  
-  # Most configuration comes from the local terraform.tfvars file
-  # AWS profile and region are automatically set based on environment (kms-dev-v1)
-  # Custom S3 bucket for this environment: zama-terraform-kms-dev-v1-mpc-modules-tfstate
-} 
+}

@@ -41,17 +41,7 @@ variable "namespace" {
   default     = "mpc-partners"
 }
 
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
-  type        = string
-  default     = "dev"
-}
 
-variable "owner" {
-  description = "Owner of the resources for tagging purposes"
-  type        = string
-  default     = "mpc-consumer-team"
-}
 
 # Kubernetes Provider Configuration
 variable "kubeconfig_path" {
@@ -68,18 +58,6 @@ variable "kubeconfig_context" {
 
 variable "use_eks_cluster_authentication" {
   description = "Whether to use EKS cluster authentication"
-  type        = bool
-  default     = false
-}
-
-variable "aws_region_for_eks" {
-  description = "AWS region where the EKS cluster is located (for provider configuration)"
-  type        = string
-  default     = null
-}
-
-variable "use_eks_cluster_lookup" {
-  description = "Whether to automatically find the vpc/subnet/secg from the cluster name"
   type        = bool
   default     = false
 }
@@ -182,9 +160,3 @@ variable "common_tags" {
     "terraform" = "true"
   }
 }
-
-variable "additional_tags" {
-  description = "Additional tags to apply to resources"
-  type        = map(string)
-  default     = {}
-} 

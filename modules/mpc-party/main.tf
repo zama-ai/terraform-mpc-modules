@@ -3,14 +3,6 @@
 # ***************************************
 data "aws_caller_identity" "current" {}
 
-data "aws_region" "current" {
-  lifecycle {
-    postcondition {
-      condition     = var.enable_region_validation ? contains(local.allowed_regions, self.region) : true
-      error_message = "This module supports only ${join(", ", local.allowed_regions)} (got: ${self.region})."
-    }
-  }
-}
 
 data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
@@ -36,7 +28,6 @@ resource "random_id" "mpc_party_suffix" {
 }
 
 locals {
-  allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
   private_subnet_ids = [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
@@ -449,10 +440,6 @@ locals {
   cluster_security_group_id = var.nodegroup_auto_assign_security_group ? try(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0], null) : null
 }
 
-data "aws_security_group" "cluster" {
-  count = var.nodegroup_auto_assign_security_group ? 1 : 0
-  id    = tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0]
-}
 
 # Get all rule IDs on the cluster SG (ingress and egress)
 data "aws_vpc_security_group_rules" "cluster_rules" {
