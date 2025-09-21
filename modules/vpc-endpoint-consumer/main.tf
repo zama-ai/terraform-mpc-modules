@@ -1,16 +1,7 @@
 # ***************************************
 #  Data sources
 # ***************************************
-data "aws_caller_identity" "current" {}
 
-data "aws_region" "current" {
-  lifecycle {
-    postcondition {
-      condition     = var.enable_region_validation ? contains(local.allowed_regions, self.region) : true
-      error_message = "This module supports only ${join(", ", local.allowed_regions)} (got: ${self.region})."
-    }
-  }
-}
 
 data "aws_eks_cluster" "selected" {
   count = var.cluster_name != null ? 1 : 0
@@ -26,8 +17,7 @@ data "aws_subnet" "cluster_subnets" {
 #  Local variables
 # ***************************************
 locals {
-  allowed_regions = var.network_environment == "testnet" ? var.testnet_supported_regions : var.mainnet_supported_regions
-  vpc_id          = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
+  vpc_id = var.vpc_id != null ? var.vpc_id : data.aws_eks_cluster.selected[0].vpc_config[0].vpc_id
   subnet_ids = length(coalesce(var.subnet_ids, [])) > 0 ? var.subnet_ids : [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
@@ -44,23 +34,6 @@ locals {
     for service in var.party_services : service.vpc_endpoint_service_name
   ]
 
-  # Create a map for easy reference with default ports fallback
-  partner_service_map = {
-    for i, service in var.party_services : "${service.name}-${i}" => {
-      party_id                  = service.party_id
-      name                      = service.name
-      region                    = service.region
-      account_id                = service.account_id
-      vpc_endpoint_service_name = local.vpc_endpoint_service_names[i]
-      ports = length(coalesce(service.ports, [])) > 0 ? service.ports : [
-        var.default_mpc_ports.grpc,
-        var.default_mpc_ports.peer,
-        var.default_mpc_ports.metrics
-      ]
-      create_kube_service = service.create_kube_service
-      kube_service_config = service.kube_service_config
-    }
-  }
 }
 
 # ************************************************************
@@ -181,4 +154,4 @@ resource "aws_route53_record" "partner_dns" {
     zone_id                = aws_vpc_endpoint.party_interface_endpoints[count.index].dns_entry[0].hosted_zone_id
     evaluate_target_health = true
   }
-} 
+}

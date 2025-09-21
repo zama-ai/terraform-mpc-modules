@@ -103,7 +103,6 @@ module "mpc_party" {
   rds_k8s_secret_namespace                  = var.rds_k8s_secret_namespace
   rds_allowed_cidr_blocks                   = var.rds_allowed_cidr_blocks
   rds_vpc_id                                = var.rds_vpc_id
-  rds_subnet_ids                            = var.rds_subnet_ids
   rds_deletion_protection                   = var.rds_deletion_protection
 
   # Tagging
@@ -115,4 +114,4 @@ module "mpc_party" {
     "Terraform"   = "true"
     "Party"       = var.party_name
   })
-} 
+}

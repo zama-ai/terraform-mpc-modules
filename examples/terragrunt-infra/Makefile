@@ -92,7 +92,7 @@ init:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make init ENV=<env>"; exit 1; fi
 	terragrunt init --all --working-dir "$(ENV)"
 
-# Dynamic output command - Get outputs from specific environment  
+# Dynamic output command - Get outputs from specific environment
 # Usage: make output ENV=<env>
 output:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make output ENV=<env>"; exit 1; fi
@@ -119,7 +119,7 @@ validate:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make validate ENV=<env>"; exit 1; fi
 	terragrunt validate --all --working-dir "$(ENV)"
 
-# Plan specific environment  
+# Plan specific environment
 # Usage: make plan ENV=<env>
 plan:
 	@if [ -z "$(ENV)" ]; then echo "Error: ENV variable is required. Usage: make plan ENV=<env>"; exit 1; fi

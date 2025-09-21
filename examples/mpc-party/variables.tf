@@ -117,11 +117,6 @@ variable "kubeconfig_context" {
   default     = null
 }
 
-variable "eks_cluster_name" {
-  description = "EKS cluster name for automatic token authentication (optional, used for exec auth)"
-  type        = string
-  default     = null
-}
 
 # Tagging
 variable "additional_tags" {
@@ -202,11 +197,6 @@ variable "nodegroup_ec2_ssh_key" {
   default     = null
 }
 
-variable "nodegroup_source_security_group_ids" {
-  description = "List of security group IDs allowed for remote access"
-  type        = list(string)
-  default     = []
-}
 
 variable "nodegroup_labels" {
   description = "Labels for the nodegroup"
@@ -290,11 +280,6 @@ variable "rds_db_name" {
   default     = "kmsconnector"
 }
 
-variable "rds_prefix" {
-  description = "Your company prefix name"
-  type        = string
-  default     = "zama"
-}
 
 variable "rds_username" {
   description = "Username for the RDS database"
@@ -446,11 +431,6 @@ variable "rds_vpc_id" {
   default     = null
 }
 
-variable "rds_subnet_ids" {
-  description = "Subnet IDs for the RDS database"
-  type        = list(string)
-  default     = []
-}
 
 variable "rds_create_monitoring_role" {
   description = "Whether to create the RDS monitoring role"

@@ -4,7 +4,7 @@ locals {
   # Extract environment from directory path
   env_regex = "terragrunt-infra/([a-zA-Z0-9-]+)/"
   environment = try(regex(local.env_regex, get_original_terragrunt_dir())[0], "default")
-  
+
   # Define environment-to-config mapping
   env_configs = {
     "kms-dev-v1" = {
@@ -29,7 +29,7 @@ locals {
       terraform_state_bucket = "zama-terraform-mpc-modules-tfstate"
     }
   }
-  
+
   # Get current environment config with fallback
   current_env_config = lookup(local.env_configs, local.environment, {
     profile                = "default"
@@ -41,7 +41,7 @@ locals {
     use_eks_cluster_authentication = false
     terraform_state_bucket = "zama-terraform-mpc-modules-tfstate"
   })
-  
+
   # Allow override via environment variables for flexibility
   aws_profile            = get_env("AWS_PROFILE_OVERRIDE", local.current_env_config.profile)
   aws_region             = get_env("AWS_REGION_OVERRIDE", local.current_env_config.region)
@@ -62,7 +62,7 @@ inputs = {
   kubeconfig_context = local.current_env_config.kubeconfig_context
   use_eks_cluster_authentication = local.current_env_config.use_eks_cluster_authentication
   cluster_name = local.current_env_config.cluster_name
-  
+
   # Additional common inputs
   project_name           = "mpc-modules"
 }

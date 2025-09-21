@@ -39,11 +39,6 @@ variable "aws_profile" {
   default     = "token-zws-dev"
 }
 
-variable "aws_region_for_eks" {
-  description = "AWS region where the EKS cluster is located (for provider configuration)"
-  type        = string
-  default     = null
-}
 
 # Kubernetes Provider Configuration
 variable "kubeconfig_path" {
@@ -79,11 +74,6 @@ variable "namespace" {
   default     = "kms-decentralized"
 }
 
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
-  type        = string
-  default     = "zws-dev"
-}
 
 
 # VPC Endpoint Services Configuration
@@ -116,4 +106,4 @@ variable "common_tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)
   default     = {}
-} 
+}

@@ -109,4 +109,4 @@ output "partner_connection_endpoints" {
       network_interface_ips = aws_vpc_endpoint.party_interface_endpoints[i].network_interface_ids
     }
   }
-} 
+}

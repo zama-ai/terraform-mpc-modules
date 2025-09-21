@@ -48,64 +48,64 @@ graph TB
                 A_MPC["🔐 MPC Node<br/>Kubernetes Pod"]
                 A_EXT_SVC["🔗 ExternalName Service<br/>bob-mpc-service<br/>DNS: bob-mpc-service.mpc-network.svc.cluster.local"]
                 A_K8S_SVC["⚖️ LoadBalancer Service<br/>alice-mpc-lb-service<br/>Type: LoadBalancer"]
-                
+
                 A_MPC --> A_K8S_SVC
                 A_MPC --> A_EXT_SVC
             end
-            
+
             A_NLB["⚖️ Network LB<br/>(AWS Managed)"]
             A_S3["🗄️ S3 Storage<br/>Key Materials"]
             A_PROVIDER["🌉 VPC Endpoint Service<br/>(Expose to Bob)"]
             A_CONSUMER["🔌 VPC Endpoint Interface<br/>(Connect to Bob)"]
-            
+
             A_K8S_SVC --> A_NLB
             A_NLB --> A_PROVIDER
             A_EXT_SVC --> A_CONSUMER
             A_MPC -.-> A_S3
         end
     end
-    
+
     subgraph "Bob (eu-west-1)"
         subgraph "Bob Infrastructure"
             subgraph "EKS Cluster (bob-mpc-cluster)"
                 B_MPC["🔐 MPC Node<br/>Kubernetes Pod"]
                 B_EXT_SVC["🔗 ExternalName Service<br/>alice-mpc-service<br/>DNS: alice-mpc-service.mpc-network.svc.cluster.local"]
                 B_K8S_SVC["⚖️ LoadBalancer Service<br/>bob-mpc-lb-service<br/>Type: LoadBalancer"]
-                
+
                 B_MPC --> B_K8S_SVC
                 B_MPC --> B_EXT_SVC
             end
-            
+
             B_NLB["⚖️ Network LB<br/>(AWS Managed)"]
             B_S3["🗄️ S3 Storage<br/>Key Materials"]
             B_PROVIDER["🌉 VPC Endpoint Service<br/>(Expose to Alice)"]
             B_CONSUMER["🔌 VPC Endpoint Interface<br/>(Connect to Alice)"]
-            
+
             B_K8S_SVC --> B_NLB
             B_NLB --> B_PROVIDER
             B_EXT_SVC --> B_CONSUMER
             B_MPC -.-> B_S3
         end
     end
-    
+
     subgraph "AWS PrivateLink"
         PL["🔒 Cross-Region<br/>Private Network"]
     end
-    
+
     %% Bidirectional connections
     A_PROVIDER -.-> PL
     B_PROVIDER -.-> PL
     PL -.-> A_CONSUMER
     PL -.-> B_CONSUMER
-    
 
-    
+
+
     %% Styling
     classDef alice fill:#e3f2fd,stroke:#000000,stroke-width:2px,color:#000000
     classDef bob fill:#f3e5f5,stroke:#000000,stroke-width:2px,color:#000000
     classDef network fill:#e8f5e8,stroke:#000000,stroke-width:2px,color:#000000
     classDef benefit fill:#f5f5f5,stroke:#000000,stroke-width:2px,color:#000000
-    
+
     class A_MPC,A_EXT_SVC,A_K8S_SVC,A_NLB,A_S3,A_PROVIDER,A_CONSUMER alice
     class B_MPC,B_EXT_SVC,B_K8S_SVC,B_NLB,B_S3,B_PROVIDER,B_CONSUMER bob
     class PL network
