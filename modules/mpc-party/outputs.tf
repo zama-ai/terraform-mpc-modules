@@ -4,6 +4,16 @@ output "party_name" {
   value       = var.party_name
 }
 
+#debug
+output "eks_vpc_config" {
+  value = data.aws_eks_cluster.cluster
+}
+
+#debug cluster_sg_rules
+output "cluster_sg_rules" {
+  value = data.aws_vpc_security_group_rules.cluster_rules
+}
+
 # Cluster Information
 output "cluster_name" {
   description = "Name of the EKS cluster"

@@ -469,6 +469,7 @@ data "aws_vpc_security_group_rule" "cluster_sg_rules_by_id" {
   security_group_rule_id = each.value
 }
 
+
 # Collect the referenced SG IDs and filter by ingress rules for the cluster SG to confirm the auto resolved node group SG is valid
 locals {
   sgs_referenced_by_cluster = var.nodegroup_auto_assign_security_group ? distinct(compact([

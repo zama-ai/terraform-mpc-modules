@@ -1,0 +1,34 @@
+# Terragrunt-specific files
+.terragrunt-cache/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl
+
+# Generated Terraform files
+provider.tf
+backend.tf
+versions.tf
+
+# Terraform variables files (keep in original partner-provider location)
+# terraform*.tfvars
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+crash.log
+crash.*.log
+
+# Environment files
+.env
+.env.local 

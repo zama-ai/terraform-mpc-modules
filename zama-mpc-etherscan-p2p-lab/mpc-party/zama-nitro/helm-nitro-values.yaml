@@ -1,0 +1,122 @@
+image:
+  repository: offchainlabs/nitro-node
+  tag: v3.6.8-d6c96a5
+
+conf:
+  env-prefix: NITRO
+
+# https://docs.arbitrum.io/run-arbitrum-node/run-full-node
+customArgs:
+  - "http.addr=0.0.0.0"
+  - "http.corsdomain=*"
+  - "http.vhosts=*"
+  - "http.rpcprefix=/"
+  - "ws.addr=0.0.0.0"
+  - "ws.origins=*"
+  - "ws.rpcprefix=/"
+  - "http.api=net,web3,eth,debug,txpool"
+
+persistence:
+  enabled: true
+  size: 50Gi
+  storageClassName: gp3
+  
+extraEnv:
+  # Required to verify the rollup data availability on parent chain
+  # A paid arbitrum-sepolia RPC provider such as Quicknode or Alchemy is suggested
+  # Should be stored in a secret
+  - name: NITRO_PARENT-CHAIN_CONNECTION_URL
+    valueFrom:
+      secretKeyRef:
+        name: arbitrum
+        key: arbitrum-sepolia-rpc-url
+  # Required to forward transactions to the sequencer
+  - name: NITRO_EXECUTION_FORWARDING-TARGET
+    valueFrom:
+      secretKeyRef:
+        name: conduit
+        key: conduit-rpc-http-url
+
+# https://docs.arbitrum.io/run-arbitrum-node/run-full-node#minimum-hardware-configuration
+resources:
+  requests:
+    cpu: 2
+    memory: 12Gi
+  limits:
+    cpu: 4
+    memory: 16Gi
+
+# It's recommended to run the full-node on a dedicated node
+# by specifying a nodeSelector and tolerations
+#nodeSelector:
+#  karpenter.sh/nodepool: custom-node-pool
+nodeSelector:
+  role: nitro
+  workload: zama-nitro
+
+#tolerations:
+tolerations:
+  - key: "nitro"
+    operator: "Equal"
+    value: "only"
+    effect: "NoSchedule"
+#  - key: karpenter.sh/nodepool
+#    effect: NoSchedule
+#    operator: Equal
+#    value: custom-node-pool
+
+configmap:
+  enabled: true
+  data:
+    http:
+      rpcprefix: ""
+    parent-chain:
+      id: 421614
+      connection:
+        # Overridden by env var for authenticated RPC, see extraEnv section
+        # Public RPCs: https://chainlist.org/?chain=11155111&search=arbitrum&testnets=true
+        # However, they will usually return 429 Too Many Requests
+        #url: "https://sepolia-rollup.arbitrum.io/rpc"
+    chain:
+      id: 55815
+      name: conduit-orbit-deployer
+      # Note: {"parent-chain-is-arbitrum": true} added to JSON
+      info-json: '[{"parent-chain-is-arbitrum": true, "chain-id":55815,"parent-chain-id":421614,"chain-name":"conduit-orbit-deployer","chain-config":{"chainId":55815,"homesteadBlock":0,"daoForkBlock":null,"daoForkSupport":true,"eip150Block":0,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":0,"eip158Block":0,"byzantiumBlock":0,"constantinopleBlock":0,"petersburgBlock":0,"istanbulBlock":0,"muirGlacierBlock":0,"berlinBlock":0,"londonBlock":0,"clique":{"period":0,"epoch":0},"arbitrum":{"EnableArbOS":true,"AllowDebugPrecompiles":false,"DataAvailabilityCommittee":true,"InitialArbOSVersion":32,"InitialChainOwner":"0x3d1D38C575EFE8964bDB419a9123552cd504C790","GenesisBlockNum":0}},"rollup":{"bridge":"0x03F26CFa4F3838e11f0D1Ae2551c16C096D8Aa0F","inbox":"0xdF03512a0F670ed726E2e774413cC972d6d5b66A","sequencer-inbox":"0x8C89f60D2a90DBdF0b2aCdc3F00a7639A29be293","rollup":"0x5484341A7fa13982A6540918e015fAEd066A39E9","validator-utils":"0xf4CeeF5CA1a0aFE028E2C9A0F2535BcD599063fC","validator-wallet-creator":"0xdb54B7Eb16aF05Af999DA00100BeBAFf2D8350dD","deployed-at":153194495}}]'
+    execution:
+      # Uncomment to make node an archive node
+      #caching: archive
+      # Overridden by env var for authenticated RPC
+      #forwarding-target: "https://rpc-zama-testnet-v2-m21djof69y.t.conduit.xyz"
+      parent-chain-reader:
+        poll-timeout: 10s
+        poll-interval: 15s
+      forwarder:
+        update-interval: 100ms
+    node:
+      data-availability:
+        enable: true
+        sequencer-inbox-address: "0x8C89f60D2a90DBdF0b2aCdc3F00a7639A29be293"
+        rest-aggregator:
+          enable: true
+          urls:
+            - "https://das-zama-testnet-v2-m21djof69y.t.conduit.xyz"
+      # Required to pull unfinalized blocks from the sequencer
+      feed:
+        input:
+          url: "wss://relay-zama-testnet-v2-m21djof69y.t.conduit.xyz"
+      staker:
+        log-query-batch-size: 5000
+    metrics: true
+
+startupProbe:
+  enabled: false
+
+readinessProbe:
+  enabled: true
+  tcpSocket:
+    port: http-rpc
+  periodSeconds: 5
+  failureThreshold: 6
+
+serviceMonitor:
+  enabled: false
