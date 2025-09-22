@@ -268,9 +268,18 @@ resource "aws_kms_key" "mpc_party" {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.iam_assumable_role_mpc_party.iam_role_name}"
         },
         Action = [
+          "kms:GetPublicKey",
+        ],
+        Resource = "*",
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.iam_assumable_role_mpc_party.iam_role_name}"
+        },
+        Action = [
           "kms:Decrypt",
           "kms:GenerateDataKey",
-          "kms:GetPublicKey"
         ],
         Resource = "*",
         Condition = {
@@ -343,7 +352,6 @@ resource "aws_kms_key" "mpc_party_backup" {
         Action = [
           "kms:Decrypt",
           "kms:GenerateDataKey",
-          "kms:GetPublicKey"
         ],
         Resource = "*",
         Condition = {
