@@ -116,4 +116,4 @@ module "mpc_party" {
     "Terraform"   = "true"
     "Party"       = var.party_name
   })
-} 
+}

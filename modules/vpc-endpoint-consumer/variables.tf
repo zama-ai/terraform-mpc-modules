@@ -1,33 +1,3 @@
-variable "network_environment" {
-  description = "MPC network environment that determines region constraints"
-  type        = string
-  default     = "testnet"
-
-  validation {
-    condition     = contains(["testnet", "mainnet"], var.network_environment)
-    error_message = "Network environment must be either 'testnet' or 'mainnet'."
-  }
-}
-
-variable "testnet_supported_regions" {
-  description = "AWS regions supported by the VPC endpoint consumer for testnet"
-  type        = list(string)
-  default     = ["eu-west-1"]
-}
-
-variable "mainnet_supported_regions" {
-  description = "AWS regions supported by the VPC endpoint consumer for mainnet"
-  type        = list(string)
-  # TODO: Update the list of supported regions
-  default = ["eu-west-1"]
-}
-
-variable "enable_region_validation" {
-  type        = bool
-  description = "Whether to enable region validation"
-  default     = true
-}
-
 variable "cluster_name" {
   description = "Name of the EKS cluster to lookup VPC, subnet, and security group details (Mode 1). If provided, vpc_id, subnet_ids, and security_group_ids will be ignored."
   type        = string
@@ -91,11 +61,6 @@ variable "party_services" {
   }
 }
 
-variable "endpoint_policy" {
-  description = "IAM policy document for the VPC interface endpoints in JSON format"
-  type        = string
-  default     = null
-}
 
 variable "private_dns_enabled" {
   description = "Whether to enable private DNS for the VPC interface endpoints"
@@ -214,4 +179,4 @@ variable "dns_domain" {
   description = "DNS domain for custom DNS records"
   type        = string
   default     = "mpc-partners.local"
-} 
+}

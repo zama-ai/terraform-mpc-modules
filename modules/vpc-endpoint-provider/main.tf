@@ -1,7 +1,6 @@
 # **************************************************************
 #  Data sources
 # **************************************************************
-data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {
   lifecycle {
@@ -24,7 +23,7 @@ resource "kubernetes_namespace" "mpc_namespace" {
 }
 
 # ********************************************
-#  Create LoadBalancer services for MPC nodes 
+#  Create LoadBalancer services for MPC nodes
 # ********************************************
 resource "kubernetes_service" "mpc_nlb" {
   wait_for_load_balancer = true
@@ -99,7 +98,7 @@ data "aws_lb" "kubernetes_nlb" {
 }
 
 # ********************************************************************
-#  Wait for NLB to be available before creating VPC endpoint service 
+#  Wait for NLB to be available before creating VPC endpoint service
 # ********************************************************************
 data "external" "wait_nlb" {
   program = ["bash", "-c", <<-EOF
@@ -135,7 +134,7 @@ locals {
 }
 
 # **************************************************************
-#  Create VPC endpoint services to expose NLBs via PrivateLink 
+#  Create VPC endpoint services to expose NLBs via PrivateLink
 # **************************************************************
 resource "aws_vpc_endpoint_service" "mpc_nlb_service" {
 
@@ -159,4 +158,4 @@ resource "aws_vpc_endpoint_service" "mpc_nlb_service" {
 
   # Wait for NLB to be ready before creating VPC endpoint service
   depends_on = [data.external.wait_nlb]
-} 
+}

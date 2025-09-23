@@ -5,13 +5,13 @@ Terragrunt setup for managing **MPC (Multi-Party Computation) infrastructure** a
 ## Modules
 
 - **🏭 mpc-party**: Core MPC infrastructure (EKS, S3, IAM, RDS)
-- **🌉 mpc-network-provider**: Expose services via AWS PrivateLink  
+- **🌉 mpc-network-provider**: Expose services via AWS PrivateLink
 - **🔌 mpc-network-consumer**: Connect to external MPC parties
 
 ## Environments
 
 - **zws-dev**: Uses `token-zws-dev` profile → `zama-terraform-mpc-modules-tfstate` bucket
-- **kms-dev-v1**: Uses `token-kms-dev` profile → `zama-terraform-kms-dev-v1-mpc-modules-tfstate` bucket  
+- **kms-dev-v1**: Uses `token-kms-dev` profile → `zama-terraform-kms-dev-v1-mpc-modules-tfstate` bucket
 
 ## Usage
 

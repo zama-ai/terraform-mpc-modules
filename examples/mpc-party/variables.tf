@@ -196,11 +196,6 @@ variable "nodegroup_ec2_ssh_key" {
   default     = null
 }
 
-variable "nodegroup_source_security_group_ids" {
-  description = "List of security group IDs allowed for remote access"
-  type        = list(string)
-  default     = []
-}
 
 variable "nodegroup_labels" {
   description = "Labels for the nodegroup"
@@ -284,11 +279,6 @@ variable "rds_db_name" {
   default     = "kmsconnector"
 }
 
-variable "rds_prefix" {
-  description = "Your company prefix name"
-  type        = string
-  default     = "zama"
-}
 
 variable "rds_username" {
   description = "Username for the RDS database"
