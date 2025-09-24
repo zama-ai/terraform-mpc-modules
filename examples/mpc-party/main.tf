@@ -65,7 +65,6 @@ module "mpc_party" {
 
   kms_image_attestation_sha                = var.kms_image_attestation_sha
   kms_deletion_window_in_days              = var.kms_deletion_window_in_days
-  nodegroup_source_security_group_ids      = var.nodegroup_source_security_group_ids
   nodegroup_additional_security_group_ids  = var.nodegroup_additional_security_group_ids
   nodegroup_enable_ssm_managed_instance    = var.nodegroup_enable_ssm_managed_instance
   nodegroup_use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
@@ -80,7 +79,6 @@ module "mpc_party" {
   # RDS Configuration
   enable_rds                                = var.enable_rds
   rds_db_name                               = var.rds_db_name
-  rds_prefix                                = var.rds_prefix
   rds_create_monitoring_role                = var.rds_create_monitoring_role
   rds_manage_master_user_password           = var.rds_manage_master_user_password
   rds_username                              = var.rds_username
