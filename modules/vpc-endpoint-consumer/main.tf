@@ -40,17 +40,17 @@ locals {
 #  VPC interface endpoints to connect to partner MPC services
 # ************************************************************
 resource "aws_vpc_endpoint" "party_interface_endpoints" {
-  count = length(var.party_services)
+  for_each = toset(var.party_services)
 
   vpc_id            = local.vpc_id
-  service_name      = local.vpc_endpoint_service_names[count.index]
+  service_name      = local.vpc_endpoint_service_names[each.key]
   vpc_endpoint_type = "Interface"
-  subnet_ids = length(coalesce(var.party_services[count.index].availability_zones, [])) > 0 && var.cluster_name != null ? [
+  subnet_ids = length(coalesce(var.party_services[each.key].availability_zones, [])) > 0 && var.cluster_name != null ? [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
-    if subnet.map_public_ip_on_launch == false && contains(var.party_services[count.index].availability_zones, subnet.availability_zone)
+    if subnet.map_public_ip_on_launch == false && contains(var.party_services[each.key].availability_zones, subnet.availability_zone)
   ] : local.subnet_ids
   security_group_ids = local.security_group_ids
-  service_region     = var.party_services[count.index].region
+  service_region     = var.party_services[each.key].region
 
   # DNS options
   private_dns_enabled = var.private_dns_enabled
@@ -61,14 +61,14 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
   tags = merge(
     var.tags,
     {
-      Name                  = "${var.name_prefix}-${var.party_services[count.index].name}-interface"
-      "mpc:partner-service" = var.party_services[count.index].name
-      "mpc:partner-region"  = var.party_services[count.index].region
+      Name                  = "${var.name_prefix}-${var.party_services[each.key].name}-interface"
+      "mpc:partner-service" = var.party_services[each.key].name
+      "mpc:partner-region"  = var.party_services[each.key].region
       "mpc:component"       = "partner-interface"
       "mpc:cluster"         = local.cluster_name_for_tags
     },
-    var.party_services[count.index].account_id != null ? {
-      "mpc:partner-account" = var.party_services[count.index].account_id
+    var.party_services[each.key].account_id != null ? {
+      "mpc:partner-account" = var.party_services[each.key].account_id
     } : {},
   )
 
