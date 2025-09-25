@@ -1,0 +1,126 @@
+imagePullSecrets:
+  - name: registry-credentials
+
+commonConfig:
+  databaseUrl: "postgresql://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@$(DATABASE_ENDPOINT)/kmsconnector"
+  gatewayUrl: "ws://gateway-node:8548"
+  chainId: "55815"
+  gatewayContractAddresses:
+    decryption: "0xb6E160B1ff80D67Bfe90A85eE06Ce0A2613607D1"
+    gatewayConfig: "0x58a10Be74766EBf2Ea174c2aC718649764905f3b"
+    kmsManagement: "0x43520983a3dE63296e4B664AFD8ADe0823f75B2C"
+  env:
+    - name: DATABASE_ENDPOINT
+      valueFrom:
+        secretKeyRef:
+          name: connector-database
+          key: endpoint
+    - name: DATABASE_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: connector-database
+          key: username
+    - name: DATABASE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: connector-database
+          key: password
+    - name: KMS_CONNECTOR_DECRYPTION_POLLING_MS
+      value: "500"
+    - name: KMS_CONNECTOR_GAS_MULTIPLIER_PERCENT
+      value: "300"
+
+kmsConnectorDbMigration:
+  enabled: true
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/fhevm/kms-connector/db-migration
+    tag: v0.8.0
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node.kubernetes.io/enclave-enabled"
+                operator: In
+                values:
+                  - "true"
+  tolerations:
+    - key: "node.kubernetes.io/enclave-enabled"
+      effect: NoSchedule
+      operator: Equal
+      value: "true"
+
+kmsConnectorGwListener:
+  enabled: true
+  nameOverride: kms-connector-gw-listener
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/fhevm/kms-connector/gw-listener
+    tag: v0.8.0
+  replicas: 1
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node.kubernetes.io/enclave-enabled"
+                operator: In
+                values:
+                  - "true"
+  tolerations:
+    - key: "node.kubernetes.io/enclave-enabled"
+      effect: NoSchedule
+      operator: Equal
+      value: "true"
+
+kmsConnectorKmsWorker:
+  enabled: true
+  nameOverride: kms-connector-kms-worker
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/fhevm/kms-connector/kms-worker
+    tag: v0.8.0
+  replicas: 1
+  config:
+    kmsCoreEndpoints: "http://kms-core:50100"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node.kubernetes.io/enclave-enabled"
+                operator: In
+                values:
+                  - "true"
+  tolerations:
+    - key: "node.kubernetes.io/enclave-enabled"
+      effect: NoSchedule
+      operator: Equal
+      value: "true"
+
+kmsConnectorTxSender:
+  enabled: true
+  nameOverride: kms-connector-tx-sender
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/fhevm/kms-connector/tx-sender
+    tag: v0.8.0
+  replicas: 1
+  wallet:
+    secret:
+      name: connector-wallet-keys
+      key: kms_txsender.private_key
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node.kubernetes.io/enclave-enabled"
+                operator: In
+                values:
+                  - "true"
+  tolerations:
+    - key: "node.kubernetes.io/enclave-enabled"
+      effect: NoSchedule
+      operator: Equal
+      value: "true"
+
+#tracing:
+#  endpoint: "http://observability-alloy.observability.svc.cluster.local:4317"

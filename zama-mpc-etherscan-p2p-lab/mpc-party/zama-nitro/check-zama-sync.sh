@@ -1,10 +1,18 @@
 #!/bin/bash
 # Check Zama Nitro node sync status against Zama Testnet public RPC
 
-# === Config === 
-# Please run "kubectl port-forward svc/zama-nitro 8547:8547 -n arbitrum" in another terminal first
-LOCAL_RPC="http://127.0.0.1:8547" 
+LOCAL_RPC="http://127.0.0.1:8547"
 PUBLIC_RPC="https://rpc-zama-testnet-v2-m21djof69y.t.conduit.xyz/AWPbX3k4TSAUyDsooPun88t27MT4bakzC"
+
+# === Helper: safe hex -> int ===
+hex2int() {
+  local hex=$1
+  if [[ -z "$hex" || "$hex" == "null" ]]; then
+    echo 0
+  else
+    echo $((16#${hex#0x}))
+  fi
+}
 
 # === Get Chain ID ===
 chain_local=$(curl -s $LOCAL_RPC \
@@ -15,30 +23,31 @@ chain_local=$(curl -s $LOCAL_RPC \
 block_local_hex=$(curl -s $LOCAL_RPC \
   -X POST -H "Content-Type: application/json" \
   --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' | jq -r .result)
-block_local=$((block_local_hex))
+block_local=$(hex2int "$block_local_hex")
 
 # === Get public block height ===
 block_public_hex=$(curl -s $PUBLIC_RPC \
   -X POST -H "Content-Type: application/json" \
   --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' | jq -r .result)
-block_public=$((block_public_hex))
+block_public=$(hex2int "$block_public_hex")
 
-# === Get peers safely ===
-peers=$(curl -s $LOCAL_RPC/net_info | jq -r '.result.n_peers // .n_peers // "0"')
-# Force integer
-peers=${peers//[^0-9]/}
+# === Get peers ===
+peers_hex=$(curl -s $PUBLIC_RPC \
+  -X POST -H "Content-Type: application/json" \
+  --data '{"jsonrpc":"2.0","method":"net_peerCount","params":[],"id":1}' | jq -r .result)
+peers=$(hex2int "$peers_hex")
 
 # === Calculate difference ===
 diff=$((block_public - block_local))
 
 # === Print results ===
-echo "🔗 Chain ID:        $chain_local"
+echo "🔗 Chain ID:        ${chain_local:-unknown}"
 echo "💻 Local block:     $block_local"
 echo "🌐 Public block:    $block_public"
-echo "👥 Peers:           ${peers:-0}"
+echo "👥 Peers:           $peers"
 echo "📊 Difference:      $diff"
 
-if [ -z "$peers" ] || [ "$peers" -eq 0 ]; then
+if [ "$peers" -eq 0 ]; then
   echo "⚠️  Node is not connected to any peers, likely producing blocks in isolation."
 elif [ "$diff" -le 5 ]; then
   echo "✅ Node is in sync with the Zama Testnet."

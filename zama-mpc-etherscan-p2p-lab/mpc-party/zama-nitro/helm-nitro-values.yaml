@@ -2,6 +2,8 @@ image:
   repository: offchainlabs/nitro-node
   tag: v3.6.8-d6c96a5
 
+fullnameOverride: gateway-node
+
 conf:
   env-prefix: NITRO
 
@@ -18,7 +20,6 @@ customArgs:
 
 persistence:
   enabled: true
-  size: 50Gi
   storageClassName: gp3
   
 extraEnv:
@@ -53,6 +54,7 @@ resources:
 nodeSelector:
   role: nitro
   workload: zama-nitro
+  topology.kubernetes.io/zone: eu-west-1a
 
 #tolerations:
 tolerations:

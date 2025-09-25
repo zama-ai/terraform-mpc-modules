@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nitrodata-gateway-node-0
+  namespace: kms-decentralized
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: gp3
+  volumeName: pvc-96199f06-97bd-4555-8dc3-ebde207185f6

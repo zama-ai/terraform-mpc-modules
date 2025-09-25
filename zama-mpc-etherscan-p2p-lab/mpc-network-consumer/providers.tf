@@ -15,7 +15,17 @@ terraform {
       version = ">= 3.1"
     }
   }
-  backend "s3" {}
+  backend "s3" {
+    bucket         = "zama-mpc-testnet-terraform-states"
+    key            = "zama-mpc-network-consumer-testnet/terraform.tfstate"
+    region         = "eu-west-1"
+    # For old Terraform (< 1.9)
+    dynamodb_table = "zama-terraform-locks"
+
+    # For new Terraform (>= 1.9)
+    use_lockfile   = true
+    encrypt        = true
+  }
 }
 
 # Configure providers

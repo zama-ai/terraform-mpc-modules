@@ -105,6 +105,7 @@ module "mpc_party" {
   rds_vpc_id                                = var.rds_vpc_id
   #rds_subnet_ids                            = var.rds_subnet_ids
   rds_deletion_protection                   = var.rds_deletion_protection
+  rds_master_password_rotation_days         = var.rds_master_password_rotation_days
 
   # Tagging
   common_tags = merge(var.additional_tags, {

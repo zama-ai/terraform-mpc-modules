@@ -314,6 +314,12 @@ variable "rds_enable_master_password_rotation" {
   default     = false
 }
 
+variable "rds_master_password_rotation_days" {
+  description = "Number of days between automatic scheduled rotations of the secret, default is set to the maximum allowed value of 1000 days"
+  type        = number
+  default     = 1000
+}
+
 variable "rds_engine" {
   description = "Engine for the RDS database"
   type        = string
@@ -323,7 +329,7 @@ variable "rds_engine" {
 variable "rds_engine_version" {
   description = "Engine version for the RDS database"
   type        = string
-  default     = "17.2"
+  default     = "17.4"
 }
 
 variable "rds_instance_class" {

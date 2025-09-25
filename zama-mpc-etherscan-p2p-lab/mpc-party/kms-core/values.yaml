@@ -1,0 +1,114 @@
+imagePullSecrets:
+  - name: registry-credentials
+
+kmsGenCertAndKeys:
+  nameOverride: kms-gen-cert-and-keys
+  enabled: true
+
+kmsCore:
+  enabled: true
+  nameOverride: kms-core
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/kms/core-service-enclave
+    tag: v0.11.0
+  serviceAccountName: etherscan-p2p-lab-service-account
+  envFrom:
+    configmap:
+      name: mpc-party
+  thresholdMode:
+    enabled: true
+    tls:
+      enabled: false
+    peersList:
+      - id: 1
+        host: mpc-node-1
+        port: 50001
+      - id: 2
+        host: mpc-node-2
+        port: 50001
+      - id: 3
+        host: mpc-node-3
+        port: 50001
+      - id: 4
+        host: mpc-node-4
+        port: 50001
+      - id: 5
+        host: mpc-node-5
+        port: 50001
+      - id: 6
+        host: mpc-node-6
+        port: 50001
+      - id: 7
+        host: mpc-node-7
+        port: 50001
+      - id: 8
+        host: mpc-node-8
+        port: 50001
+      - id: 9
+        host: mpc-node-9
+        port: 50001
+      - id: 10
+        host: mpc-node-10
+        port: 50001
+      - id: 11
+        host: mpc-node-11
+        port: 50001
+      - id: 12
+        host: mpc-node-12
+        port: 50001
+      - id: 13
+        host: mpc-node-13
+        port: 50001
+  nitroEnclave:
+    enabled: true
+  aws:
+    region: eu-west-1
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "node.kubernetes.io/enclave-enabled"
+                operator: In
+                values:
+                  - "true"
+    # Make sure that kms-core pods are not scheduled on the same node (for future core sharding on enclave nodes)
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: "kubernetes.io/hostname"
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - kms-core
+  tolerations:
+    - key: "node.kubernetes.io/enclave-enabled"
+      effect: NoSchedule
+      operator: Equal
+      value: "true"
+  publicVault:
+    s3:
+      enabled: true
+  privateVault:
+    s3:
+      enabled: true
+    awskms:
+      enabled: true
+
+kmsCoreClient:
+  enabled: true
+  nameOverride: kms-client
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/kms/core-client
+    tag: v0.11.0
+  envFrom:
+    configmap:
+      name: mpc-party
+
+kubeUtils:
+  image:
+    name: hub.zama.ai/zama-protocol/zama-ai/security-hub/infra/kube-utils
+    tag: v0.4.0
+
+rustLog: info

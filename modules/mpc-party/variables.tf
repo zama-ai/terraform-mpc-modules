@@ -511,7 +511,7 @@ variable "rds_db_password" {
 variable "rds_enable_master_password_rotation" {
   description = "Whether to manage the master user password rotation. By default, false on creation, rotation is managed by RDS. There is not currently no way to disable this on initial creation even when set to false. Setting this value to false after previously having been set to true will disable automatic rotation."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "rds_master_password_rotation_days" {

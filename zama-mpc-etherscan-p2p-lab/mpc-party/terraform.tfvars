@@ -13,7 +13,7 @@ environment = "dev"
 
 # S3 Bucket Configuration
 bucket_prefix   = "zama-kms-decentralized-threshold-2"
-config_map_name = "etherscan-p2p-lab-config"
+config_map_name = "mpc-party"
 
 # Kubernetes Configuration
 cluster_name         = "zama-mpc-testnet-eks"
@@ -42,8 +42,20 @@ rds_prefix              = "zama" # Use your organization prefix here
 rds_db_name             = "kmsconnector"
 rds_username            = "kmsconnector"
 rds_enable_master_password_rotation = false # To change to 'false' on second apply only (there is a bug when initializing the value to 'false')
+rds_master_password_rotation_days = 1000
 rds_vpc_id          = "vpc-0e4ed8f62c12625e7" # Replace with your private subnet IDs
 rds_deletion_protection = true # Allow deletion of RDS instance
+
+rds_engine_version = "17.4"
+
+rds_parameters = [
+  {
+    name  = "rds.force_ssl"
+    value = "0"
+  }
+]
+
+
 
 # Node Group Configuration
 create_nodegroup                         = true
