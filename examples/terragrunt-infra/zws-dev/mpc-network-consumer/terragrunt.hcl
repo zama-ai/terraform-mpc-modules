@@ -13,7 +13,7 @@ include "common" {
 
 # Reference the vpc-endpoint-consumer module
 terraform {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.6"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.7"
 
   extra_arguments "tfvars" {
     commands = get_terraform_commands_that_need_vars()
