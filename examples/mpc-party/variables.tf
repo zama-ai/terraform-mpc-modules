@@ -117,7 +117,6 @@ variable "kubeconfig_context" {
   default     = null
 }
 
-
 # Tagging
 variable "additional_tags" {
   description = "Additional tags to apply to all resources"
@@ -430,7 +429,6 @@ variable "rds_vpc_id" {
   type        = string
   default     = null
 }
-
 
 variable "rds_create_monitoring_role" {
   description = "Whether to create the RDS monitoring role"
