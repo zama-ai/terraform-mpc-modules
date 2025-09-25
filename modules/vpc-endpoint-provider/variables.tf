@@ -54,7 +54,7 @@ variable "tags" {
 variable "namespace" {
   description = "Kubernetes namespace where MPC services will be deployed"
   type        = string
-  default     = "mpc-cluster"
+  default     = "kms-decentralized"
 }
 
 variable "create_namespace" {

@@ -352,7 +352,7 @@ The module can optionally create:
 | <a name="input_create_nodegroup"></a> [create\_nodegroup](#input\_create\_nodegroup) | Whether to create an EKS managed node group | `bool` | `false` | no |
 | <a name="input_create_service_account"></a> [create\_service\_account](#input\_create\_service\_account) | Whether to create the Kubernetes service account (should be false when using IRSA as IRSA creates it) | `bool` | `true` | no |
 | <a name="input_enable_rds"></a> [enable\_rds](#input\_enable\_rds) | Whether to create the RDS instance | `bool` | `true` | no |
-| <a name="input_k8s_namespace"></a> [k8s\_namespace](#input\_k8s\_namespace) | The Kubernetes namespace for MPC party resources | `string` | n/a | yes |
+| <a name="input_k8s_namespace"></a> [k8s\_namespace](#input\_k8s\_namespace) | The Kubernetes namespace for MPC party resources | `string` | `"kms-decentralized"` | no |
 | <a name="input_k8s_service_account_name"></a> [k8s\_service\_account\_name](#input\_k8s\_service\_account\_name) | The name of the Kubernetes service account for MPC party | `string` | n/a | yes |
 | <a name="input_kms_backup_external_role_arn"></a> [kms\_backup\_external\_role\_arn](#input\_kms\_backup\_external\_role\_arn) | ARN of the backup vault for the KMS key | `string` | `null` | no |
 | <a name="input_kms_backup_vault_customer_master_key_spec"></a> [kms\_backup\_vault\_customer\_master\_key\_spec](#input\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"ASYMMETRIC_DEFAULT"` | no |

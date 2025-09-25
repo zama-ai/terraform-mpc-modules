@@ -82,7 +82,7 @@ variable "cluster_name" {
 variable "namespace" {
   description = "Kubernetes namespace for MPC party resources"
   type        = string
-  default     = "mpc-party"
+  default     = "kms-decentralized"
 }
 
 variable "service_account_name" {

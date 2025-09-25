@@ -102,7 +102,7 @@ variable "endpoint_delete_timeout" {
 variable "namespace" {
   description = "Kubernetes namespace where partner services will be created"
   type        = string
-  default     = "mpc-partners"
+  default     = "kms-decentralized"
 }
 
 variable "create_namespace" {

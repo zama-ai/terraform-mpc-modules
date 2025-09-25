@@ -38,7 +38,7 @@ variable "cluster_name" {
 variable "namespace" {
   description = "Kubernetes namespace for partner services"
   type        = string
-  default     = "mpc-partners"
+  default     = "kms-decentralized"
 }
 
 
