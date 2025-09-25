@@ -22,12 +22,6 @@ variable "aws_profile" {
   default     = "token-zws-dev"
 }
 
-variable "enable_region_validation" {
-  type        = bool
-  description = "Whether to enable region validation"
-  default     = true
-}
-
 # MPC Party Configuration
 variable "party_id" {
   description = "Party ID for the MPC service"
@@ -286,12 +280,6 @@ variable "rds_username" {
   default     = "kmsconnector"
 }
 
-variable "rds_manage_master_user_password" {
-  description = "Whether to manage the master user password"
-  type        = bool
-  default     = false
-}
-
 variable "rds_engine" {
   description = "Engine for the RDS database"
   type        = string
@@ -358,30 +346,6 @@ variable "rds_monitoring_role_arn" {
   default     = null
 }
 
-variable "rds_performance_insights_enabled" {
-  description = "Whether to enable performance insights for the RDS database"
-  type        = bool
-  default     = false
-}
-
-variable "rds_performance_insights_kms_key_id" {
-  description = "KMS key ID for performance insights"
-  type        = string
-  default     = null
-}
-
-variable "rds_performance_insights_retention_period" {
-  description = "Retention period for performance insights"
-  type        = number
-  default     = 7
-}
-
-variable "rds_blue_green_update_enabled" {
-  description = "Whether to enable blue-green update for the RDS database"
-  type        = bool
-  default     = false
-}
-
 variable "use_eks_cluster_authentication" {
   description = "Whether to use EKS cluster authentication"
   type        = bool
@@ -392,30 +356,6 @@ variable "rds_parameters" {
   description = "Parameters for the RDS database"
   type        = list(map(string))
   default     = []
-}
-
-variable "rds_snapshot_identifier" {
-  description = "Snapshot identifier for the RDS database"
-  type        = string
-  default     = null
-}
-
-variable "rds_final_snapshot_enabled" {
-  description = "Whether to enable final snapshot for the RDS database"
-  type        = bool
-  default     = false
-}
-
-variable "rds_k8s_secret_name" {
-  description = "Name of the Kubernetes secret for the RDS database"
-  type        = string
-  default     = "rds-credentials"
-}
-
-variable "rds_k8s_secret_namespace" {
-  description = "Namespace of the Kubernetes secret for the RDS database"
-  type        = string
-  default     = "mpc-party"
 }
 
 variable "rds_allowed_cidr_blocks" {

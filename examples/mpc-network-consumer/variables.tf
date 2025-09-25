@@ -1,15 +1,3 @@
-# Network Environment Configuration
-variable "network_environment" {
-  description = "MPC network environment that determines region constraints"
-  type        = string
-  default     = "testnet"
-
-  validation {
-    condition     = contains(["testnet", "mainnet"], var.network_environment)
-    error_message = "Network environment must be either 'testnet' or 'mainnet'."
-  }
-}
-
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
@@ -20,12 +8,6 @@ variable "aws_profile" {
   description = "AWS profile to use for authentication"
   type        = string
   default     = "token-zws-dev"
-}
-
-variable "enable_region_validation" {
-  type        = bool
-  description = "Whether to enable region validation"
-  default     = true
 }
 
 # MPC Cluster Configuration
