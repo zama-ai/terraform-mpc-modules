@@ -1,9 +1,5 @@
 # AWS Configuration
-aws_region         = "eu-west-1"
-enable_region_validation = false
-
-# Network Environment Configuration
-network_environment = "testnet"
+aws_region = "eu-west-1"
 
 # Cluster Configuration
 cluster_name = "zws-dev"

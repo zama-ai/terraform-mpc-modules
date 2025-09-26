@@ -44,6 +44,7 @@ variable "cluster_name" {
 variable "k8s_namespace" {
   type        = string
   description = "The Kubernetes namespace for MPC party resources"
+  default     = "kms-decentralized"
 }
 
 variable "create_namespace" {
