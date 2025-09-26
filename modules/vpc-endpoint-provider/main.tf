@@ -130,7 +130,7 @@ data "aws_subnet" "nlb_subnet" {
 
 # Get all availability zones from the NLB subnets
 locals {
-  availability_zones = [for subnet in data.aws_subnet.nlb_subnet : subnet.availability_zone]
+  availability_zones = [for subnet in data.aws_subnet.nlb_subnet : subnet.availability_zone_id]
 }
 
 # **************************************************************

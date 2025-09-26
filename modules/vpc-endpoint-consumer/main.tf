@@ -51,7 +51,7 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
   vpc_endpoint_type = "Interface"
   subnet_ids = length(coalesce(each.value.availability_zones, [])) > 0 && var.cluster_name != null ? [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
-    if subnet.map_public_ip_on_launch == false && contains(each.value.availability_zones, subnet.availability_zone)
+    if subnet.map_public_ip_on_launch == false && contains(each.value.availability_zones, subnet.availability_zone_id)
   ] : local.subnet_ids
   security_group_ids = local.security_group_ids
   service_region     = each.value.region
