@@ -27,12 +27,16 @@ locals {
   # Cluster name for tagging (use provided cluster_name or default)
   cluster_name_for_tags = var.cluster_name != null ? var.cluster_name : "mpc-cluster"
 
-  # Use the VPC endpoint service names provided by partners
-  # Note: vpc_endpoint_service_name must be provided directly by the partner
-  # as AWS auto-generates these names when creating VPC endpoint services
-  vpc_endpoint_service_names = [
-    for service in var.party_services : service.vpc_endpoint_service_name
-  ]
+  # Convert party_services list to map for for_each usage
+  party_services_map = {
+    for service in var.party_services : service.party_id => service
+  }
+
+  # Create separate map for services that need Kubernetes services
+  kube_services_map = {
+    for service in var.party_services : service.party_id => service
+    if service.create_kube_service
+  }
 
 }
 
@@ -40,17 +44,17 @@ locals {
 #  VPC interface endpoints to connect to partner MPC services
 # ************************************************************
 resource "aws_vpc_endpoint" "party_interface_endpoints" {
-  count = length(var.party_services)
+  for_each = local.party_services_map
 
   vpc_id            = local.vpc_id
-  service_name      = local.vpc_endpoint_service_names[count.index]
+  service_name      = each.value.vpc_endpoint_service_name
   vpc_endpoint_type = "Interface"
-  subnet_ids = length(coalesce(var.party_services[count.index].availability_zones, [])) > 0 && var.cluster_name != null ? [
+  subnet_ids = length(coalesce(each.value.availability_zones, [])) > 0 && var.cluster_name != null ? [
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
-    if subnet.map_public_ip_on_launch == false && contains(var.party_services[count.index].availability_zones, subnet.availability_zone)
+    if subnet.map_public_ip_on_launch == false && contains(each.value.availability_zones, subnet.availability_zone)
   ] : local.subnet_ids
   security_group_ids = local.security_group_ids
-  service_region     = var.party_services[count.index].region
+  service_region     = each.value.region
 
   # DNS options
   private_dns_enabled = var.private_dns_enabled
@@ -61,14 +65,15 @@ resource "aws_vpc_endpoint" "party_interface_endpoints" {
   tags = merge(
     var.tags,
     {
-      Name                  = "${var.name_prefix}-${var.party_services[count.index].name}-interface"
-      "mpc:partner-service" = var.party_services[count.index].name
-      "mpc:partner-region"  = var.party_services[count.index].region
+      Name                  = "${var.name_prefix}-${each.value.name}-interface"
+      "mpc:partner-service" = each.value.name
+      "mpc:partner-party"   = each.key
+      "mpc:partner-region"  = each.value.region
       "mpc:component"       = "partner-interface"
       "mpc:cluster"         = local.cluster_name_for_tags
     },
-    var.party_services[count.index].account_id != null ? {
-      "mpc:partner-account" = var.party_services[count.index].account_id
+    each.value.account_id != null ? {
+      "mpc:partner-account" = each.value.account_id
     } : {},
   )
 
@@ -92,34 +97,35 @@ resource "kubernetes_namespace" "partner_namespace" {
 #  Create Kubernetes services that route to the VPC interface endpoints
 # *********************************************************************
 resource "kubernetes_service" "party_services" {
-  count = length([for service in var.party_services : service if service.create_kube_service])
+  for_each = local.kube_services_map
 
   metadata {
-    name      = "mpc-node-${var.party_services[count.index].party_id}"
+    name      = "mpc-node-${each.key}"
     namespace = var.create_namespace ? kubernetes_namespace.partner_namespace[0].metadata[0].name : var.namespace
 
     annotations = merge({
       "mpc.io/connection-type" = "partner-interface"
-      "mpc.io/partner-service" = var.party_services[count.index].name
+      "mpc.io/partner-service" = each.value.name
+      "mpc.io/partner-party"   = each.key
       },
-      var.party_services[count.index].account_id != null ? {
-        "mpc.io/partner-account" = var.party_services[count.index].account_id
+      each.value.account_id != null ? {
+        "mpc.io/partner-account" = each.value.account_id
       } : {},
-    var.party_services[count.index].kube_service_config.additional_annotations)
+    each.value.kube_service_config.additional_annotations)
 
     labels = merge({
-      "app.kubernetes.io/name"      = "kms-${var.party_services[count.index].party_id}-core"
-      "app.kubernetes.io/instance"  = "kms-${var.party_services[count.index].party_id}-core"
+      "app.kubernetes.io/name"      = "kms-${each.key}-core"
+      "app.kubernetes.io/instance"  = "kms-${each.key}-core"
       "app.kubernetes.io/component" = "mpc-partner-interface"
       "app.kubernetes.io/part-of"   = "mpc-cluster"
       "mpc.io/partner-service"      = "true"
-    }, var.party_services[count.index].kube_service_config.labels)
+    }, each.value.kube_service_config.labels)
   }
 
   spec {
     type             = "ExternalName"
-    external_name    = aws_vpc_endpoint.party_interface_endpoints[count.index].dns_entry[0].dns_name
-    session_affinity = var.party_services[count.index].kube_service_config.session_affinity
+    external_name    = aws_vpc_endpoint.party_interface_endpoints[each.key].dns_entry[0].dns_name
+    session_affinity = each.value.kube_service_config.session_affinity
 
     dynamic "port" {
       for_each = concat(
@@ -143,15 +149,15 @@ resource "kubernetes_service" "party_services" {
 #  Create Route53 private hosted zone records for custom DNS names (in progress,optional)
 # **************************************************************************************
 resource "aws_route53_record" "partner_dns" {
-  count = var.create_custom_dns_records ? length(var.party_services) : 0
+  for_each = var.create_custom_dns_records ? local.party_services_map : {}
 
   zone_id = var.private_zone_id
-  name    = "${var.party_services[count.index].name}.${var.dns_domain}"
+  name    = "${each.value.name}.${var.dns_domain}"
   type    = "A"
 
   alias {
-    name                   = aws_vpc_endpoint.party_interface_endpoints[count.index].dns_entry[0].dns_name
-    zone_id                = aws_vpc_endpoint.party_interface_endpoints[count.index].dns_entry[0].hosted_zone_id
+    name                   = aws_vpc_endpoint.party_interface_endpoints[each.key].dns_entry[0].dns_name
+    zone_id                = aws_vpc_endpoint.party_interface_endpoints[each.key].dns_entry[0].hosted_zone_id
     evaluate_target_health = true
   }
 }
