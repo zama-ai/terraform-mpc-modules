@@ -4,7 +4,7 @@
 
 # Deploy MPC Party infrastructure using the enhanced mpc-party module
 module "mpc_party" {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.7"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.8"
 
   # Network environment configuration
   network_environment = var.network_environment

@@ -2,7 +2,7 @@
 # This example demonstrates how to connect to existing MPC services from partners
 
 module "vpc_endpoint_consumer" {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.7"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.8"
 
   # Partner services configuration
   party_services = var.party_services
