@@ -22,7 +22,6 @@ data "aws_subnet" "cluster_subnets" {
 # ***************************************
 #  Local variables
 # ***************************************
-
 resource "random_id" "mpc_party_suffix" {
   byte_length = 4
 }
@@ -628,7 +627,7 @@ locals {
 
 }
 resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
-  count = local.node_group_nitro_enclaves_enabled ? 1 : 0
+  count = local.node_group_nitro_enclaves_enabled && var.nodegroup_nitro_enclaves_daemonset_enabled ? 1 : 0
 
   metadata {
     name      = "aws-nitro-enclaves-k8s-device-plugin"
