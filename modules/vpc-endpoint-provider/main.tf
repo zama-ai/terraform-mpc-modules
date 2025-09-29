@@ -122,15 +122,39 @@ locals {
 }
 
 
-# data subnet for each subnet in the NLB
-data "aws_subnet" "nlb_subnet" {
-  for_each = toset(data.aws_lb.kubernetes_nlb.subnets)
-  id       = each.value
+# Get all availability zones in the region to map names to IDs
+data "aws_availability_zones" "all" {
+  state = "available"
 }
 
-# Get all availability zones from the NLB subnets
+# Use external data source to get availability zone names from NLB
+data "external" "nlb_availability_zones" {
+  program = ["bash", "-c", <<-EOF
+    set -e
+    
+    # Get availability zone names from the NLB as a comma-separated string
+    zone_names=$(aws elbv2 describe-load-balancers \
+      --region ${data.aws_region.current.region} \
+      --load-balancer-arns ${data.aws_lb.kubernetes_nlb.arn} \
+      --query 'LoadBalancers[0].AvailabilityZones[].ZoneName' \
+      --output text | tr '\t' ',')
+    
+    # Return as JSON with string value
+    echo "{\"zone_names\": \"$zone_names\"}"
+  EOF
+  ]
+  depends_on = [data.external.wait_nlb]
+}
+
 locals {
-  availability_zones = [for subnet in data.aws_subnet.nlb_subnet : subnet.availability_zone_id]
+  # Map zone names to zone IDs
+  zone_name_to_id = zipmap(data.aws_availability_zones.all.names, data.aws_availability_zones.all.zone_ids)
+  
+  # Get zone names from external data source
+  nlb_zone_names = split(",", data.external.nlb_availability_zones.result.zone_names)
+  
+  # Convert zone names to zone IDs
+  availability_zones = [for zone_name in local.nlb_zone_names : local.zone_name_to_id[zone_name]]
 }
 
 # **************************************************************
