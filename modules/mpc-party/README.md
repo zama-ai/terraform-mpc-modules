@@ -68,6 +68,7 @@ graph TB
 > **ℹ️ Info**
 > 
 > The `Complete` and `Database-Only` examples provided below are to simply show the full set of variables that can be configured for the `mpc-party` module.  
+>
 > The examples are **not intended for usage as-is** in a deployment context for Zama testnet or mainnet!
 >
 > Please refer to the [terraform.tfvars.example](../../examples/mpc-party/terraform.tfvars.example) file in `examples/mpc-party` for a closer repesentation of configuration usable in deployment contexts. But as always, ensure conformance with broader infrastructre base layer before deploying.
