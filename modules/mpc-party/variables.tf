@@ -153,17 +153,17 @@ variable "nodegroup_use_latest_ami_release_version" {
 variable "nodegroup_ami_release_version" {
   type        = string
   description = "AMI release version for the node group"
-  default     = "1.32.3-20250620"
-  validation {
-    condition     = contains(["1.32.3-20250620"], var.nodegroup_ami_release_version)
-    error_message = "This AMI release version is not supported. Please use the recommended version in the list."
-  }
+  default     = null
+  //validation {
+  //  condition     = contains(["1.32.3-20250620"], var.nodegroup_ami_release_version)
+  //  error_message = "This AMI release version is not supported. Please use the recommended version in the list."
+  //}
 }
 
 variable "nodegroup_ami_id" {
   type        = string
-  description = "AMI ID for the node group"
-  default     = "ami-085d6a1add83c50f3"
+  description = "AMI ID for the node group. When set, uses a custom AMI. When null, uses EKS-optimized AMI based on ami_type and ami_release_version"
+  default     = null
 }
 
 # Scaling Configuration
