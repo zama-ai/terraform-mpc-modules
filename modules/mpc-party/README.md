@@ -65,6 +65,12 @@ graph TB
 
 ## Usage
 
+> **ℹ️ Info**
+> 
+> The `Complete` and `Database-Only` examples provided below are to simply show the full set of variables that can be configured for the `mpc-party` module.  
+> The examples are **not intended for usage as-is** in a deployment context for Zama testnet or mainnet!
+> Please refer to the [terraform.tfvars.example](../../examples/mpc-party/terraform.tfvars.example) file in `examples/mpc-party` for a functional example usable in deployment contexts
+
 ### Complete Example with All Options
 
 ```terraform
@@ -72,10 +78,10 @@ module "mpc_party" {
   source = "./modules/mpc-party"
 
   # Core Configuration
-  party_name               = "mpc-party-production"
+  party_name                = "mpc-party-production"
   vault_private_bucket_name = "prod-mpc-private-${random_id.suffix.hex}"
   vault_public_bucket_name  = "prod-mpc-public-${random_id.suffix.hex}"
-  cluster_name             = "production-eks-cluster"
+  cluster_name              = "production-eks-cluster"
 
   # Network Environment & Region Validation
   network_environment        = "mainnet"  # or "testnet"
@@ -88,7 +94,7 @@ module "mpc_party" {
   k8s_service_account_name = "mpc-party-sa"
   create_namespace         = true
   create_service_account   = true
-  create_irsa             = true
+  create_irsa              = true
 
   # Namespace Customization
   namespace_labels = {
@@ -101,27 +107,27 @@ module "mpc_party" {
   }
 
   # ConfigMap Configuration
-  create_config_map = true
-  config_map_name   = "mpc-party-config"
+  create_config_map      = true
+  config_map_name        = "mpc-party-config"
   additional_config_data = {
     "LOG_LEVEL"   = "info"
     "ENVIRONMENT" = "production"
   }
 
   # RDS Database Configuration
-  enable_rds                    = true
-  rds_prefix                   = "zama"
-  rds_db_name                  = "mpc_production"
-  rds_username                 = "mpc_user"
-  rds_engine                   = "postgres"
-  rds_engine_version           = "17.2"
-  rds_instance_class           = "db.t4g.large"
-  rds_allocated_storage        = 100
-  rds_max_allocated_storage    = 500
-  rds_multi_az                 = true
-  rds_backup_retention_period  = 14
-  rds_deletion_protection      = false
-  rds_storage_encrypted        = true
+  enable_rds                      = true
+  rds_prefix                      = "zama"
+  rds_db_name                     = "mpc_production"
+  rds_username                    = "mpc_user"
+  rds_engine                      = "postgres"
+  rds_engine_version              = "17.2"
+  rds_instance_class              = "db.t4g.large"
+  rds_allocated_storage           = 100
+  rds_max_allocated_storage       = 500
+  rds_multi_az                    = true
+  rds_backup_retention_period     = 14
+  rds_deletion_protection         = false
+  rds_storage_encrypted           = true
   rds_manage_master_user_password = true
 
   # RDS Network Configuration
@@ -141,23 +147,23 @@ module "mpc_party" {
   ]
 
   # RDS Kubernetes Integration
-  rds_create_externalname_service   = true
-  rds_externalname_service_name     = "mpc-db-external"
+  rds_create_externalname_service    = true
+  rds_externalname_service_name      = "mpc-db-external"
   rds_externalname_service_namespace = "mpc-production"
 
   # Node Group Configuration
-  create_nodegroup                = true
-  nodegroup_name                 = "mpc-production-ng"
-  nodegroup_instance_types       = ["m5.4xlarge"]
-  nodegroup_min_size             = 1
-  nodegroup_max_size             = 3
-  nodegroup_desired_size         = 2
-  nodegroup_disk_size            = 100
-  nodegroup_capacity_type        = "ON_DEMAND"
-  nodegroup_ami_type             = "AL2023_x86_64_STANDARD"
+  create_nodegroup         = true
+  nodegroup_name           = "mpc-production-ng"
+  nodegroup_instance_types = ["m5.4xlarge"]
+  nodegroup_min_size       = 1
+  nodegroup_max_size       = 3
+  nodegroup_desired_size   = 2
+  nodegroup_disk_size      = 100
+  nodegroup_capacity_type  = "ON_DEMAND"
+  nodegroup_ami_type       = "AL2023_x86_64_STANDARD"
 
   # Node Group Security
-  nodegroup_enable_remote_access = false
+  nodegroup_enable_remote_access          = false
   nodegroup_additional_security_group_ids = ["sg-12345678"]
 
   # Node Group Labels and Taints
@@ -173,8 +179,8 @@ module "mpc_party" {
   kms_deletion_window_in_days     = 30
 
   # Resource Overrides for Nitro Enclaves
-  nitro_enclaves_override_cpu_count   = 6
-  nitro_enclaves_override_memory_mib  = 12288
+  nitro_enclaves_override_cpu_count  = 6
+  nitro_enclaves_override_memory_mib = 12288
 
   # Tagging
   common_tags = {
@@ -200,24 +206,24 @@ module "mpc_party" {
   source = "./modules/mpc-party"
 
   # Core Configuration
-  party_name               = "mpc-party-db"
+  party_name                = "mpc-party-db"
   vault_private_bucket_name = "mpc-private-${random_id.suffix.hex}"
   vault_public_bucket_name  = "mpc-public-${random_id.suffix.hex}"
-  cluster_name             = "existing-eks-cluster"
+  cluster_name              = "existing-eks-cluster"
 
   # Kubernetes Configuration
   k8s_namespace            = "mpc-db"
   k8s_service_account_name = "mpc-db-sa"
   create_namespace         = true
   create_service_account   = true
-  create_irsa             = true
+  create_irsa              = true
 
   # RDS Configuration
-  enable_rds                    = true
-  rds_db_name                  = "mpc_database"
-  rds_username                 = "mpc_admin"
-  rds_instance_class           = "db.t4g.medium"
-  rds_allocated_storage        = 50
+  enable_rds                      = true
+  rds_db_name                     = "mpc_database"
+  rds_username                    = "mpc_admin"
+  rds_instance_class              = "db.t4g.medium"
+  rds_allocated_storage           = 50
   rds_manage_master_user_password = true
   rds_create_externalname_service = true
 
