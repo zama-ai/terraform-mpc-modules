@@ -66,8 +66,8 @@ graph TB
 ## Usage
 
 > **ℹ️ Info**
-> 
-> The `Complete` and `Database-Only` examples provided below are to simply show the full set of variables that can be configured for the `mpc-party` module.  
+>
+> The `Complete` and `Database-Only` examples provided below are to simply show the full set of variables that can be configured for the `mpc-party` module.
 >
 > The examples are **not intended for usage as-is** in a deployment context for Zama testnet or mainnet!
 >
