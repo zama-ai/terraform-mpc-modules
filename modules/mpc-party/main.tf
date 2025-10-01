@@ -590,7 +590,7 @@ module "eks_managed_node_group" {
       filename     = "20-nitro-enclaves.sh"
       content      = <<-EOT
         #!/usr/bin/env bash
-    
+
         # Node resources that will be allocated for Nitro Enclaves
         readonly CPU_COUNT=${local.node_group_nitro_enclaves_cpu_count}
         readonly MEMORY_MIB=${local.node_group_nitro_enclaves_memory_mib}

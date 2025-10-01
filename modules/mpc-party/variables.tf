@@ -154,10 +154,10 @@ variable "nodegroup_ami_release_version" {
   type        = string
   description = "AMI release version for the node group"
   default     = null
-  //validation {
-  //  condition     = contains(["1.32.3-20250620"], var.nodegroup_ami_release_version)
-  //  error_message = "This AMI release version is not supported. Please use the recommended version in the list."
-  //}
+  validation {
+    condition     = var.nodegroup_ami_release_version != null ? contains(["1.32.3-20250620"], var.nodegroup_ami_release_version) : true
+    error_message = "This AMI release version is not supported. Please use the recommended version in the list."
+  }
 }
 
 variable "nodegroup_ami_id" {
@@ -201,7 +201,7 @@ variable "nodegroup_capacity_type" {
 variable "nodegroup_ami_type" {
   type        = string
   description = "Type of Amazon Machine Image (AMI) associated with the EKS Node Group"
-  default     = "AL2_x86_64"
+  default     = "AL2023_x86_64_STANDARD"
 }
 
 variable "nodegroup_disk_size" {

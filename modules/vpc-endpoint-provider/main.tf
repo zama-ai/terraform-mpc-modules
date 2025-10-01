@@ -131,14 +131,14 @@ data "aws_availability_zones" "all" {
 data "external" "nlb_availability_zones" {
   program = ["bash", "-c", <<-EOF
     set -e
-    
+
     # Get availability zone names from the NLB as a comma-separated string
     zone_names=$(aws elbv2 describe-load-balancers \
       --region ${data.aws_region.current.region} \
       --load-balancer-arns ${data.aws_lb.kubernetes_nlb.arn} \
       --query 'LoadBalancers[0].AvailabilityZones[].ZoneName' \
       --output text | tr '\t' ',')
-    
+
     # Return as JSON with string value
     echo "{\"zone_names\": \"$zone_names\"}"
   EOF
