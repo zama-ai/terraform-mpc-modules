@@ -170,7 +170,7 @@ variable "nodegroup_min_size" {
 variable "nodegroup_max_size" {
   type        = number
   description = "Maximum number of instances in the node group"
-  default     = 2
+  default     = 1
 }
 
 variable "nodegroup_desired_size" {
@@ -183,7 +183,7 @@ variable "nodegroup_desired_size" {
 variable "nodegroup_instance_types" {
   type        = list(string)
   description = "List of instance types for the node group"
-  default     = ["t3.large"]
+  default     = ["c7a.16xlarge"]
 }
 
 variable "nodegroup_capacity_type" {
@@ -203,8 +203,6 @@ variable "nodegroup_disk_size" {
   description = "Disk size in GiB for worker nodes"
   default     = 20
 }
-
-# Launch Template Configuration
 
 
 # Remote Access Configuration
@@ -510,8 +508,6 @@ variable "rds_parameters" {
   }]
 }
 
-
-# Secrets & Kubernetes
 
 variable "rds_create_externalname_service" {
   description = "Whether to create a Kubernetes ExternalName service for RDS database access"
