@@ -515,6 +515,7 @@ module "eks_managed_node_group" {
   cluster_name = var.cluster_name
 
   kubernetes_version             = data.aws_eks_cluster.cluster.version
+  ami_id                         = var.nodegroup_ami_id
   ami_release_version            = var.nodegroup_ami_release_version
   use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
 

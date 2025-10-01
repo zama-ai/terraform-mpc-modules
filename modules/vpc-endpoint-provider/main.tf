@@ -149,10 +149,10 @@ data "external" "nlb_availability_zones" {
 locals {
   # Map zone names to zone IDs
   zone_name_to_id = zipmap(data.aws_availability_zones.all.names, data.aws_availability_zones.all.zone_ids)
-  
+
   # Get zone names from external data source
   nlb_zone_names = split(",", data.external.nlb_availability_zones.result.zone_names)
-  
+
   # Convert zone names to zone IDs
   availability_zones = [for zone_name in local.nlb_zone_names : local.zone_name_to_id[zone_name]]
 }

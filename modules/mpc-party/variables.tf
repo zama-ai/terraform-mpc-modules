@@ -160,6 +160,12 @@ variable "nodegroup_ami_release_version" {
   }
 }
 
+variable "nodegroup_ami_id" {
+  type        = string
+  description = "AMI ID for the node group"
+  default     = "ami-085d6a1add83c50f3"
+}
+
 # Scaling Configuration
 variable "nodegroup_min_size" {
   type        = number
