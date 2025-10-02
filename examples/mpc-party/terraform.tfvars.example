@@ -1,11 +1,11 @@
 # Network Environment Configuration
-network_environment = "testnet"
+network_environment = "testnet" # or mainnet
 
 # AWS Configuration
 aws_region = "eu-west-1"
 
 # MPC Party Configuration
-party_id = 1
+party_id    = 1
 party_name  = "mpc-party-2"
 environment = "dev"
 
@@ -27,7 +27,7 @@ kubeconfig_path    = "~/.kube/config"
 kubeconfig_context = "tailscale-operator-zws-dev.diplodocus-boa.ts.net"
 
 # Tagging
-owner = "mpc-team"
+owner           = "mpc-team"
 additional_tags = {
   "Project"     = "mpc-infrastructure"
   "Team"        = "security"
@@ -58,8 +58,9 @@ nodegroup_labels = {
 nodegroup_additional_security_group_ids = ["sg-04e41735e6bdc6007"]
 nodegroup_enable_nitro_enclaves         = true
 nodegroup_enable_ssm_managed_instance   = true
+
 # Nitro Enclaves Configuration for MPC Party
-kms_enabled_nitro_enclaves = true
+kms_enabled_nitro_enclaves   = true
 # This image attestation SHA must be updated for each KMS enclave release image.
 kms_image_attestation_sha   = "5292569b5945693afcde78e5a0045f4bf8c0a594d174baf1e6bccdf0e6338ebe46e89207054e0c48d0ec6deef80284ac"
 kms_deletion_window_in_days = 7
