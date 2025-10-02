@@ -115,21 +115,22 @@ party_services = [
     "region" = "eu-west-1"
     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-0e5fdfd2139f77e7f"
   },
-  # {
-  #     "create_kube_service" = true
-  #     "kube_service_config" = {
-  #       "labels" = {
-  #         "environment" = "testnet"
-  #         "partyid" = "9"
-  #       }
-  #       "session_affinity" = "None"
-  #     }
-  #     "name" = "mpc-node-9"
-  #     "partner_name" = "omakase"
-  #     "party_id" = "9"
-  #     "region" = "eu-west-1"
-  #     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-08c7bac1776c40b91"
-  # },
+  {
+      "create_kube_service" = true
+       "availability_zones" = ["euw1-az1","euw1-az3"]
+      "kube_service_config" = {
+        "labels" = {
+          "environment" = "testnet"
+          "partyid" = "9"
+        }
+        "session_affinity" = "None"
+      }
+      "name" = "mpc-node-9"
+      "partner_name" = "omakase"
+      "party_id" = "9"
+      "region" = "eu-west-1"
+      "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-08c7bac1776c40b91"
+  },
   # {
   #    "create_kube_service" = true
   #    "kube_service_config" = {

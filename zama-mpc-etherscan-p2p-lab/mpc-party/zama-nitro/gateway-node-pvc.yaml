@@ -8,6 +8,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: 100Gi # It was 50G before, but patched to 100G -> https://p2pvalidator.atlassian.net/browse/PL-1884
   storageClassName: gp3
   volumeName: pvc-96199f06-97bd-4555-8dc3-ebde207185f6
