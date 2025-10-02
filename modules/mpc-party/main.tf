@@ -8,7 +8,7 @@ data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
   lifecycle {
     postcondition {
-      condition     = strcontains(var.nodegroup_ami_release_version, self.version)
+      condition     = var.nodegroup_ami_release_version != null ? strcontains(var.nodegroup_ami_release_version, self.version) : true
       error_message = "The EKS cluster version is not supported. Please use the recommended version that will be supported by the enclavenode group."
     }
   }
@@ -22,7 +22,6 @@ data "aws_subnet" "cluster_subnets" {
 # ***************************************
 #  Local variables
 # ***************************************
-
 resource "random_id" "mpc_party_suffix" {
   byte_length = 4
 }
@@ -507,6 +506,27 @@ resource "null_resource" "validate_auto_resolved_node_sg" {
   depends_on = [data.aws_vpc_security_group_rule.cluster_sg_rules_by_id]
 }
 
+
+locals {
+  using_custom_ami = try(var.nodegroup_ami_id, null) != null && var.nodegroup_ami_id != ""
+
+  nodeadm_nodeconfig_part = local.using_custom_ami ? [{
+    content_type = "application/node.eks.aws"
+    filename     = "10-nodeconfig.yaml"
+    content      = <<-YAML
+      ---
+      apiVersion: node.eks.aws/v1alpha1
+      kind: NodeConfig
+      spec:
+        cluster:
+          name: ${var.cluster_name}
+          apiServerEndpoint: ${data.aws_eks_cluster.cluster.endpoint}
+          certificateAuthority: ${data.aws_eks_cluster.cluster.certificate_authority[0].data}
+          cidr: ${data.aws_eks_cluster.cluster.kubernetes_network_config[0].service_ipv4_cidr}
+    YAML
+  }] : []
+}
+
 module "eks_managed_node_group" {
   count   = var.create_nodegroup ? 1 : 0
   source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
@@ -515,9 +535,13 @@ module "eks_managed_node_group" {
   name         = var.nodegroup_name
   cluster_name = var.cluster_name
 
-  kubernetes_version             = data.aws_eks_cluster.cluster.version
-  ami_release_version            = var.nodegroup_ami_release_version
-  use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
+  # When using custom AMI, AWS does not allow specifying kubernetes_version, ami_release_version, or ami_type
+  # See: https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html
+  kubernetes_version             = var.nodegroup_ami_id != null ? null : data.aws_eks_cluster.cluster.version
+  ami_id                         = var.nodegroup_ami_id
+  ami_release_version            = var.nodegroup_ami_id != null ? null : var.nodegroup_ami_release_version
+  use_latest_ami_release_version = var.nodegroup_ami_id != null ? false : var.nodegroup_use_latest_ami_release_version
+  ami_type                       = var.nodegroup_ami_id != null ? null : var.nodegroup_ami_type
 
   subnet_ids = local.private_subnet_ids
 
@@ -533,7 +557,6 @@ module "eks_managed_node_group" {
   # Instance Configuration (only when not using launch template)
   instance_types = var.nodegroup_instance_types
   capacity_type  = var.nodegroup_capacity_type
-  ami_type       = var.nodegroup_ami_type
 
   # Enclave options for Nitro Enclaves
   enclave_options = local.node_group_nitro_enclaves_enabled ? { enabled = true } : null
@@ -556,38 +579,34 @@ module "eks_managed_node_group" {
     } : {}
   )
 
-
   # This script configures and launches the Nitro enclave allocator. The
   # CPU_COUNT and MEMORY_MIB variables indicate the resources available to
   # all enclaves running on the node. A rule of thumb for the kms-core is to
   # allocate 75% of the underlying instance capacity.
-  cloudinit_pre_nodeadm = local.node_group_nitro_enclaves_enabled ? [{
-    content_type = "text/x-shellscript; charset=\"us-ascii\""
-    content      = <<-EOT
+  cloudinit_pre_nodeadm = concat(
+    local.nodeadm_nodeconfig_part,
+    local.node_group_nitro_enclaves_enabled ? [{
+      content_type = "text/x-shellscript"
+      filename     = "20-nitro-enclaves.sh"
+      content      = <<-EOT
         #!/usr/bin/env bash
 
         # Node resources that will be allocated for Nitro Enclaves
         readonly CPU_COUNT=${local.node_group_nitro_enclaves_cpu_count}
         readonly MEMORY_MIB=${local.node_group_nitro_enclaves_memory_mib}
-
         readonly NE_ALLOCATOR_SPEC_PATH="/etc/nitro_enclaves/allocator.yaml"
 
-        # This step below is needed to install nitro-enclaves-allocator service.
-        dnf install aws-nitro-enclaves-cli -y
+        dnf install -y aws-nitro-enclaves-cli
 
-        # Update enclave's allocator specification: allocator.yaml
         sed -i "s/cpu_count:.*/cpu_count: $CPU_COUNT/g" $NE_ALLOCATOR_SPEC_PATH
         sed -i "s/memory_mib:.*/memory_mib: $MEMORY_MIB/g" $NE_ALLOCATOR_SPEC_PATH
 
-        # Enable the nitro-enclaves-allocator service on boot
         systemctl enable nitro-enclaves-allocator.service
-
-        # Restart the nitro-enclaves-allocator service to take changes effect.
         systemctl restart nitro-enclaves-allocator.service
-
-        echo "NE user data script has finished successfully."
+        echo "NE user data script finished."
       EOT
-  }] : null
+    }] : []
+  )
 
   # Cluster service CIDR for user data
   cluster_service_cidr = data.aws_eks_cluster.cluster.kubernetes_network_config[0].service_ipv4_cidr
@@ -628,7 +647,7 @@ locals {
 
 }
 resource "kubernetes_daemon_set_v1" "aws_nitro_enclaves_device_plugin" {
-  count = local.node_group_nitro_enclaves_enabled ? 1 : 0
+  count = local.node_group_nitro_enclaves_enabled && var.nodegroup_nitro_enclaves_daemonset_enabled ? 1 : 0
 
   metadata {
     name      = "aws-nitro-enclaves-k8s-device-plugin"

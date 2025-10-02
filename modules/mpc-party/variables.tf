@@ -153,11 +153,17 @@ variable "nodegroup_use_latest_ami_release_version" {
 variable "nodegroup_ami_release_version" {
   type        = string
   description = "AMI release version for the node group"
-  default     = "1.32.3-20250620"
+  default     = null
   validation {
-    condition     = contains(["1.32.3-20250620"], var.nodegroup_ami_release_version)
+    condition     = var.nodegroup_ami_release_version != null ? contains(["1.32.3-20250620"], var.nodegroup_ami_release_version) : true
     error_message = "This AMI release version is not supported. Please use the recommended version in the list."
   }
+}
+
+variable "nodegroup_ami_id" {
+  type        = string
+  description = "AMI ID for the node group. When set, uses a custom AMI. When null, uses EKS-optimized AMI based on ami_type and ami_release_version"
+  default     = null
 }
 
 # Scaling Configuration
@@ -170,7 +176,7 @@ variable "nodegroup_min_size" {
 variable "nodegroup_max_size" {
   type        = number
   description = "Maximum number of instances in the node group"
-  default     = 2
+  default     = 1
 }
 
 variable "nodegroup_desired_size" {
@@ -183,7 +189,7 @@ variable "nodegroup_desired_size" {
 variable "nodegroup_instance_types" {
   type        = list(string)
   description = "List of instance types for the node group"
-  default     = ["t3.large"]
+  default     = ["c7a.16xlarge"]
 }
 
 variable "nodegroup_capacity_type" {
@@ -195,7 +201,7 @@ variable "nodegroup_capacity_type" {
 variable "nodegroup_ami_type" {
   type        = string
   description = "Type of Amazon Machine Image (AMI) associated with the EKS Node Group"
-  default     = "AL2_x86_64"
+  default     = "AL2023_x86_64_STANDARD"
 }
 
 variable "nodegroup_disk_size" {
@@ -203,8 +209,6 @@ variable "nodegroup_disk_size" {
   description = "Disk size in GiB for worker nodes"
   default     = 20
 }
-
-# Launch Template Configuration
 
 
 # Remote Access Configuration
@@ -292,6 +296,12 @@ variable "nodegroup_nitro_enclaves_daemonset_resources" {
       memory = "15Mi"
     }
   }
+}
+
+variable "nodegroup_nitro_enclaves_daemonset_enabled" {
+  type        = bool
+  description = "Whether to enable the Nitro Enclaves daemonset"
+  default     = true
 }
 
 variable "nodegroup_auto_assign_security_group" {
@@ -504,8 +514,6 @@ variable "rds_parameters" {
   }]
 }
 
-
-# Secrets & Kubernetes
 
 variable "rds_create_externalname_service" {
   description = "Whether to create a Kubernetes ExternalName service for RDS database access"
