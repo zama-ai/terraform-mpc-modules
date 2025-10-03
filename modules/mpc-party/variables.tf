@@ -8,23 +8,8 @@ variable "network_environment" {
   }
 }
 
-variable "testnet_supported_regions" {
-  description = "AWS regions supported by the MPC party for testnet"
-  type        = list(string)
-  default     = ["eu-west-1"]
-}
 
-variable "mainnet_supported_regions" {
-  description = "AWS regions supported by the MPC party for mainnet"
-  type        = list(string)
-  default     = ["eu-west-1"]
-}
 
-variable "enable_region_validation" {
-  type        = bool
-  description = "Whether to enable region validation"
-  default     = true
-}
 
 variable "bucket_prefix" {
   type        = string
@@ -59,6 +44,7 @@ variable "cluster_name" {
 variable "k8s_namespace" {
   type        = string
   description = "The Kubernetes namespace for MPC party resources"
+  default     = "kms-decentralized"
 }
 
 variable "create_namespace" {
@@ -123,11 +109,6 @@ variable "config_map_name" {
   default     = "mpc-party"
 }
 
-variable "additional_config_data" {
-  type        = map(string)
-  description = "Additional key-value pairs to add to the ConfigMap"
-  default     = {}
-}
 
 # Deprecated Tagging
 variable "common_tags" {
@@ -161,11 +142,6 @@ variable "nodegroup_name" {
   description = "Name of the EKS managed node group"
 }
 
-variable "kubernetes_version" {
-  type        = string
-  description = "Kubernetes version for the node group. If not specified, the EKS cluster's Kubernetes version will be used"
-  default     = null
-}
 
 variable "nodegroup_use_latest_ami_release_version" {
   type        = bool
@@ -177,11 +153,17 @@ variable "nodegroup_use_latest_ami_release_version" {
 variable "nodegroup_ami_release_version" {
   type        = string
   description = "AMI release version for the node group"
-  default     = "1.32.3-20250620"
+  default     = null
   validation {
-    condition     = contains(["1.32.3-20250620"], var.nodegroup_ami_release_version)
+    condition     = var.nodegroup_ami_release_version != null ? contains(["1.32.3-20250620"], var.nodegroup_ami_release_version) : true
     error_message = "This AMI release version is not supported. Please use the recommended version in the list."
   }
+}
+
+variable "nodegroup_ami_id" {
+  type        = string
+  description = "AMI ID for the node group. When set, uses a custom AMI. When null, uses EKS-optimized AMI based on ami_type and ami_release_version"
+  default     = null
 }
 
 # Scaling Configuration
@@ -194,7 +176,7 @@ variable "nodegroup_min_size" {
 variable "nodegroup_max_size" {
   type        = number
   description = "Maximum number of instances in the node group"
-  default     = 2
+  default     = 1
 }
 
 variable "nodegroup_desired_size" {
@@ -207,7 +189,7 @@ variable "nodegroup_desired_size" {
 variable "nodegroup_instance_types" {
   type        = list(string)
   description = "List of instance types for the node group"
-  default     = ["t3.large"]
+  default     = ["c7a.16xlarge"]
 }
 
 variable "nodegroup_capacity_type" {
@@ -219,20 +201,13 @@ variable "nodegroup_capacity_type" {
 variable "nodegroup_ami_type" {
   type        = string
   description = "Type of Amazon Machine Image (AMI) associated with the EKS Node Group"
-  default     = "AL2_x86_64"
+  default     = "AL2023_x86_64_STANDARD"
 }
 
 variable "nodegroup_disk_size" {
   type        = number
   description = "Disk size in GiB for worker nodes"
   default     = 20
-}
-
-# Launch Template Configuration
-variable "nodegroup_use_custom_launch_template" {
-  type        = bool
-  description = "Whether to use a custom launch template"
-  default     = true
 }
 
 
@@ -323,6 +298,12 @@ variable "nodegroup_nitro_enclaves_daemonset_resources" {
   }
 }
 
+variable "nodegroup_nitro_enclaves_daemonset_enabled" {
+  type        = bool
+  description = "Whether to enable the Nitro Enclaves daemonset"
+  default     = true
+}
+
 variable "nodegroup_auto_assign_security_group" {
   type        = bool
   description = "The auto-resolver retrieves the node group security group from the cluster security group and assigns it to the node group. This variable is can be used if the cluster have additional security groups that allow traffic from the node group to the cluster API server on port 443(created by the EKS module https://registry.terraform.io/modules/terraform-aws-modules/eks)."
@@ -355,8 +336,9 @@ variable "kms_key_usage" {
 }
 
 variable "kms_customer_master_key_spec" {
-  type    = string
-  default = "SYMMETRIC_DEFAULT"
+  description = "Specification for the KMS customer master key (e.g., SYMMETRIC_DEFAULT, RSA_2048)"
+  type        = string
+  default     = "SYMMETRIC_DEFAULT"
 }
 
 variable "kms_image_attestation_sha" {
@@ -382,17 +364,7 @@ variable "kms_backup_external_role_arn" {
   default     = null
 }
 
-variable "kms_backup_vault_deletion_window_in_days" {
-  type        = number
-  description = "Deletion window in days for the backup vault"
-  default     = 30
-}
 
-variable "kms_backup_vault_enable_key_rotation" {
-  type        = bool
-  description = "Whether to enable key rotation for the backup vault"
-  default     = false
-}
 
 variable "kms_backup_vault_key_usage" {
   type        = string
@@ -413,11 +385,6 @@ variable "nodegroup_enable_ssm_managed_instance" {
   default     = false
 }
 
-variable "nodegroup_security_group_custom" {
-  type        = list(string)
-  description = "List of security group IDs to associate with the node group"
-  default     = []
-}
 
 # ******************************************************
 # variables for the RDS instance
@@ -483,23 +450,27 @@ variable "rds_db_name" {
 }
 
 variable "rds_backup_retention_period" {
-  type    = number
-  default = 7
+  description = "Number of days to retain RDS automated backups (0 to 35)"
+  type        = number
+  default     = 7
 }
 
 variable "rds_maintenance_window" {
-  type    = string
-  default = null
+  description = "Weekly maintenance window for RDS instance (e.g., 'sun:05:00-sun:06:00')"
+  type        = string
+  default     = null
 }
 
 variable "rds_multi_az" {
-  type    = bool
-  default = false
+  description = "Whether to enable Multi-AZ deployment for RDS instance for high availability"
+  type        = bool
+  default     = false
 }
 
 variable "rds_deletion_protection" {
-  type    = bool
-  default = false
+  description = "Whether to enable deletion protection for RDS instance"
+  type        = bool
+  default     = false
 }
 
 variable "rds_db_password" {
@@ -520,64 +491,19 @@ variable "rds_master_password_rotation_days" {
   default     = 1000
 }
 
-variable "rds_delete_automated_backups" {
-  type    = bool
-  default = true
-}
-
-variable "rds_storage_encrypted" {
-  type    = bool
-  default = true
-}
-
-variable "rds_storage_type" {
-  type    = string
-  default = "gp3"
-}
-
-variable "rds_iops" {
-  type    = number
-  default = null
-}
-
 variable "rds_monitoring_interval" {
-  type    = number
-  default = 0
+  description = "Enhanced monitoring interval in seconds (0, 1, 5, 10, 15, 30, 60)"
+  type        = number
+  default     = 0
 }
 
 variable "rds_monitoring_role_arn" {
-  type    = string
-  default = null
-}
-
-variable "rds_performance_insights_enabled" {
-  type    = bool
-  default = false
-}
-
-variable "rds_performance_insights_kms_key_id" {
-  type    = string
-  default = null
-}
-
-variable "rds_performance_insights_retention_period" {
-  type    = number
-  default = null
-}
-
-variable "rds_blue_green_update_enabled" {
-  type    = bool
-  default = false
+  description = "ARN of IAM role for RDS enhanced monitoring (required if monitoring_interval > 0)"
+  type        = string
+  default     = null
 }
 
 # Parameter group
-variable "rds_parameter_group_family" {
-  type        = string
-  default     = null
-  description = "DB parameter group family (e.g., postgres16). If null, no parameter group will be created."
-}
-
-
 variable "rds_parameters" {
   description = "List of DB parameter maps for the parameter group."
   type        = list(map(string))
@@ -588,54 +514,23 @@ variable "rds_parameters" {
   }]
 }
 
-# Snapshots / restore
-variable "rds_snapshot_identifier" {
-  type        = string
-  default     = null
-  description = "If set, restore from this snapshot instead of creating a fresh DB."
-}
-
-variable "rds_final_snapshot_enabled" {
-  type        = bool
-  default     = true
-  description = "Create a final snapshot on destroy (recommended for prod)."
-}
-
-# Secrets & Kubernetes
-variable "rds_k8s_secret_name" {
-  type    = string
-  default = "db-credentials"
-}
-variable "rds_k8s_secret_namespace" {
-  type    = string
-  default = "default"
-}
-variable "rds_extra_secret_namespaces" {
-  type        = list(string)
-  default     = []
-  description = "Namespaces to replicate the DB secret into."
-}
 
 variable "rds_create_externalname_service" {
-  type    = bool
-  default = false
+  description = "Whether to create a Kubernetes ExternalName service for RDS database access"
+  type        = bool
+  default     = false
 }
 
 variable "rds_externalname_service_name" {
-  type    = string
-  default = "kms-connector-db-external"
+  description = "Name of the Kubernetes ExternalName service for RDS database"
+  type        = string
+  default     = "kms-connector-db-external"
 }
 
 variable "rds_externalname_service_namespace" {
-  type    = string
-  default = "default"
-}
-
-# Master password strategy
-variable "rds_manage_master_user_password" {
-  type        = bool
-  default     = false
-  description = "If true, let AWS Secrets Manager manage the master user password. If false, a random_password will be generated and stored to K8s secrets."
+  description = "Kubernetes namespace for the RDS ExternalName service"
+  type        = string
+  default     = "default"
 }
 
 # Optional override for RDS identifier

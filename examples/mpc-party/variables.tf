@@ -22,12 +22,6 @@ variable "aws_profile" {
   default     = "token-zws-dev"
 }
 
-variable "enable_region_validation" {
-  type        = bool
-  description = "Whether to enable region validation"
-  default     = true
-}
-
 # MPC Party Configuration
 variable "party_id" {
   description = "Party ID for the MPC service"
@@ -82,7 +76,7 @@ variable "cluster_name" {
 variable "namespace" {
   description = "Kubernetes namespace for MPC party resources"
   type        = string
-  default     = "mpc-party"
+  default     = "kms-decentralized"
 }
 
 variable "service_account_name" {
@@ -113,12 +107,6 @@ variable "kubeconfig_path" {
 
 variable "kubeconfig_context" {
   description = "Kubernetes context to use from kubeconfig"
-  type        = string
-  default     = null
-}
-
-variable "eks_cluster_name" {
-  description = "EKS cluster name for automatic token authentication (optional, used for exec auth)"
   type        = string
   default     = null
 }
@@ -202,11 +190,6 @@ variable "nodegroup_ec2_ssh_key" {
   default     = null
 }
 
-variable "nodegroup_source_security_group_ids" {
-  description = "List of security group IDs allowed for remote access"
-  type        = list(string)
-  default     = []
-}
 
 variable "nodegroup_labels" {
   description = "Labels for the nodegroup"
@@ -290,22 +273,11 @@ variable "rds_db_name" {
   default     = "kmsconnector"
 }
 
-variable "rds_prefix" {
-  description = "Your company prefix name"
-  type        = string
-  default     = "zama"
-}
 
 variable "rds_username" {
   description = "Username for the RDS database"
   type        = string
   default     = "kmsconnector"
-}
-
-variable "rds_manage_master_user_password" {
-  description = "Whether to manage the master user password"
-  type        = bool
-  default     = false
 }
 
 variable "rds_engine" {
@@ -374,30 +346,6 @@ variable "rds_monitoring_role_arn" {
   default     = null
 }
 
-variable "rds_performance_insights_enabled" {
-  description = "Whether to enable performance insights for the RDS database"
-  type        = bool
-  default     = false
-}
-
-variable "rds_performance_insights_kms_key_id" {
-  description = "KMS key ID for performance insights"
-  type        = string
-  default     = null
-}
-
-variable "rds_performance_insights_retention_period" {
-  description = "Retention period for performance insights"
-  type        = number
-  default     = 7
-}
-
-variable "rds_blue_green_update_enabled" {
-  description = "Whether to enable blue-green update for the RDS database"
-  type        = bool
-  default     = false
-}
-
 variable "use_eks_cluster_authentication" {
   description = "Whether to use EKS cluster authentication"
   type        = bool
@@ -410,30 +358,6 @@ variable "rds_parameters" {
   default     = []
 }
 
-variable "rds_snapshot_identifier" {
-  description = "Snapshot identifier for the RDS database"
-  type        = string
-  default     = null
-}
-
-variable "rds_final_snapshot_enabled" {
-  description = "Whether to enable final snapshot for the RDS database"
-  type        = bool
-  default     = false
-}
-
-variable "rds_k8s_secret_name" {
-  description = "Name of the Kubernetes secret for the RDS database"
-  type        = string
-  default     = "rds-credentials"
-}
-
-variable "rds_k8s_secret_namespace" {
-  description = "Namespace of the Kubernetes secret for the RDS database"
-  type        = string
-  default     = "mpc-party"
-}
-
 variable "rds_allowed_cidr_blocks" {
   description = "Allowed CIDR blocks for the RDS database"
   type        = list(string)
@@ -444,12 +368,6 @@ variable "rds_vpc_id" {
   description = "VPC ID for the RDS database"
   type        = string
   default     = null
-}
-
-variable "rds_subnet_ids" {
-  description = "Subnet IDs for the RDS database"
-  type        = list(string)
-  default     = []
 }
 
 variable "rds_create_monitoring_role" {

@@ -5,16 +5,17 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.10 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.10 |
+| <a name="requirement_external"></a> [external](#requirement\_external) | >= 2.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.23 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
-| <a name="provider_external"></a> [external](#provider\_external) | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.10 |
+| <a name="provider_external"></a> [external](#provider\_external) | >= 2.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.23 |
 
 ## Modules
@@ -28,10 +29,10 @@ No modules.
 | [aws_vpc_endpoint_service.mpc_nlb_service](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint_service) | resource |
 | [kubernetes_namespace.mpc_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_service.mpc_nlb](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_availability_zones.all](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
 | [aws_lb.kubernetes_nlb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
-| [aws_subnet.nlb_subnet](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
+| [external_external.nlb_availability_zones](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
 | [external_external.wait_nlb](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
 
 ## Inputs
@@ -46,7 +47,7 @@ No modules.
 | <a name="input_enable_region_validation"></a> [enable\_region\_validation](#input\_enable\_region\_validation) | Whether to enable region validation | `bool` | `true` | no |
 | <a name="input_kubernetes_nlb_extra_labels"></a> [kubernetes\_nlb\_extra\_labels](#input\_kubernetes\_nlb\_extra\_labels) | Extra labels to add to the Kubernetes NLB | `map(string)` | `{}` | no |
 | <a name="input_mainnet_supported_regions"></a> [mainnet\_supported\_regions](#input\_mainnet\_supported\_regions) | AWS regions supported by the VPC endpoint service for mainnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
-| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where MPC services will be deployed | `string` | `"mpc-cluster"` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where MPC services will be deployed | `string` | `"kms-decentralized"` | no |
 | <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
 | <a name="input_partner_name"></a> [partner\_name](#input\_partner\_name) | Partner name for the MPC service | `string` | n/a | yes |
 | <a name="input_party_id"></a> [party\_id](#input\_party\_id) | Party ID for the MPC service | `string` | n/a | yes |

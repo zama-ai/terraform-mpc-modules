@@ -5,7 +5,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.23 |
 
@@ -28,9 +28,7 @@ No modules.
 | [aws_vpc_endpoint.party_interface_endpoints](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint) | resource |
 | [kubernetes_namespace.partner_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_service.party_services](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_eks_cluster.selected](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
-| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnet.cluster_subnets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 
 ## Inputs
@@ -43,14 +41,10 @@ No modules.
 | <a name="input_default_mpc_ports"></a> [default\_mpc\_ports](#input\_default\_mpc\_ports) | Default port configurations for MPC services. These can be overridden per service in party\_services configuration. | <pre>object({<br/>    grpc = object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })<br/>    peer = object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })<br/>    metrics = object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })<br/>  })</pre> | <pre>{<br/>  "grpc": {<br/>    "name": "grpc",<br/>    "port": 50100,<br/>    "protocol": "TCP",<br/>    "target_port": 50100<br/>  },<br/>  "metrics": {<br/>    "name": "metrics",<br/>    "port": 9646,<br/>    "protocol": "TCP",<br/>    "target_port": 9646<br/>  },<br/>  "peer": {<br/>    "name": "peer",<br/>    "port": 50001,<br/>    "protocol": "TCP",<br/>    "target_port": 50001<br/>  }<br/>}</pre> | no |
 | <a name="input_dns_domain"></a> [dns\_domain](#input\_dns\_domain) | DNS domain for custom DNS records | `string` | `"mpc-partners.local"` | no |
 | <a name="input_enable_grpc_port"></a> [enable\_grpc\_port](#input\_enable\_grpc\_port) | Whether to enable and expose the gRPC port in the load balancer service | `bool` | `true` | no |
-| <a name="input_enable_region_validation"></a> [enable\_region\_validation](#input\_enable\_region\_validation) | Whether to enable region validation | `bool` | `true` | no |
 | <a name="input_endpoint_create_timeout"></a> [endpoint\_create\_timeout](#input\_endpoint\_create\_timeout) | Timeout for creating VPC interface endpoints | `string` | `"10m"` | no |
 | <a name="input_endpoint_delete_timeout"></a> [endpoint\_delete\_timeout](#input\_endpoint\_delete\_timeout) | Timeout for deleting VPC interface endpoints | `string` | `"10m"` | no |
-| <a name="input_endpoint_policy"></a> [endpoint\_policy](#input\_endpoint\_policy) | IAM policy document for the VPC interface endpoints in JSON format | `string` | `null` | no |
-| <a name="input_mainnet_supported_regions"></a> [mainnet\_supported\_regions](#input\_mainnet\_supported\_regions) | AWS regions supported by the VPC endpoint consumer for mainnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming VPC interface endpoint resources | `string` | `"mpc-partner"` | no |
-| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where partner services will be created | `string` | `"mpc-partners"` | no |
-| <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
+| <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where partner services will be created | `string` | `"kms-decentralized"` | no |
 | <a name="input_party_services"></a> [party\_services](#input\_party\_services) | List of partner MPC services to connect to via VPC interface endpoints | <pre>list(object({<br/>    name                      = string<br/>    region                    = string<br/>    party_id                  = string<br/>    account_id                = optional(string, null)<br/>    partner_name              = optional(string, null)<br/>    vpc_endpoint_service_name = string<br/>    ports = optional(list(object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })), null)<br/>    availability_zones  = optional(list(string), null)<br/>    create_kube_service = optional(bool, true)<br/>    kube_service_config = optional(object({<br/>      additional_annotations = optional(map(string), {})<br/>      labels                 = optional(map(string), {})<br/>      session_affinity       = optional(string, "None")<br/>    }), {})<br/>  }))</pre> | n/a | yes |
 | <a name="input_private_dns_enabled"></a> [private\_dns\_enabled](#input\_private\_dns\_enabled) | Whether to enable private DNS for the VPC interface endpoints | `bool` | `false` | no |
 | <a name="input_private_zone_id"></a> [private\_zone\_id](#input\_private\_zone\_id) | Route53 private hosted zone ID for custom DNS records | `string` | `""` | no |
@@ -58,7 +52,6 @@ No modules.
 | <a name="input_security_group_ids"></a> [security\_group\_ids](#input\_security\_group\_ids) | List of security group IDs to associate with the VPC interface endpoints (Mode 2). Required if cluster\_name is not provided. | `list(string)` | `null` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of subnet IDs where the VPC interface endpoints will be created (Mode 2). Required if cluster\_name is not provided. | `list(string)` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to VPC interface endpoint resources | `map(string)` | `{}` | no |
-| <a name="input_testnet_supported_regions"></a> [testnet\_supported\_regions](#input\_testnet\_supported\_regions) | AWS regions supported by the VPC endpoint consumer for testnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID where the VPC interface endpoints will be created (Mode 2). Required if cluster\_name is not provided. | `string` | `null` | no |
 
 ## Outputs

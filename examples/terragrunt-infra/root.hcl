@@ -15,7 +15,7 @@ remote_state {
     region         = local.common_vars.inputs.aws_region
     encrypt        = true
     profile        = local.common_vars.inputs.aws_profile
-    
+
     # Optional: Add DynamoDB table for state locking
     # dynamodb_table = "terraform-state-lock"
   }
@@ -27,7 +27,7 @@ terraform {
     commands = ["apply", "plan", "destroy", "refresh", "validate", "init", "output"]
     execute  = ["bash", "-c", "export AWS_PROFILE=${local.common_vars.inputs.aws_profile}"]
   }
-  
+
   extra_arguments "common_vars" {
     commands = get_terraform_commands_that_need_vars()
     env_vars = {
@@ -60,7 +60,7 @@ provider "aws" {
   region              = "${local.common_vars.inputs.aws_region}"
   profile             = "${local.common_vars.inputs.aws_profile}"
   allowed_account_ids = ["${local.common_vars.inputs.aws_account_id}"]
-  
+
   default_tags {
     tags = {
       Environment = "${local.common_vars.inputs.environment}"
@@ -91,4 +91,4 @@ provider "kubernetes" {
 }
 
 EOF
-} 
+}

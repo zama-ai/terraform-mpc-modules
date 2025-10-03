@@ -47,9 +47,13 @@ nodegroup_desired_size                   = 1
 nodegroup_disk_size                      = 30
 nodegroup_capacity_type                  = "ON_DEMAND"
 nodegroup_ami_type                       = "AL2023_x86_64_STANDARD"
-nodegroup_use_latest_ami_release_version = false
+
+#nodegroup_use_latest_ami_release_version = false
 # This is the AMI release version recommended by the zama team for the 1.32.3 release. Other versions are not supported.
-nodegroup_ami_release_version = "1.32.3-20250620"
+#nodegroup_ami_release_version = "1.32.3-20250620"
+
+# Custom AMI ID for the node group
+nodegroup_ami_id = "ami-085d6a1add83c50f3"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
