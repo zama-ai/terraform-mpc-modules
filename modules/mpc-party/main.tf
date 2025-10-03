@@ -817,7 +817,9 @@ module "rds_security_group" {
   vpc_id      = var.rds_vpc_id == null ? data.aws_eks_cluster.cluster.vpc_config[0].vpc_id : var.rds_vpc_id
   ingress_with_cidr_blocks = [
     {
-      rule        = "postgresql-tcp"
+      from_port   = var.rds_port
+      to_port     = var.rds_port
+      protocol    = "tcp"
       cidr_blocks = join(",", concat(var.rds_allowed_cidr_blocks, local.private_subnet_cidr_blocks))
     }
   ]
