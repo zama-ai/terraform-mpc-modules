@@ -818,6 +818,7 @@ module "rds_security_group" {
     {
       from_port   = var.rds_port
       to_port     = var.rds_port
+      protocol    = "tcp"
       cidr_blocks = join(",", concat(var.rds_allowed_cidr_blocks, local.private_subnet_cidr_blocks))
     }
   ]
