@@ -4,11 +4,11 @@
 
 # Deploy MPC Party infrastructure using the enhanced mpc-party module
 module "mpc_party" {
-  #source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.6"
-  source = "../../modules/mpc-party"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.9"
+  #source = "../../modules/mpc-party"
   # Network environment configuration
   network_environment      = var.network_environment
-  enable_region_validation = var.enable_region_validation
+  #enable_region_validation = var.enable_region_validation
 
   # Party configuration
   party_id      = var.party_id
@@ -80,7 +80,7 @@ module "mpc_party" {
   enable_rds                                = var.enable_rds
   rds_db_name                               = var.rds_db_name
   rds_create_monitoring_role                = var.rds_create_monitoring_role
-  rds_manage_master_user_password           = var.rds_manage_master_user_password
+  #rds_manage_master_user_password           = var.rds_manage_master_user_password
   rds_username                              = var.rds_username
   rds_engine                                = var.rds_engine
   rds_engine_version                        = var.rds_engine_version
@@ -92,15 +92,15 @@ module "mpc_party" {
   rds_maintenance_window                    = var.rds_maintenance_window
   rds_monitoring_interval                   = var.rds_monitoring_interval
   rds_monitoring_role_arn                   = var.rds_monitoring_role_arn
-  rds_performance_insights_enabled          = var.rds_performance_insights_enabled
-  rds_performance_insights_kms_key_id       = var.rds_performance_insights_kms_key_id
-  rds_performance_insights_retention_period = var.rds_performance_insights_retention_period
-  rds_blue_green_update_enabled             = var.rds_blue_green_update_enabled
+  #rds_performance_insights_enabled          = var.rds_performance_insights_enabled
+  #rds_performance_insights_kms_key_id       = var.rds_performance_insights_kms_key_id
+  #rds_performance_insights_retention_period = var.rds_performance_insights_retention_period
+  #rds_blue_green_update_enabled             = var.rds_blue_green_update_enabled
   rds_parameters                            = var.rds_parameters
-  rds_snapshot_identifier                   = var.rds_snapshot_identifier
-  rds_final_snapshot_enabled                = var.rds_final_snapshot_enabled
-  rds_k8s_secret_name                       = var.rds_k8s_secret_name
-  rds_k8s_secret_namespace                  = var.rds_k8s_secret_namespace
+  #rds_snapshot_identifier                   = var.rds_snapshot_identifier
+  #rds_final_snapshot_enabled                = var.rds_final_snapshot_enabled
+  #rds_k8s_secret_name                       = var.rds_k8s_secret_name
+  #rds_k8s_secret_namespace                  = var.rds_k8s_secret_namespace
   rds_allowed_cidr_blocks                   = var.rds_allowed_cidr_blocks
   rds_vpc_id                                = var.rds_vpc_id
   #rds_subnet_ids                            = var.rds_subnet_ids

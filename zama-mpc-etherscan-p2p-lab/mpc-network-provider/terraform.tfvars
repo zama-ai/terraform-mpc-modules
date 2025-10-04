@@ -24,12 +24,12 @@ use_eks_cluster_authentication = true
 # VPC Endpoint Services Configuration
 # Indicate all aws accounts and regions from which the partner services will be consumed
 # By default, the terraform module will add the current region to the supported regions list
-allowed_vpc_endpoint_principals  = ["arn:aws:iam::156692459989:root", #Zama 1
+allowed_vpc_endpoint_principals  = ["arn:aws:iam::156692459989:root", #Zama 1 13
                                     "arn:aws:iam::864456252326:root", #Dfns 2
                                     "arn:aws:iam::192990274904:root", #Figment 3
                                     "arn:aws:iam::813007935465:root", #Fireblocks 4
                                     "arn:aws:iam::954455479205:root", #InfStones 5
-                                    "arn:aws:iam::920189201894:root", #Kiln 6
+                                    "arn:aws:iam::145491114753:root", #Kiln 6
                                     "arn:aws:iam::003460570947:root", #LayerZero 7
                                     #"arn:aws:iam::xxxx:root",        #Ledger 8
                                     "arn:aws:iam::287540661763:root", #Omakase 9

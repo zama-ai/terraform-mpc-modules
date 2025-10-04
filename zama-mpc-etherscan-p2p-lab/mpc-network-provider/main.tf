@@ -4,8 +4,8 @@ data "aws_region" "current" {}
 
 # Deploy VPC endpoints for the created NLBs (optional, only in provider mode)
 module "vpc_endpoint_provider" {
-  #source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-provider?ref=v0.1.6"
-  source = "../../modules/vpc-endpoint-provider"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-provider?ref=v0.1.9"
+  #source = "../../modules/vpc-endpoint-provider"
   # Network environment configuration
   network_environment      = var.network_environment
   enable_region_validation = var.enable_region_validation

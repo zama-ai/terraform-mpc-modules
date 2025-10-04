@@ -1,15 +1,3 @@
-# Network Environment Configuration
-variable "network_environment" {
-  description = "MPC network environment that determines region constraints"
-  type        = string
-  default     = "testnet"
-
-  validation {
-    condition     = contains(["testnet", "mainnet"], var.network_environment)
-    error_message = "Network environment must be either 'testnet' or 'mainnet'."
-  }
-}
-
 variable "aws_region" {
   description = "AWS region where resources will be created"
   type        = string
@@ -22,12 +10,6 @@ variable "aws_profile" {
   default     = "token-zws-dev"
 }
 
-variable "enable_region_validation" {
-  type        = bool
-  description = "Whether to enable region validation"
-  default     = true
-}
-
 # MPC Cluster Configuration
 variable "cluster_name" {
   description = "Name of the MPC cluster"
@@ -38,20 +20,10 @@ variable "cluster_name" {
 variable "namespace" {
   description = "Kubernetes namespace for partner services"
   type        = string
-  default     = "mpc-partners"
+  default     = "kms-decentralized"
 }
 
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
-  type        = string
-  default     = "dev"
-}
 
-variable "owner" {
-  description = "Owner of the resources for tagging purposes"
-  type        = string
-  default     = "mpc-consumer-team"
-}
 
 # Kubernetes Provider Configuration
 variable "kubeconfig_path" {
@@ -68,18 +40,6 @@ variable "kubeconfig_context" {
 
 variable "use_eks_cluster_authentication" {
   description = "Whether to use EKS cluster authentication"
-  type        = bool
-  default     = false
-}
-
-variable "aws_region_for_eks" {
-  description = "AWS region where the EKS cluster is located (for provider configuration)"
-  type        = string
-  default     = null
-}
-
-variable "use_eks_cluster_lookup" {
-  description = "Whether to automatically find the vpc/subnet/secg from the cluster name"
   type        = bool
   default     = false
 }
@@ -119,6 +79,7 @@ variable "party_services" {
       target_port = number
       protocol    = string
     })), [])
+    availability_zones  = optional(list(string), null) # miss this params before fixed
     create_kube_service = optional(bool, true)
     kube_service_config = optional(object({
       additional_annotations = optional(map(string), {})
@@ -182,9 +143,3 @@ variable "common_tags" {
     "terraform" = "true"
   }
 }
-
-variable "additional_tags" {
-  description = "Additional tags to apply to resources"
-  type        = map(string)
-  default     = {}
-} 

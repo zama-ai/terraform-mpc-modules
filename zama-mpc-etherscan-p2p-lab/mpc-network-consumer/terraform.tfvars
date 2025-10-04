@@ -1,15 +1,15 @@
 # AWS Configuration
 aws_region               = "eu-west-1"
 aws_profile              =  "zama-mpc-testnet-user"
-enable_region_validation = false
+#enable_region_validation = false
 
 # Network Environment Configuration
-network_environment = "testnet"
+#network_environment = "testnet"
 
 # Cluster Configuration
 cluster_name = "zama-mpc-testnet-eks"
-environment  = "dev"
-owner        = "etherscan-p2p-lab"
+#environment  = "dev"
+#owner        = "etherscan-p2p-lab"
 
 # Kubernetes Provider Configuration
 # IMPORTANT: Update these values for each consumer node
@@ -37,9 +37,9 @@ party_services = [
   # Example partner service configuration using default ports
   {
     "availability_zones" = [
-      "eu-west-1a",
-      "eu-west-1c",
-      "eu-west-1b",
+      "euw1-az3",
+      "euw1-az2",
+      "euw1-az1",
     ]
     "create_kube_service" = true
     "kube_service_config" = {
@@ -55,21 +55,21 @@ party_services = [
     "region" = "eu-west-1"
     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-021b85d8e9c37d55d"
   },
-  # {
-  #     "create_kube_service" = true
-  #     "kube_service_config" = {
-  #       "labels" = {
-  #         "environment" = "testnet"
-  #         "partyid" = "2"
-  #       }
-  #       "session_affinity" = "None"
-  #     }
-  #     "name" = "mpc-node-2"
-  #     "partner_name" = "dfns"
-  #     "party_id" = "2"
-  #     "region" = "eu-west-1"
-  #     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-03f1619cd9da8453b"
-  # },
+  {
+      "create_kube_service" = true
+      "kube_service_config" = {
+        "labels" = {
+          "environment" = "testnet"
+          "partyid" = "2"
+        }
+        "session_affinity" = "None"
+      }
+      "name" = "mpc-node-2"
+      "partner_name" = "dfns"
+      "party_id" = "2"
+      "region" = "eu-west-1"
+      "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-03f1619cd9da8453b"
+  },
   {
     "create_kube_service" = true
     "kube_service_config" = {
@@ -80,6 +80,11 @@ party_services = [
       "session_affinity" = "None"
     }
     "name" = "mpc-node-3"
+    "availability_zones" = [
+      "euw1-az3",
+      "euw1-az2",
+      "euw1-az1",
+    ]
     "partner_name" = "figment"
     "party_id" = "3"
     "region" = "eu-west-1"
@@ -101,6 +106,48 @@ party_services = [
     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-0327c4ffead6ab766"
   },
   {
+    party_id                  = "5"
+    name                      = "mpc-node-5"
+    region                    = "eu-west-1"
+    account_id                = "954455479205"
+    partner_name              = "InfStones"
+    vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-1.vpce-svc-027c5cfd24cb53edd"
+    create_kube_service       = true
+    availability_zones = [
+      "euw1-az1",
+      "euw1-az2",
+      "euw1-az3",
+    ]
+    kube_service_config = {
+      labels = {
+        "party-id" = "5"
+        "partner-name" = "InfStones"
+        "environment"  = "testnet"
+      }
+      session_affinity = "None"
+    }
+  },
+  # {
+  #   "availability_zones" = [
+  #     "euw1-az1",
+  #     "euw1-az2",
+  #     "euw1-az3",
+  #   ]
+  #   "create_kube_service" = true
+  #   "kube_service_config" = {
+  #     "labels" = {
+  #       "environment" = "testnet"
+  #       "partyid" = "6"
+  #     }
+  #     "session_affinity" = "None"
+  #   }
+  #   "name" = "mpc-node-6"
+  #   "partner_name" = "kiln"
+  #   "party_id" = "6"
+  #   "region" = "eu-west-1"
+  #   "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-03a510bc4920e4415"
+  # },
+  {
     "create_kube_service" = true
     "kube_service_config" = {
       "labels" = {
@@ -110,6 +157,11 @@ party_services = [
       "session_affinity" = "None"
     }
     "name" = "mpc-node-7"
+    "availability_zones" = [
+      "euw1-az3",
+      "euw1-az2",
+      "euw1-az1",
+    ]
     "partner_name" = "layerzerolabs.org"
     "party_id" = "7"
     "region" = "eu-west-1"
@@ -131,21 +183,41 @@ party_services = [
       "region" = "eu-west-1"
       "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-08c7bac1776c40b91"
   },
-  # {
-  #    "create_kube_service" = true
-  #    "kube_service_config" = {
-  #      "labels" = {
-  #        "environment" = "testnet"
-  #        "partyid" = "11"
-  #      }
-  #      "session_affinity" = "None"
-  #    }
-  #    "name" = "mpc-node-11"
-  #    "partner_name" = "openzeppelin"
-  #    "party_id" = "11"
-  #    "region" = "eu-west-1"
-  #    "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-02a3d2fd26d694453"
-  # },
+  {
+      "create_kube_service" = true
+      "kube_service_config" = {
+        "labels" = {
+          "environment" = "testnet"
+          "partyid" = "10"
+        }
+        "session_affinity" = "None"
+      }
+      "name" = "mpc-node-10"
+      "partner_name" = "StakeCapital"
+      "party_id" = "10"
+      "region" = "eu-west-1"
+      "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-0823eff8b9e9b52c0"
+  },
+  {
+     "availability_zones" = [
+        "euw1-az3",
+        "euw1-az2",
+        "euw1-az1",
+      ],
+     "create_kube_service" = true
+     "kube_service_config" = {
+       "labels" = {
+         "environment" = "testnet"
+         "partyid" = "11"
+       }
+       "session_affinity" = "None"
+     }
+     "name" = "mpc-node-11"
+     "partner_name" = "openzeppelin"
+     "party_id" = "11"
+     "region" = "eu-west-1"
+     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-02a3d2fd26d694453"
+},
   # {
   #     "availability_zones" = [
   #       "eu-west-1b",
@@ -166,6 +238,26 @@ party_services = [
   #     "region" = "eu-west-1"
   #     "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-052ecc49741d8e66b"
   #   }
+  {
+    "availability_zones" = [
+      "euw1-az3",
+      "euw1-az2",
+      "euw1-az1",
+    ]
+    "create_kube_service" = true
+    "kube_service_config" = {
+      "labels" = {
+        "environment" = "testnet"
+        "partyid" = "13"
+      }
+      "session_affinity" = "None"
+    }
+    "name" = "mpc-node-13"
+    "partner_name" = "zama-13"
+    "party_id" = "13"
+    "region" = "eu-west-1"
+    "vpc_endpoint_service_name" = "com.amazonaws.vpce.eu-west-1.vpce-svc-0c4dae6e486eb302b"
+  }
 ]
 
 # VPC Endpoint Configuration
@@ -187,6 +279,6 @@ common_tags = {
   "environment" = "dev"
 }
 
-additional_tags = {
-  "Project"     = "mpc-connectivity"
-}
+# additional_tags = {
+#   "Project"     = "mpc-connectivity"
+# }

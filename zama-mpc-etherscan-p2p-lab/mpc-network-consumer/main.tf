@@ -2,12 +2,8 @@
 # This example demonstrates how to connect to existing MPC services from partners
 
 module "vpc_endpoint_consumer" {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.6"
-
-  # Network environment configuration
-  network_environment      = var.network_environment
-  enable_region_validation = var.enable_region_validation
-
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.9"
+  #source = "../../modules/vpc-endpoint-consumer"
   # Partner services configuration
   party_services = var.party_services
 
@@ -18,7 +14,6 @@ module "vpc_endpoint_consumer" {
   security_group_ids = var.security_group_ids
 
   # VPC Interface Endpoint configuration
-  endpoint_policy     = null
   private_dns_enabled = var.private_dns_enabled
   route_table_ids     = []
 

@@ -43,13 +43,13 @@ output "k8s_configmap_summary" {
 }
 
 #debug
-output "eks_vpc_config" {
-  value = module.mpc_party.eks_vpc_config
-}
+# output "eks_vpc_config" {
+#   value = module.mpc_party.eks_vpc_config
+# }
 
-output "cluster_sg_rules" {
-  value = module.mpc_party.cluster_sg_rules
-}
+# output "cluster_sg_rules" {
+#   value = module.mpc_party.cluster_sg_rules
+# }
 
 output "cluster_name" {
   value = module.mpc_party.cluster_name
