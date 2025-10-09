@@ -66,10 +66,11 @@ module "mpc_party" {
   kms_deletion_window_in_days             = var.kms_deletion_window_in_days
   nodegroup_additional_security_group_ids = var.nodegroup_additional_security_group_ids
   nodegroup_enable_ssm_managed_instance   = var.nodegroup_enable_ssm_managed_instance
+
   # Custom AMI ID for the node group
-  nodegroup_ami_id = "ami-085d6a1add83c50f3"
-  # nodegroup_use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
-  # nodegroup_ami_release_version            = var.nodegroup_ami_release_version
+  nodegroup_ami_id                         = var.nodegroup_ami_id
+  nodegroup_use_latest_ami_release_version = var.nodegroup_ami_id != null ? null : var.nodegroup_use_latest_ami_release_version
+  nodegroup_ami_release_version            = var.nodegroup_ami_id != null ? null : var.nodegroup_ami_release_version
 
   # Nitro Enclaves Configuration
   kms_enabled_nitro_enclaves         = var.kms_enabled_nitro_enclaves
