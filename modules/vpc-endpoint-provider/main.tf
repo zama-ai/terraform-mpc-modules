@@ -26,7 +26,7 @@ data "kubernetes_config_map_v1" "mpc_party_config" {
   count = var.sync_bucket.enabled ? 1 : 0
   metadata {
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
-    name = var.sync_bucket.configmap_name
+    name      = var.sync_bucket.configmap_name
   }
 }
 

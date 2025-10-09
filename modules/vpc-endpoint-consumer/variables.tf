@@ -32,7 +32,7 @@ variable "party_services" {
     account_id                = optional(string, null)
     partner_name              = optional(string, null)
     vpc_endpoint_service_name = string
-    public_bucket_url            = optional(string, null)
+    public_bucket_url         = optional(string, null)
     ports = optional(list(object({
       name        = string
       port        = number

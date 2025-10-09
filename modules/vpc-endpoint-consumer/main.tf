@@ -35,7 +35,6 @@ locals {
     for service in var.party_services : service.party_id => service
   }
 
-  
   party_services_map_with_s3_bucket = {
     for service in var.party_services : service.party_id => service
     if service.public_bucket_url != null
@@ -157,7 +156,7 @@ resource "kubernetes_service" "party_services" {
 data "kubernetes_config_map_v1" "mpc_party_config" {
   count = var.sync_bucket.enabled ? 1 : 0
   metadata {
-    name = var.sync_bucket.configmap_name
+    name      = var.sync_bucket.configmap_name
     namespace = var.create_namespace ? kubernetes_namespace.partner_namespace[0].metadata[0].name : var.namespace
   }
 }
@@ -170,7 +169,7 @@ resource "null_resource" "sync_s3_bucket" {
   for_each = local.party_services_map_with_s3_bucket
   provisioner "local-exec" {
     interpreter = ["bash", "-c"]
-    command = <<-EOT
+    command     = <<-EOT
     set -e
     TEMP_DIR=$(mktemp -d)
     trap "rm -rf $TEMP_DIR" EXIT
