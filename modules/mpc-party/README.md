@@ -423,6 +423,7 @@ The module can optionally create:
 | <a name="input_rds_max_allocated_storage"></a> [rds\_max\_allocated\_storage](#input\_rds\_max\_allocated\_storage) | Max autoscaled storage in GiB. | `number` | `100` | no |
 | <a name="input_rds_monitoring_interval"></a> [rds\_monitoring\_interval](#input\_rds\_monitoring\_interval) | Enhanced monitoring interval in seconds (0, 1, 5, 10, 15, 30, 60) | `number` | `0` | no |
 | <a name="input_rds_monitoring_role_arn"></a> [rds\_monitoring\_role\_arn](#input\_rds\_monitoring\_role\_arn) | ARN of IAM role for RDS enhanced monitoring (required if monitoring\_interval > 0) | `string` | `null` | no |
+| <a name="input_rds_monitoring_role_name"></a> [rds\_monitoring\_role\_name](#input\_rds\_monitoring\_role\_name) | Name of the monitoring role to create | `string` | `"rds-monitoring-role"` | no |
 | <a name="input_rds_multi_az"></a> [rds\_multi\_az](#input\_rds\_multi\_az) | Whether to enable Multi-AZ deployment for RDS instance for high availability | `bool` | `false` | no |
 | <a name="input_rds_parameters"></a> [rds\_parameters](#input\_rds\_parameters) | List of DB parameter maps for the parameter group. | `list(map(string))` | <pre>[<br/>  {<br/>    "name": "rds.force_ssl",<br/>    "value": "0"<br/>  }<br/>]</pre> | no |
 | <a name="input_rds_port"></a> [rds\_port](#input\_rds\_port) | Port for the RDS instance | `number` | `5432` | no |

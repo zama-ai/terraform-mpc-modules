@@ -559,7 +559,7 @@ variable "rds_create_monitoring_role" {
 }
 
 variable "rds_monitoring_role_name" {
-  type = string
-  default = "rds-monitoring-role"
+  type        = string
+  default     = "rds-monitoring-role"
   description = "Name of the monitoring role to create"
 }

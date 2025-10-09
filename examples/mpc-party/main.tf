@@ -62,12 +62,12 @@ module "mpc_party" {
   nodegroup_ec2_ssh_key          = var.nodegroup_ec2_ssh_key
   nodegroup_labels               = var.nodegroup_labels
 
-  kms_image_attestation_sha                = var.kms_image_attestation_sha
-  kms_deletion_window_in_days              = var.kms_deletion_window_in_days
-  nodegroup_additional_security_group_ids  = var.nodegroup_additional_security_group_ids
-  nodegroup_enable_ssm_managed_instance    = var.nodegroup_enable_ssm_managed_instance
+  kms_image_attestation_sha               = var.kms_image_attestation_sha
+  kms_deletion_window_in_days             = var.kms_deletion_window_in_days
+  nodegroup_additional_security_group_ids = var.nodegroup_additional_security_group_ids
+  nodegroup_enable_ssm_managed_instance   = var.nodegroup_enable_ssm_managed_instance
   # Custom AMI ID for the node group
-  nodegroup_ami_id                         = "ami-085d6a1add83c50f3"
+  nodegroup_ami_id = "ami-085d6a1add83c50f3"
   # nodegroup_use_latest_ami_release_version = var.nodegroup_use_latest_ami_release_version
   # nodegroup_ami_release_version            = var.nodegroup_ami_release_version
 
