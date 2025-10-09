@@ -19,9 +19,6 @@ module "vpc_endpoint_provider" {
 
   service_create_timeout = var.service_create_timeout
 
-  # Sync public bucket between partners
-  sync_public_bucket = var.sync_public_bucket
-
   # VPC Endpoint Service configuration
   acceptance_required = var.vpc_endpoint_acceptance_required
   allowed_principals  = var.allowed_vpc_endpoint_principals

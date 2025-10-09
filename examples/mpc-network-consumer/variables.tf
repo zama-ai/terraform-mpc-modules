@@ -97,18 +97,6 @@ variable "private_dns_enabled" {
   default     = true
 }
 
-variable "sync_public_bucket" {
-  description = "Sync public bucket between partners"
-  type = object({
-    enabled        = optional(bool, true)
-    configmap_name = optional(string, "mpc-party")
-  })
-  default = {
-    enabled        = true
-    configmap_name = "mpc-party"
-  }
-}
-
 variable "name_prefix" {
   description = "Prefix for naming VPC endpoints and related resources"
   type        = string
