@@ -60,6 +60,11 @@ endpoint_delete_timeout = "10m"
 create_custom_dns_records = false
 private_zone_id           = ""
 
+sync_public_bucket = {
+  enabled        = true
+  configmap_name = "mpc-party"
+}
+
 # Tagging
 tags = {
   "terraform"   = "true"

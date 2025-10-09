@@ -40,7 +40,7 @@ output "configuration_for_consumer" {
     partner_name              = var.partner_name
     region                    = data.aws_region.current.region
     vpc_endpoint_service_name = aws_vpc_endpoint_service.mpc_nlb_service.service_name
-    s3_bucket_name            = var.sync_bucket.enabled ? local.public_vault_s3_bucket_name : null
+    s3_bucket_name            = var.sync_public_bucket.enabled ? local.public_vault_s3_bucket_name : null
     availability_zones        = local.availability_zones
     create_kube_service       = true
     kube_service_config = {

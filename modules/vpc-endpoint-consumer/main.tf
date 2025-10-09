@@ -154,15 +154,15 @@ resource "kubernetes_service" "party_services" {
 }
 
 data "kubernetes_config_map_v1" "mpc_party_config" {
-  count = var.sync_bucket.enabled ? 1 : 0
+  count = var.sync_public_bucket.enabled ? 1 : 0
   metadata {
-    name      = var.sync_bucket.configmap_name
+    name      = var.sync_public_bucket.configmap_name
     namespace = var.create_namespace ? kubernetes_namespace.partner_namespace[0].metadata[0].name : var.namespace
   }
 }
 
 locals {
-  public_vault_s3_bucket_name = var.sync_bucket.enabled ? "s3://${data.kubernetes_config_map_v1.mpc_party_config[0].data["KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"]}" : ""
+  public_vault_s3_bucket_name = var.sync_public_bucket.enabled ? "s3://${data.kubernetes_config_map_v1.mpc_party_config[0].data["KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"]}" : ""
 }
 
 resource "null_resource" "sync_s3_bucket" {

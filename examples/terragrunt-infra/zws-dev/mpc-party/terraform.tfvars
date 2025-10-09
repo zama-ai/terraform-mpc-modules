@@ -57,6 +57,7 @@ nodegroup_ami_id = "ami-085d6a1add83c50f3"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
+
 nodegroup_auto_assign_security_group  = true
 nodegroup_enable_nitro_enclaves       = true
 nodegroup_enable_ssm_managed_instance = true

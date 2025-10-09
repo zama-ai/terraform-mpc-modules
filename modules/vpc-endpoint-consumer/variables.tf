@@ -182,14 +182,14 @@ variable "dns_domain" {
   default     = "mpc-partners.local"
 }
 
-variable "sync_bucket" {
-  description = "Sync bucket for the MPC service"
+variable "sync_public_bucket" {
+  description = "Sync public bucket between partners"
   type = object({
-    enabled        = optional(bool, false)
+    enabled        = optional(bool, true)
     configmap_name = optional(string, "mpc-party")
   })
   default = {
-    enabled        = false
+    enabled        = true
     configmap_name = "mpc-party"
   }
 }

@@ -53,6 +53,14 @@ variable "kubeconfig_context" {
   default     = ""
 }
 
+variable "sync_public_bucket" {
+  description = "Sync public bucket between partners"
+  type = object({
+    enabled        = optional(bool, true)
+    configmap_name = optional(string, "mpc-party")
+  })
+}
+
 
 
 # MPC Cluster Configuration

@@ -29,6 +29,11 @@ vpc_endpoint_supported_regions   = ["eu-west-1"]
 
 vpc_endpoint_acceptance_required = false
 
+sync_public_bucket = {
+  enabled        = true
+  configmap_name = "mpc-party"
+}
+
 # Tagging
 common_tags = {
   "terraform"   = "true"

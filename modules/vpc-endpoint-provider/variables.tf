@@ -68,8 +68,8 @@ variable "party_id" {
   type        = string
 }
 
-variable "sync_bucket" {
-  description = "Sync bucket for the MPC service"
+variable "sync_public_bucket" {
+  description = "Sync public bucket between partners"
   type = object({
     enabled        = optional(bool, true)
     configmap_name = optional(string, "mpc-party")

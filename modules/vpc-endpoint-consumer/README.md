@@ -55,7 +55,7 @@ No modules.
 | <a name="input_route_table_ids"></a> [route\_table\_ids](#input\_route\_table\_ids) | List of route table IDs to associate with the VPC interface endpoints | `list(string)` | `[]` | no |
 | <a name="input_security_group_ids"></a> [security\_group\_ids](#input\_security\_group\_ids) | List of security group IDs to associate with the VPC interface endpoints (Mode 2). Required if cluster\_name is not provided. | `list(string)` | `null` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of subnet IDs where the VPC interface endpoints will be created (Mode 2). Required if cluster\_name is not provided. | `list(string)` | `null` | no |
-| <a name="input_sync_bucket"></a> [sync\_bucket](#input\_sync\_bucket) | Sync bucket for the MPC service | <pre>object({<br/>    enabled        = optional(bool, false)<br/>    configmap_name = optional(string, "mpc-party")<br/>  })</pre> | <pre>{<br/>  "configmap_name": "mpc-party",<br/>  "enabled": false<br/>}</pre> | no |
+| <a name="input_sync_public_bucket"></a> [sync\_bucket](#input\_sync\_bucket) | Sync public bucket between partners | <pre>object({<br/>    enabled        = optional(bool, false)<br/>    configmap_name = optional(string, "mpc-party")<br/>  })</pre> | <pre>{<br/>  "configmap_name": "mpc-party",<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to VPC interface endpoint resources | `map(string)` | `{}` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID where the VPC interface endpoints will be created (Mode 2). Required if cluster\_name is not provided. | `string` | `null` | no |
 
