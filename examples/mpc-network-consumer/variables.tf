@@ -103,6 +103,18 @@ variable "name_prefix" {
   default     = "mpc-partner"
 }
 
+variable "sync_public_bucket" {
+  description = "Sync public bucket between partners"
+  type = object({
+    enabled        = optional(bool, true)
+    configmap_name = optional(string, "mpc-party")
+  })
+  default = {
+    enabled        = true
+    configmap_name = "mpc-party"
+  }
+}
+
 # Timeouts
 variable "endpoint_create_timeout" {
   description = "Timeout for creating VPC endpoints"

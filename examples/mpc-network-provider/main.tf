@@ -4,7 +4,7 @@ data "aws_region" "current" {}
 
 # Deploy VPC endpoints for the created NLBs (optional, only in provider mode)
 module "vpc_endpoint_provider" {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-provider?ref=v0.1.9"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-provider?ref=v0.1.10"
 
   # Network environment configuration
   network_environment      = var.network_environment
@@ -18,6 +18,8 @@ module "vpc_endpoint_provider" {
   create_namespace = false
 
   service_create_timeout = var.service_create_timeout
+
+  sync_public_bucket = var.sync_public_bucket
 
   # VPC Endpoint Service configuration
   acceptance_required = var.vpc_endpoint_acceptance_required

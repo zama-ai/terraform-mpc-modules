@@ -99,6 +99,18 @@ variable "service_create_timeout" {
   default     = "5m"
 }
 
+variable "sync_public_bucket" {
+  description = "Sync public bucket between partners"
+  type = object({
+    enabled        = optional(bool, true)
+    configmap_name = optional(string, "mpc-party")
+  })
+  default = {
+    enabled        = true
+    configmap_name = "mpc-party"
+  }
+}
+
 # Tagging
 variable "common_tags" {
   description = "Common tags to apply to all resources"

@@ -2,7 +2,7 @@
 # This example demonstrates how to connect to existing MPC services from partners
 
 module "vpc_endpoint_consumer" {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.9"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/vpc-endpoint-consumer?ref=v0.1.10"
 
   # Partner services configuration
   party_services = var.party_services
@@ -24,6 +24,8 @@ module "vpc_endpoint_consumer" {
   # Timeouts
   endpoint_create_timeout = var.endpoint_create_timeout
   endpoint_delete_timeout = var.endpoint_delete_timeout
+
+  sync_public_bucket = var.sync_public_bucket
 
   # Kubernetes configuration
   namespace        = var.namespace
