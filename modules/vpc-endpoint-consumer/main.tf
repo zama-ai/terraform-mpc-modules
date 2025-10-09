@@ -176,7 +176,7 @@ resource "null_resource" "sync_s3_bucket" {
     aws s3 sync --region ${data.aws_region.current.region} ${each.value.public_bucket_url} "$TEMP_DIR"
     aws s3 sync --region ${data.aws_region.current.region} "$TEMP_DIR" ${local.public_vault_s3_bucket_name}
     EOT
-    when        = "create"
+    when        = create
     quiet       = true
   }
   depends_on = [kubernetes_service.party_services]
