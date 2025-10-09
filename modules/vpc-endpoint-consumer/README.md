@@ -8,6 +8,7 @@
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.23 |
+| <a name="requirement_null"></a> [null](#requirement\_null) | >= 3.0 |
 
 ## Providers
 
@@ -15,6 +16,7 @@
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.23 |
+| <a name="provider_null"></a> [null](#provider\_null) | >= 3.0 |
 
 ## Modules
 
@@ -28,8 +30,11 @@ No modules.
 | [aws_vpc_endpoint.party_interface_endpoints](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint) | resource |
 | [kubernetes_namespace.partner_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_service.party_services](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
+| [null_resource.sync_s3_bucket](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [aws_eks_cluster.selected](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnet.cluster_subnets](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
+| [kubernetes_config_map_v1.mpc_party_config](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/data-sources/config_map_v1) | data source |
 
 ## Inputs
 
@@ -45,12 +50,13 @@ No modules.
 | <a name="input_endpoint_delete_timeout"></a> [endpoint\_delete\_timeout](#input\_endpoint\_delete\_timeout) | Timeout for deleting VPC interface endpoints | `string` | `"10m"` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming VPC interface endpoint resources | `string` | `"mpc-partner"` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where partner services will be created | `string` | `"kms-decentralized"` | no |
-| <a name="input_party_services"></a> [party\_services](#input\_party\_services) | List of partner MPC services to connect to via VPC interface endpoints | <pre>list(object({<br/>    name                      = string<br/>    region                    = string<br/>    party_id                  = string<br/>    account_id                = optional(string, null)<br/>    partner_name              = optional(string, null)<br/>    vpc_endpoint_service_name = string<br/>    ports = optional(list(object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })), null)<br/>    availability_zones  = optional(list(string), null)<br/>    create_kube_service = optional(bool, true)<br/>    kube_service_config = optional(object({<br/>      additional_annotations = optional(map(string), {})<br/>      labels                 = optional(map(string), {})<br/>      session_affinity       = optional(string, "None")<br/>    }), {})<br/>  }))</pre> | n/a | yes |
+| <a name="input_party_services"></a> [party\_services](#input\_party\_services) | List of partner MPC services to connect to via VPC interface endpoints | <pre>list(object({<br/>    name                      = string<br/>    region                    = string<br/>    party_id                  = string<br/>    account_id                = optional(string, null)<br/>    partner_name              = optional(string, null)<br/>    vpc_endpoint_service_name = string<br/>    public_bucket_url         = optional(string, null)<br/>    ports = optional(list(object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })), null)<br/>    availability_zones  = optional(list(string), null)<br/>    create_kube_service = optional(bool, true)<br/>    kube_service_config = optional(object({<br/>      additional_annotations = optional(map(string), {})<br/>      labels                 = optional(map(string), {})<br/>      session_affinity       = optional(string, "None")<br/>    }), {})<br/>  }))</pre> | n/a | yes |
 | <a name="input_private_dns_enabled"></a> [private\_dns\_enabled](#input\_private\_dns\_enabled) | Whether to enable private DNS for the VPC interface endpoints | `bool` | `false` | no |
 | <a name="input_private_zone_id"></a> [private\_zone\_id](#input\_private\_zone\_id) | Route53 private hosted zone ID for custom DNS records | `string` | `""` | no |
 | <a name="input_route_table_ids"></a> [route\_table\_ids](#input\_route\_table\_ids) | List of route table IDs to associate with the VPC interface endpoints | `list(string)` | `[]` | no |
 | <a name="input_security_group_ids"></a> [security\_group\_ids](#input\_security\_group\_ids) | List of security group IDs to associate with the VPC interface endpoints (Mode 2). Required if cluster\_name is not provided. | `list(string)` | `null` | no |
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | List of subnet IDs where the VPC interface endpoints will be created (Mode 2). Required if cluster\_name is not provided. | `list(string)` | `null` | no |
+| <a name="input_sync_public_bucket"></a> [sync\_public\_bucket](#input\_sync\_public\_bucket) | Sync public bucket between partners | <pre>object({<br/>    enabled        = optional(bool, true)<br/>    configmap_name = optional(string, "mpc-party")<br/>  })</pre> | <pre>{<br/>  "configmap_name": "mpc-party",<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to VPC interface endpoint resources | `map(string)` | `{}` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | VPC ID where the VPC interface endpoints will be created (Mode 2). Required if cluster\_name is not provided. | `string` | `null` | no |
 

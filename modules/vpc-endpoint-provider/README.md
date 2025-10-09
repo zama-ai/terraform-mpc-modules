@@ -34,6 +34,7 @@ No modules.
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [external_external.nlb_availability_zones](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
 | [external_external.wait_nlb](https://registry.terraform.io/providers/hashicorp/external/latest/docs/data-sources/external) | data source |
+| [kubernetes_config_map_v1.mpc_party_config](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/data-sources/config_map_v1) | data source |
 
 ## Inputs
 
@@ -53,6 +54,7 @@ No modules.
 | <a name="input_party_id"></a> [party\_id](#input\_party\_id) | Party ID for the MPC service | `string` | n/a | yes |
 | <a name="input_service_create_timeout"></a> [service\_create\_timeout](#input\_service\_create\_timeout) | Timeout for creating Kubernetes services | `string` | `"10m"` | no |
 | <a name="input_supported_regions"></a> [supported\_regions](#input\_supported\_regions) | List of AWS regions supported by the VPC endpoint service | `list(string)` | `[]` | no |
+| <a name="input_sync_public_bucket"></a> [sync\_public\_bucket](#input\_sync\_public\_bucket) | Sync public bucket between partners | <pre>object({<br/>    enabled        = optional(bool, true)<br/>    configmap_name = optional(string, "mpc-party")<br/>  })</pre> | <pre>{<br/>  "configmap_name": "mpc-party",<br/>  "enabled": true<br/>}</pre> | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to assign to the VPC endpoint services | `map(string)` | `{}` | no |
 | <a name="input_testnet_supported_regions"></a> [testnet\_supported\_regions](#input\_testnet\_supported\_regions) | AWS regions supported by the VPC endpoint service for testnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
 

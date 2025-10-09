@@ -53,8 +53,6 @@ variable "kubeconfig_context" {
   default     = ""
 }
 
-
-
 # MPC Cluster Configuration
 variable "cluster_name" {
   description = "Name of the MPC cluster"

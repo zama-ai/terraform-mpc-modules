@@ -38,15 +38,15 @@ rds_enable_master_password_rotation = true  # To change to 'false' on second app
 rds_deletion_protection             = false # Allow deletion of RDS instance
 
 # Node Group Configuration
-create_nodegroup                         = true
-nodegroup_name                           = "mpc"
-nodegroup_instance_types                 = ["c7a.16xlarge"]
-nodegroup_min_size                       = 1
-nodegroup_max_size                       = 1
-nodegroup_desired_size                   = 1
-nodegroup_disk_size                      = 30
-nodegroup_capacity_type                  = "ON_DEMAND"
-nodegroup_ami_type                       = "AL2023_x86_64_STANDARD"
+create_nodegroup         = true
+nodegroup_name           = "mpc"
+nodegroup_instance_types = ["c7a.16xlarge"]
+nodegroup_min_size       = 1
+nodegroup_max_size       = 1
+nodegroup_desired_size   = 1
+nodegroup_disk_size      = 30
+nodegroup_capacity_type  = "ON_DEMAND"
+nodegroup_ami_type       = "AL2023_x86_64_STANDARD"
 
 #nodegroup_use_latest_ami_release_version = false
 # This is the AMI release version recommended by the zama team for the 1.32.3 release. Other versions are not supported.
@@ -57,6 +57,7 @@ nodegroup_ami_id = "ami-085d6a1add83c50f3"
 nodegroup_labels = {
   "nodepool" = "kms"
 }
+
 nodegroup_auto_assign_security_group  = true
 nodegroup_enable_nitro_enclaves       = true
 nodegroup_enable_ssm_managed_instance = true

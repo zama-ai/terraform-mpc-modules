@@ -19,6 +19,11 @@ supported_regions   = ["eu-west-1", "eu-west-3"]
 acceptance_required = false
 enable_grpc_port    = false
 
+sync_public_bucket = {
+  enabled        = true
+  configmap_name = "mpc-party"
+}
+
 # Tagging
 tags = {
   "terraform"   = "true"

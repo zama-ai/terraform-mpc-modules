@@ -72,6 +72,7 @@ variable "party_services" {
     party_id                  = string
     account_id                = optional(string)
     partner_name              = optional(string)
+    public_bucket_url         = optional(string)
     vpc_endpoint_service_name = string
     ports = optional(list(object({
       name        = string

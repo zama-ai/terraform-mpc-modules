@@ -32,6 +32,7 @@ variable "party_services" {
     account_id                = optional(string, null)
     partner_name              = optional(string, null)
     vpc_endpoint_service_name = string
+    public_bucket_url         = optional(string, null)
     ports = optional(list(object({
       name        = string
       port        = number
@@ -179,4 +180,16 @@ variable "dns_domain" {
   description = "DNS domain for custom DNS records"
   type        = string
   default     = "mpc-partners.local"
+}
+
+variable "sync_public_bucket" {
+  description = "Sync public bucket between partners"
+  type = object({
+    enabled        = optional(bool, true)
+    configmap_name = optional(string, "mpc-party")
+  })
+  default = {
+    enabled        = true
+    configmap_name = "mpc-party"
+  }
 }

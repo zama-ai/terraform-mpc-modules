@@ -26,6 +26,11 @@ namespace        = "kms-decentralized"
 
 security_group_ids   = ["sg-087debb93352a906a"]
 
+sync_public_bucket = {
+  enabled        = true
+  configmap_name = "mpc-party"
+}
+
 # Partner Services Configuration
 # IMPORTANT: Update these for each consumer node
 party_services = [
@@ -36,6 +41,7 @@ party_services = [
     region                    = "eu-west-3"
     account_id                = "767398008331"
     partner_name              = "partner-1"
+    public_bucket_url         = "s3://mpc-partner-1-public-bucket"
     vpc_endpoint_service_name = "com.amazonaws.vpce.eu-west-3.vpce-svc-0e13100b8fdc2f048"
     create_kube_service = true
     kube_service_config = {
