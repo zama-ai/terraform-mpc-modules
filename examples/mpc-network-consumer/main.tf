@@ -29,6 +29,9 @@ module "vpc_endpoint_consumer" {
   namespace        = var.namespace
   create_namespace = false
 
+  # Sync public bucket between partners
+  sync_public_bucket = var.sync_public_bucket
+
   # Custom DNS (optional)
   create_custom_dns_records = var.create_custom_dns_records
   private_zone_id           = var.private_zone_id
