@@ -68,6 +68,12 @@ variable "party_id" {
   type        = string
 }
 
+variable "lb_additional_labels_selector" {
+  description = "Additional labels to add to the Kubernetes service load balancer"
+  type        = map(string)
+  default     = null
+}
+
 variable "sync_public_bucket" {
   description = "Sync public bucket between partners"
   type = object({

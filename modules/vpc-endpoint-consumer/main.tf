@@ -165,22 +165,22 @@ locals {
   public_vault_s3_bucket_name = var.sync_public_bucket.enabled ? "s3://${data.kubernetes_config_map_v1.mpc_party_config[0].data["KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"]}" : ""
 }
 
-resource "null_resource" "sync_s3_bucket" {
-  for_each = local.party_services_map_with_s3_bucket
-  provisioner "local-exec" {
-    interpreter = ["bash", "-c"]
-    command     = <<-EOT
-    set -e
-    TEMP_DIR=$(mktemp -d)
-    trap "rm -rf $TEMP_DIR" EXIT
-    aws s3 sync --region ${data.aws_region.current.region} ${each.value.public_bucket_url} "$TEMP_DIR"
-    aws s3 sync --region ${data.aws_region.current.region} "$TEMP_DIR" ${local.public_vault_s3_bucket_name}
-    EOT
-    when        = create
-    quiet       = true
-  }
-  depends_on = [kubernetes_service.party_services]
-}
+//resource "null_resource" "sync_s3_bucket" {
+//  for_each = local.party_services_map_with_s3_bucket
+//  provisioner "local-exec" {
+//    interpreter = ["bash", "-c"]
+//    command     = <<-EOT
+//    set -e
+//    TEMP_DIR=$(mktemp -d)
+//    trap "rm -rf $TEMP_DIR" EXIT
+//    aws s3 sync --region ${data.aws_region.current.region} ${each.value.public_bucket_url} "$TEMP_DIR"
+//    aws s3 sync --region ${data.aws_region.current.region} "$TEMP_DIR" ${local.public_vault_s3_bucket_name}
+//    EOT
+//    when        = create
+//    quiet       = true
+//  }
+//  depends_on = [kubernetes_service.party_services]
+//}
 
 # **************************************************************************************
 #  Create Route53 private hosted zone records for custom DNS names (in progress,optional)
