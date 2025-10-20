@@ -18,8 +18,38 @@ variable "subnet_ids" {
 }
 
 variable "security_group_ids" {
-  description = "List of security group IDs to associate with the VPC interface endpoints (Mode 2). Required if cluster_name is not provided."
+  description = "List of security group IDs to associate with the VPC interface endpoints (Mode 2). Required if cluster_name is not provided and create_security_group is false."
   type        = list(string)
+  default     = null
+}
+
+variable "create_security_group" {
+  description = "Whether to create a security group for VPC endpoints with default ingress rules"
+  type        = bool
+  default     = false
+}
+
+variable "security_group_name" {
+  description = "Name of the security group to create (if create_security_group is true)"
+  type        = string
+  default     = "mpc-vpc-endpoint-consumer-sg"
+}
+
+variable "security_group_description" {
+  description = "Description for the security group"
+  type        = string
+  default     = "Security group for MPC VPC endpoint consumer"
+}
+
+variable "security_group_ingress_cidr_blocks" {
+  description = "CIDR blocks to allow ingress traffic from for MPC ports (when create_security_group is true)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "security_group_ingress_source_sg_id" {
+  description = "Source security group ID to allow ingress traffic from for MPC ports (when create_security_group is true). If set, this takes precedence over cidr_blocks."
+  type        = string
   default     = null
 }
 

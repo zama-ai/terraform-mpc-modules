@@ -1,5 +1,136 @@
 # VPC Endpoint Consumer Module
 
+This module creates VPC interface endpoints to connect to partner MPC services and optionally creates Kubernetes services for easy consumption within an EKS cluster.
+
+## Features
+
+- **VPC Interface Endpoints**: Create VPC endpoints to privately connect to partner services
+- **Kubernetes Service Integration**: Automatically create Kubernetes ExternalName services pointing to VPC endpoints
+- **Security Group Management**: Option to create a security group with default ingress rules or use existing security groups
+- **Custom DNS**: Optional Route53 private hosted zone records for custom DNS names
+- **S3 Bucket Sync**: Sync public buckets between partners for data exchange
+
+## Usage
+
+### Basic Usage with Auto-Created Security Group
+
+```terraform
+module "vpc_endpoint_consumer" {
+  source = "./modules/vpc-endpoint-consumer"
+
+  cluster_name = "my-eks-cluster"
+
+  # Create a security group with default ingress rules
+  create_security_group = true
+  security_group_name   = "mpc-vpc-endpoint-sg"
+
+  # Default ingress rules allow traffic on gRPC (50100), peer (50001), and metrics (9646) ports
+  # You can customize these rules using security_group_ingress_rules variable
+
+  party_services = [
+    {
+      name                      = "partner-kms-core"
+      region                    = "us-east-1"
+      party_id                  = "partner1"
+      vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx"
+    }
+  ]
+}
+```
+
+### Using Custom CIDR Blocks
+
+```terraform
+module "vpc_endpoint_consumer" {
+  source = "./modules/vpc-endpoint-consumer"
+
+  vpc_id     = "vpc-xxxxx"
+  subnet_ids = ["subnet-xxxxx", "subnet-yyyyy"]
+
+  # Create security group with custom CIDR blocks
+  create_security_group              = true
+  security_group_name                = "custom-mpc-sg"
+  security_group_ingress_cidr_blocks = ["10.0.0.0/16"]
+
+  party_services = [
+    {
+      name                      = "partner-kms-core"
+      region                    = "us-east-1"
+      party_id                  = "partner1"
+      vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx"
+    }
+  ]
+}
+```
+
+### Using Source Security Group
+
+```terraform
+module "vpc_endpoint_consumer" {
+  source = "./modules/vpc-endpoint-consumer"
+
+  vpc_id     = "vpc-xxxxx"
+  subnet_ids = ["subnet-xxxxx", "subnet-yyyyy"]
+
+  # Allow traffic from a specific security group
+  create_security_group                 = true
+  security_group_name                   = "custom-mpc-sg"
+  security_group_ingress_source_sg_id   = "sg-xxxxx"
+
+  party_services = [
+    {
+      name                      = "partner-kms-core"
+      region                    = "us-east-1"
+      party_id                  = "partner1"
+      vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx"
+    }
+  ]
+}
+```
+
+### Using Existing Security Groups
+
+```terraform
+module "vpc_endpoint_consumer" {
+  source = "./modules/vpc-endpoint-consumer"
+
+  vpc_id             = "vpc-xxxxx"
+  subnet_ids         = ["subnet-xxxxx", "subnet-yyyyy"]
+  security_group_ids = ["sg-xxxxx"]
+
+  # Don't create a new security group (default behavior)
+  create_security_group = false
+
+  party_services = [
+    {
+      name                      = "partner-kms-core"
+      region                    = "us-east-1"
+      party_id                  = "partner1"
+      vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx"
+    }
+  ]
+}
+```
+
+## Security Group Configuration
+
+When `create_security_group = true`, the module automatically creates ingress rules based on the `default_mpc_ports` configuration:
+
+- **gRPC Port (50100)**: Created only if `enable_grpc_port = true` (default)
+- **Peer Port (50001)**: Always created
+- **Metrics Port (9646)**: Always created
+
+The module automatically adds a default egress rule that allows all outbound traffic (0.0.0.0/0).
+
+### Customizing Ingress Rules
+
+You can customize who can access the VPC endpoints using:
+
+- **`security_group_ingress_cidr_blocks`**: List of CIDR blocks to allow (default: `["0.0.0.0/0"]`)
+- **`security_group_ingress_source_sg_id`**: Source security group ID (takes precedence over CIDR blocks)
+
+The ports used for ingress rules are automatically derived from `default_mpc_ports`, ensuring consistency between your Kubernetes services and security group rules.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 

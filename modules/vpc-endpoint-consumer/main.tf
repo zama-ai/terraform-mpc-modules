@@ -17,6 +17,66 @@ data "aws_region" "current" {
 }
 
 # ***************************************
+#  Security Group
+# ***************************************
+resource "aws_security_group" "vpc_endpoint" {
+  count = var.create_security_group ? 1 : 0
+
+  name        = var.security_group_name
+  description = var.security_group_description
+  vpc_id      = local.vpc_id
+
+  tags = merge(
+    var.tags,
+    {
+      Name            = var.security_group_name
+      "mpc:component" = "vpc-endpoint-consumer"
+      "mpc:cluster"   = local.cluster_name_for_tags
+    }
+  )
+}
+
+resource "aws_vpc_security_group_ingress_rule" "vpc_endpoint" {
+  for_each = var.create_security_group ? local.security_group_ingress_rules : {}
+
+  security_group_id = aws_security_group.vpc_endpoint[0].id
+
+  description = each.value.description
+  from_port   = each.value.from_port
+  to_port     = each.value.to_port
+  ip_protocol = each.value.protocol
+
+  # Use source security group if provided, otherwise use CIDR blocks
+  cidr_ipv4                    = var.security_group_ingress_source_sg_id == null ? var.security_group_ingress_cidr_blocks[0] : null
+  referenced_security_group_id = var.security_group_ingress_source_sg_id
+  
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.security_group_name}-ingress-${each.key}"
+    }
+  )
+}
+
+# Default egress rule to allow all outbound traffic
+resource "aws_vpc_security_group_egress_rule" "vpc_endpoint_default" {
+  count = var.create_security_group ? 1 : 0
+
+  security_group_id = aws_security_group.vpc_endpoint[0].id
+
+  description = "Allow all outbound traffic"
+  ip_protocol = "-1"
+  cidr_ipv4   = "0.0.0.0/0"
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.security_group_name}-egress-default"
+    }
+  )
+}
+
+# ***************************************
 #  Local variables
 # ***************************************
 locals {
@@ -25,7 +85,14 @@ locals {
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
   ]
-  security_group_ids = var.security_group_ids != null ? var.security_group_ids : [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id]
+  
+  # Security group IDs logic:
+  # 1. If create_security_group is true, use the created security group
+  # 2. Otherwise, use provided security_group_ids if available
+  # 3. Fall back to EKS cluster security group if cluster_name is provided
+  security_group_ids = var.create_security_group ? [aws_security_group.vpc_endpoint[0].id] : (
+    var.security_group_ids != null ? var.security_group_ids : [data.aws_eks_cluster.selected[0].vpc_config[0].cluster_security_group_id]
+  )
 
   # Cluster name for tagging (use provided cluster_name or default)
   cluster_name_for_tags = var.cluster_name != null ? var.cluster_name : "mpc-cluster"
@@ -44,6 +111,26 @@ locals {
   kube_services_map = {
     for service in var.party_services : service.party_id => service
     if service.create_kube_service
+  }
+
+  # Build ingress rules from default_mpc_ports
+  mpc_ports_for_ingress = concat(
+    var.enable_grpc_port ? [var.default_mpc_ports.grpc] : [],
+    [
+      var.default_mpc_ports.peer,
+      var.default_mpc_ports.metrics
+    ]
+  )
+
+  # Create ingress rules map for security group
+  security_group_ingress_rules = {
+    for port_config in local.mpc_ports_for_ingress :
+    port_config.name => {
+      description = "Allow ${port_config.name} traffic"
+      from_port   = port_config.port
+      to_port     = port_config.port
+      protocol    = lower(port_config.protocol)
+    }
   }
 
 }
