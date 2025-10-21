@@ -84,9 +84,9 @@ resource "kubernetes_service" "mpc_nlb" {
       }
     }
 
-    selector = {
+    selector = merge({
       "app" = "kms-core"
-    }
+    }, var.lb_additional_labels_selector)
   }
 
   timeouts {

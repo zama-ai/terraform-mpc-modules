@@ -1,3 +1,18 @@
+output "security_group_id" {
+  description = "ID of the created security group (if create_security_group is true)"
+  value       = var.create_security_group ? aws_security_group.vpc_endpoint[0].id : null
+}
+
+output "security_group_arn" {
+  description = "ARN of the created security group (if create_security_group is true)"
+  value       = var.create_security_group ? aws_security_group.vpc_endpoint[0].arn : null
+}
+
+output "security_group_name" {
+  description = "Name of the created security group (if create_security_group is true)"
+  value       = var.create_security_group ? aws_security_group.vpc_endpoint[0].name : null
+}
+
 output "vpc_interface_endpoint_ids" {
   description = "IDs of the created VPC interface endpoints"
   value       = [for endpoint in values(aws_vpc_endpoint.party_interface_endpoints) : endpoint.id]
