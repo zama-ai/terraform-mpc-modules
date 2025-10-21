@@ -98,8 +98,10 @@ locals {
   cluster_name_for_tags = var.cluster_name != null ? var.cluster_name : "mpc-cluster"
 
   # Convert party_services list to map for for_each usage
+  # VPC endpoints needed for both consumer sync and Kubernetes services
   party_services_map = {
     for service in var.party_services : service.party_id => service
+    if service.enable_consumer_sync == true
   }
 
   party_services_map_with_s3_bucket = {
@@ -110,7 +112,7 @@ locals {
   # Create separate map for services that need Kubernetes services
   kube_services_map = {
     for service in var.party_services : service.party_id => service
-    if service.create_kube_service
+    if service.create_kube_service && service.enable_consumer_sync == true
   }
 
   # Build ingress rules from default_mpc_ports

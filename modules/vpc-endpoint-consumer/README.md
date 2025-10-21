@@ -38,56 +38,6 @@ module "vpc_endpoint_consumer" {
 }
 ```
 
-### Using Custom CIDR Blocks
-
-```terraform
-module "vpc_endpoint_consumer" {
-  source = "./modules/vpc-endpoint-consumer"
-
-  vpc_id     = "vpc-xxxxx"
-  subnet_ids = ["subnet-xxxxx", "subnet-yyyyy"]
-
-  # Create security group with custom CIDR blocks
-  create_security_group              = true
-  security_group_name                = "custom-mpc-sg"
-  security_group_ingress_cidr_blocks = ["10.0.0.0/16"]
-
-  party_services = [
-    {
-      name                      = "partner-kms-core"
-      region                    = "us-east-1"
-      party_id                  = "partner1"
-      vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx"
-    }
-  ]
-}
-```
-
-### Using Source Security Group
-
-```terraform
-module "vpc_endpoint_consumer" {
-  source = "./modules/vpc-endpoint-consumer"
-
-  vpc_id     = "vpc-xxxxx"
-  subnet_ids = ["subnet-xxxxx", "subnet-yyyyy"]
-
-  # Allow traffic from a specific security group
-  create_security_group                 = true
-  security_group_name                   = "custom-mpc-sg"
-  security_group_ingress_source_sg_id   = "sg-xxxxx"
-
-  party_services = [
-    {
-      name                      = "partner-kms-core"
-      region                    = "us-east-1"
-      party_id                  = "partner1"
-      vpc_endpoint_service_name = "com.amazonaws.vpce.us-east-1.vpce-svc-xxxxx"
-    }
-  ]
-}
-```
-
 ### Using Existing Security Groups
 
 ```terraform
@@ -185,7 +135,7 @@ No modules.
 | <a name="input_endpoint_delete_timeout"></a> [endpoint\_delete\_timeout](#input\_endpoint\_delete\_timeout) | Timeout for deleting VPC interface endpoints | `string` | `"10m"` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix for naming VPC interface endpoint resources | `string` | `"mpc-partner"` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where partner services will be created | `string` | `"kms-decentralized"` | no |
-| <a name="input_party_services"></a> [party\_services](#input\_party\_services) | List of partner MPC services to connect to via VPC interface endpoints | <pre>list(object({<br/>    name                      = string<br/>    region                    = string<br/>    party_id                  = string<br/>    account_id                = optional(string, null)<br/>    partner_name              = optional(string, null)<br/>    vpc_endpoint_service_name = string<br/>    public_bucket_url         = optional(string, null)<br/>    ports = optional(list(object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })), null)<br/>    availability_zones  = optional(list(string), null)<br/>    create_kube_service = optional(bool, true)<br/>    kube_service_config = optional(object({<br/>      additional_annotations = optional(map(string), {})<br/>      labels                 = optional(map(string), {})<br/>      session_affinity       = optional(string, "None")<br/>    }), {})<br/>  }))</pre> | n/a | yes |
+| <a name="input_party_services"></a> [party\_services](#input\_party\_services) | List of partner MPC services to connect to via VPC interface endpoints | <pre>list(object({<br/>    name                      = string<br/>    region                    = string<br/>    party_id                  = string<br/>    account_id                = optional(string, null)<br/>    partner_name              = optional(string, null)<br/>    vpc_endpoint_service_name = string<br/>    enable_consumer_sync      = optional(bool, true)<br/>    public_bucket_url         = optional(string, null)<br/>    ports = optional(list(object({<br/>      name        = string<br/>      port        = number<br/>      target_port = number<br/>      protocol    = string<br/>    })), null)<br/>    availability_zones  = optional(list(string), null)<br/>    create_kube_service = optional(bool, true)<br/>    kube_service_config = optional(object({<br/>      additional_annotations = optional(map(string), {})<br/>      labels                 = optional(map(string), {})<br/>      session_affinity       = optional(string, "None")<br/>    }), {})<br/>  }))</pre> | n/a | yes |
 | <a name="input_private_dns_enabled"></a> [private\_dns\_enabled](#input\_private\_dns\_enabled) | Whether to enable private DNS for the VPC interface endpoints | `bool` | `false` | no |
 | <a name="input_private_zone_id"></a> [private\_zone\_id](#input\_private\_zone\_id) | Route53 private hosted zone ID for custom DNS records | `string` | `""` | no |
 | <a name="input_route_table_ids"></a> [route\_table\_ids](#input\_route\_table\_ids) | List of route table IDs to associate with the VPC interface endpoints | `list(string)` | `[]` | no |
