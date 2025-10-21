@@ -26,7 +26,7 @@ variable "security_group_ids" {
 variable "create_security_group" {
   description = "Whether to create a security group for VPC endpoints with default ingress rules"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "security_group_name" {

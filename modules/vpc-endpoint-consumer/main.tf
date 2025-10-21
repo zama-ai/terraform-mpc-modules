@@ -49,7 +49,7 @@ resource "aws_vpc_security_group_ingress_rule" "vpc_endpoint" {
   # Use source security group if provided, otherwise use CIDR blocks
   cidr_ipv4                    = var.security_group_ingress_source_sg_id == null ? var.security_group_ingress_cidr_blocks[0] : null
   referenced_security_group_id = var.security_group_ingress_source_sg_id
-  
+
   tags = merge(
     var.tags,
     {
@@ -85,7 +85,7 @@ locals {
     for subnet_id, subnet in data.aws_subnet.cluster_subnets : subnet_id
     if subnet.map_public_ip_on_launch == false
   ]
-  
+
   # Security group IDs logic:
   # 1. If create_security_group is true, use the created security group
   # 2. Otherwise, use provided security_group_ids if available
