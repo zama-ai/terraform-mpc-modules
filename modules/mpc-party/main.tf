@@ -226,6 +226,7 @@ module "iam_assumable_role_mpc_party" {
 
 resource "kubernetes_service_account" "mpc_party_service_account" {
   count = var.create_service_account ? 1 : 0
+
   metadata {
     name      = var.k8s_service_account_name
     namespace = var.k8s_namespace
@@ -248,16 +249,23 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
 }
 
 # ***************************************
-#  aws kms key for mpc party
+#  AWS KMS Key for MPC Party
 # ***************************************
+locals {
+  create_mpc_party_key        = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
+  create_mpc_party_key_backup = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
+}
+
 resource "aws_kms_key" "mpc_party" {
-  count                    = var.kms_enabled_nitro_enclaves ? 1 : 0
+  count = local.create_mpc_party_key ? 1 : 0
+
   description              = "KMS key for MPC Party"
   key_usage                = var.kms_key_usage
   customer_master_key_spec = var.kms_customer_master_key_spec
   enable_key_rotation      = false
   deletion_window_in_days  = var.kms_deletion_window_in_days
   tags                     = var.tags
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -315,7 +323,8 @@ resource "aws_kms_key" "mpc_party" {
 }
 
 resource "aws_kms_alias" "mpc_party" {
-  count         = var.kms_enabled_nitro_enclaves ? 1 : 0
+  count = local.create_mpc_party_key ? 1 : 0
+
   name          = "alias/mpc-${var.party_name}"
   target_key_id = aws_kms_key.mpc_party[0].key_id
 }
@@ -324,12 +333,15 @@ resource "aws_kms_alias" "mpc_party" {
 #  ASYMMETRIC KMS Key Backup for MPC Party
 # ***************************************
 resource "aws_kms_key" "mpc_party_backup" {
-  count                    = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  count = local.create_mpc_party_key_backup ? 1 : 0
+
   description              = "Asymmetric KMS key backup for MPC Party"
   key_usage                = var.kms_backup_vault_key_usage
   customer_master_key_spec = var.kms_backup_vault_customer_master_key_spec
   enable_key_rotation      = false
   deletion_window_in_days  = var.kms_deletion_window_in_days
+  tags                     = var.tags
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -382,17 +394,16 @@ resource "aws_kms_key" "mpc_party_backup" {
         ],
         Resource = "*"
       }
-
     ]
   })
-  tags = var.tags
 }
 
 # ***************************************
 #  KMS Key Alias for MPC Party Backup
 # ***************************************
 resource "aws_kms_alias" "mpc_party_backup" {
-  count         = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault ? 1 : 0
+  count = local.create_mpc_party_key_backup ? 1 : 0
+
   name          = "alias/mpc-${var.party_name}-backup"
   target_key_id = aws_kms_key.mpc_party_backup[0].key_id
 }
@@ -400,6 +411,12 @@ resource "aws_kms_alias" "mpc_party_backup" {
 # ***************************************
 #  ConfigMap for MPC Party
 # ***************************************
+locals {
+  kms_key_id = var.kms_enabled_nitro_enclaves ? (
+    var.kms_use_cross_account_kms_key ? var.kms_cross_account_kms_key_id : aws_kms_key.mpc_party[0].key_id
+  ) : null
+}
+
 resource "kubernetes_config_map" "mpc_party_config" {
   count = var.create_config_map ? 1 : 0
 
@@ -428,7 +445,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
     "KMS_CORE__PRIVATE_VAULT__STORAGE__S3__PREFIX"              = ""
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"               = aws_s3_bucket.vault_public_bucket.id
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX"               = ""
-    "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"   = var.kms_enabled_nitro_enclaves ? aws_kms_key.mpc_party[0].key_id : null
+    "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"   = local.kms_key_id
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC" = var.kms_enabled_nitro_enclaves ? "symm" : null
   }
 
@@ -439,18 +456,19 @@ resource "kubernetes_config_map" "mpc_party_config" {
 #  EKS Managed Node Group
 # ***************************************
 data "aws_ec2_instance_type" "this" {
+  count = var.nodegroup_enable_nitro_enclaves ? 1 : 0
+
   instance_type = var.nodegroup_instance_types[0]
-  count         = var.nodegroup_enable_nitro_enclaves ? 1 : 0
 }
 
 locals {
   cluster_security_group_id = var.nodegroup_auto_assign_security_group ? try(tolist(data.aws_eks_cluster.cluster.vpc_config[0].security_group_ids)[0], null) : null
 }
 
-
 # Get all rule IDs on the cluster SG (ingress and egress)
 data "aws_vpc_security_group_rules" "cluster_rules" {
   count = var.nodegroup_auto_assign_security_group && local.cluster_security_group_id != null ? 1 : 0
+
   filter {
     name   = "group-id"
     values = [local.cluster_security_group_id]
@@ -459,7 +477,8 @@ data "aws_vpc_security_group_rules" "cluster_rules" {
 
 # Read each rule to find which ones reference another SG
 data "aws_vpc_security_group_rule" "cluster_sg_rules_by_id" {
-  for_each               = toset(try(data.aws_vpc_security_group_rules.cluster_rules[0].ids, []))
+  for_each = toset(try(data.aws_vpc_security_group_rules.cluster_rules[0].ids, []))
+
   security_group_rule_id = each.value
 }
 
@@ -475,6 +494,7 @@ locals {
 
 data "aws_vpc_security_group_rules" "node_group_sg_rules" {
   count = var.nodegroup_auto_assign_security_group && local.auto_resolved_node_sg != null ? 1 : 0
+
   filter {
     name   = "group-id"
     values = [local.auto_resolved_node_sg]
@@ -482,7 +502,8 @@ data "aws_vpc_security_group_rules" "node_group_sg_rules" {
 }
 
 data "aws_vpc_security_group_rule" "node_group_sg_rules_by_id" {
-  for_each               = toset(try(data.aws_vpc_security_group_rules.node_group_sg_rules[0].ids, []))
+  for_each = toset(try(data.aws_vpc_security_group_rules.node_group_sg_rules[0].ids, []))
+
   security_group_rule_id = each.value
 }
 
@@ -496,6 +517,7 @@ locals {
 
 resource "null_resource" "validate_auto_resolved_node_sg" {
   count = var.nodegroup_auto_assign_security_group ? 1 : 0
+
   lifecycle {
     precondition {
       # Ensure the auto resolved node group SG is valid
@@ -528,7 +550,8 @@ locals {
 }
 
 module "eks_managed_node_group" {
-  count   = var.create_nodegroup ? 1 : 0
+  count = var.create_nodegroup ? 1 : 0
+
   source  = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
   version = "21.0.6"
 
@@ -764,7 +787,8 @@ locals {
 }
 
 module "rds_instance" {
-  count   = var.enable_rds ? 1 : 0
+  count = var.enable_rds ? 1 : 0
+
   source  = "terraform-aws-modules/rds/aws"
   version = "~> 6.10"
 
@@ -808,7 +832,8 @@ module "rds_instance" {
 }
 
 module "rds_security_group" {
-  count   = var.enable_rds ? 1 : 0
+  count = var.enable_rds ? 1 : 0
+
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 5.3.0"
 

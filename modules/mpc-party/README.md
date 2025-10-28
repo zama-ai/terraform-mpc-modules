@@ -365,12 +365,14 @@ The module can optionally create:
 | <a name="input_kms_backup_external_role_arn"></a> [kms\_backup\_external\_role\_arn](#input\_kms\_backup\_external\_role\_arn) | ARN of the backup vault for the KMS key | `string` | `null` | no |
 | <a name="input_kms_backup_vault_customer_master_key_spec"></a> [kms\_backup\_vault\_customer\_master\_key\_spec](#input\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"ASYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_backup_vault_key_usage"></a> [kms\_backup\_vault\_key\_usage](#input\_kms\_backup\_vault\_key\_usage) | Key usage for the backup vault | `string` | `"ENCRYPT_DECRYPT"` | no |
+| <a name="input_kms_cross_account_kms_key_id"></a> [kms\_cross\_account\_kms\_key\_id](#input\_kms\_cross\_account\_kms\_key\_id) | KMS key ID of KMS key created in a different AWS account | `string` | `""` | no |
 | <a name="input_kms_customer_master_key_spec"></a> [kms\_customer\_master\_key\_spec](#input\_kms\_customer\_master\_key\_spec) | Specification for the KMS customer master key (e.g., SYMMETRIC\_DEFAULT, RSA\_2048) | `string` | `"SYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_deletion_window_in_days"></a> [kms\_deletion\_window\_in\_days](#input\_kms\_deletion\_window\_in\_days) | Deletion window in days for KMS key | `number` | `30` | no |
 | <a name="input_kms_enable_backup_vault"></a> [kms\_enable\_backup\_vault](#input\_kms\_enable\_backup\_vault) | Whether to enable the backup vault for the KMS key | `bool` | `false` | no |
 | <a name="input_kms_enabled_nitro_enclaves"></a> [kms\_enabled\_nitro\_enclaves](#input\_kms\_enabled\_nitro\_enclaves) | Whether to enable KMS for Nitro Enclaves | `bool` | n/a | yes |
 | <a name="input_kms_image_attestation_sha"></a> [kms\_image\_attestation\_sha](#input\_kms\_image\_attestation\_sha) | Attestation SHA for KMS image | `string` | n/a | yes |
 | <a name="input_kms_key_usage"></a> [kms\_key\_usage](#input\_kms\_key\_usage) | Key usage for KMS | `string` | `"ENCRYPT_DECRYPT"` | no |
+| <a name="input_kms_use_cross_account_kms_key"></a> [kms\_use\_cross\_account\_kms\_key](#input\_kms\_use\_cross\_account\_kms\_key) | Whether a KMS key has been created in a different AWS account | `bool` | `false` | no |
 | <a name="input_namespace_annotations"></a> [namespace\_annotations](#input\_namespace\_annotations) | Additional annotations to apply to the namespace | `map(string)` | `{}` | no |
 | <a name="input_namespace_labels"></a> [namespace\_labels](#input\_namespace\_labels) | Additional labels to apply to the namespace | `map(string)` | `{}` | no |
 | <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
