@@ -8,15 +8,11 @@ variable "network_environment" {
   }
 }
 
-
-
-
 variable "bucket_prefix" {
   type        = string
   description = "The prefix for the S3 bucket names"
   default     = "mpc-vault"
 }
-
 
 # MPC Party Configuration
 variable "party_id" {
@@ -109,7 +105,6 @@ variable "config_map_name" {
   default     = "mpc-party"
 }
 
-
 # Deprecated Tagging
 variable "common_tags" {
   type        = map(string)
@@ -130,7 +125,9 @@ variable "tags" {
   }
 }
 
+# ******************************************************
 # EKS Node Group Core Configuration
+# ******************************************************
 variable "create_nodegroup" {
   type        = bool
   description = "Whether to create an EKS managed node group"
@@ -142,13 +139,11 @@ variable "nodegroup_name" {
   description = "Name of the EKS managed node group"
 }
 
-
 variable "nodegroup_use_latest_ami_release_version" {
   type        = bool
   description = "Whether to use the latest AMI release version"
   default     = false
 }
-
 
 variable "nodegroup_ami_release_version" {
   type        = string
@@ -210,7 +205,6 @@ variable "nodegroup_disk_size" {
   default     = 20
 }
 
-
 # Remote Access Configuration
 variable "nodegroup_enable_remote_access" {
   type        = bool
@@ -229,7 +223,6 @@ variable "nodegroup_source_security_group_ids" {
   description = "List of security group IDs allowed for remote access"
   default     = []
 }
-
 
 variable "nodegroup_additional_security_group_ids" {
   type        = list(string)
@@ -322,11 +315,29 @@ variable "nodegroup_update_config" {
   }
 }
 
-
-# kms configuration
+# ******************************************************
+# KMS Configuration
+# ******************************************************
 variable "kms_enabled_nitro_enclaves" {
   type        = bool
   description = "Whether to enable KMS for Nitro Enclaves"
+}
+
+variable "kms_use_cross_account_kms_key" {
+  type        = bool
+  description = "Whether a KMS key has been created in a different AWS account"
+  default     = false
+}
+
+variable "kms_cross_account_kms_key_id" {
+  type        = string
+  description = "KMS key ID of KMS key created in a different AWS account"
+  default     = ""
+
+  validation {
+    condition     = !var.kms_use_cross_account_kms_key || (var.kms_use_cross_account_kms_key && var.kms_cross_account_kms_key_id != "")
+    error_message = "kms_cross_account_kms_key_id must be provided when kms_use_cross_account_kms_key is true."
+  }
 }
 
 variable "kms_key_usage" {
@@ -364,8 +375,6 @@ variable "kms_backup_external_role_arn" {
   default     = null
 }
 
-
-
 variable "kms_backup_vault_key_usage" {
   type        = string
   description = "Key usage for the backup vault"
@@ -378,16 +387,14 @@ variable "kms_backup_vault_customer_master_key_spec" {
   default     = "ASYMMETRIC_DEFAULT"
 }
 
-
 variable "nodegroup_enable_ssm_managed_instance" {
   type        = bool
   description = "Whether to enable SSM managed instance"
   default     = false
 }
 
-
 # ******************************************************
-# variables for the RDS instance
+# RDS instance
 # ******************************************************
 variable "enable_rds" {
   type        = bool
@@ -513,7 +520,6 @@ variable "rds_parameters" {
     value = "0"
   }]
 }
-
 
 variable "rds_create_externalname_service" {
   description = "Whether to create a Kubernetes ExternalName service for RDS database access"
