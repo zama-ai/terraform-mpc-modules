@@ -89,6 +89,16 @@ output "rds_summary" {
   } : null
 }
 
+# KMS Connector KMS Key
+output "kms_connector_tx_sender" {
+  description = "KMS Connector Transaction Sender KMS Key"
+  value = var.kms_enable_kms_connector_txsender_key ? {
+    key_id    = aws_kms_external_key.mpc_connector_tx_sender[0].id
+    key_spec  = aws_kms_external_key.mpc_connector_tx_sender[0].key_spec
+    key_usage = aws_kms_external_key.mpc_connector_tx_sender[0].key_usage
+  } : null
+}
+
 # Node Group Tolerations
 output "node_group_tolerations" {
   description = "Kubernetes tolerations derived from EKS node group taints"
