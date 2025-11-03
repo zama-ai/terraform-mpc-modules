@@ -287,8 +287,8 @@ resource "kubernetes_service_account" "mpc_kms_connector_service_account" {
 #  AWS KMS Key for MPC Party
 # ***************************************
 locals {
-  create_mpc_party_key        = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
-  create_mpc_party_key_backup = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
+  create_mpc_party_key              = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
+  create_mpc_party_key_backup       = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
   create_mpc_connector_txsender_key = var.kms_enable_kms_connector_txsender_key && !var.kms_use_cross_account_kms_key
 }
 
@@ -450,11 +450,11 @@ resource "aws_kms_alias" "mpc_party_backup" {
 resource "aws_kms_external_key" "mpc_connector_tx_sender" {
   count = local.create_mpc_connector_txsender_key ? 1 : 0
 
-  description              = "KMS Connector tx sender key for MPC Party"
-  key_usage                = var.kms_connector_txsender_key_usage
-  key_spec                 = var.kms_connector_txsender_key_spec
-  deletion_window_in_days  = var.kms_deletion_window_in_days
-  tags                     = var.tags
+  description             = "KMS Connector tx sender key for MPC Party"
+  key_usage               = var.kms_connector_txsender_key_usage
+  key_spec                = var.kms_connector_txsender_key_spec
+  deletion_window_in_days = var.kms_deletion_window_in_days
+  tags                    = var.tags
 
   policy = jsonencode({
     Version = "2012-10-17"
