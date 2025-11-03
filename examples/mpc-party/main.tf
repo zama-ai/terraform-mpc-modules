@@ -98,6 +98,9 @@ module "mpc_party" {
   rds_vpc_id                  = var.rds_vpc_id
   rds_deletion_protection     = var.rds_deletion_protection
 
+  # KMS-Connector  Configuration
+  kms_connector_enable_txsender_key = true
+
   # Tagging
   common_tags = merge(var.additional_tags, {
     "Environment" = var.environment

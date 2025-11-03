@@ -62,3 +62,5 @@ kms_enabled_nitro_enclaves = true
 # This image attestation SHA must be updated for each KMS enclave release image.
 kms_image_attestation_sha   = "5292569b5945693afcde78e5a0045f4bf8c0a594d174baf1e6bccdf0e6338ebe46e89207054e0c48d0ec6deef80284ac"
 kms_deletion_window_in_days = 7
+
+kms_connector_enable_txsender_key = true

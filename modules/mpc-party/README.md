@@ -369,13 +369,13 @@ The module can optionally create:
 | <a name="input_kms_backup_external_role_arn"></a> [kms\_backup\_external\_role\_arn](#input\_kms\_backup\_external\_role\_arn) | ARN of the backup vault for the KMS key | `string` | `null` | no |
 | <a name="input_kms_backup_vault_customer_master_key_spec"></a> [kms\_backup\_vault\_customer\_master\_key\_spec](#input\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"ASYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_backup_vault_key_usage"></a> [kms\_backup\_vault\_key\_usage](#input\_kms\_backup\_vault\_key\_usage) | Key usage for the backup vault | `string` | `"ENCRYPT_DECRYPT"` | no |
+| <a name="input_kms_connector_enable_txsender_key"></a> [kms\_connector\_enable\_txsender\_key](#input\_kms\_connector\_enable\_txsender\_key) | Whether to enable the KMS key for the kms-connector txsender | `bool` | `false` | no |
 | <a name="input_kms_connector_txsender_key_spec"></a> [kms\_connector\_txsender\_key\_spec](#input\_kms\_connector\_txsender\_key\_spec) | Specification for the KMS-Connector txsender (e.g., ECC\_SECG\_P256K1 for Ethereum key signing) | `string` | `"ECC_SECG_P256K1"` | no |
 | <a name="input_kms_connector_txsender_key_usage"></a> [kms\_connector\_txsender\_key\_usage](#input\_kms\_connector\_txsender\_key\_usage) | Key usage for KMS-Connector txsender | `string` | `"SIGN_VERIFY"` | no |
 | <a name="input_kms_cross_account_kms_key_id"></a> [kms\_cross\_account\_kms\_key\_id](#input\_kms\_cross\_account\_kms\_key\_id) | KMS key ID of KMS key created in a different AWS account | `string` | `""` | no |
 | <a name="input_kms_customer_master_key_spec"></a> [kms\_customer\_master\_key\_spec](#input\_kms\_customer\_master\_key\_spec) | Specification for the KMS customer master key (e.g., SYMMETRIC\_DEFAULT, RSA\_2048) | `string` | `"SYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_deletion_window_in_days"></a> [kms\_deletion\_window\_in\_days](#input\_kms\_deletion\_window\_in\_days) | Deletion window in days for KMS key | `number` | `30` | no |
 | <a name="input_kms_enable_backup_vault"></a> [kms\_enable\_backup\_vault](#input\_kms\_enable\_backup\_vault) | Whether to enable the backup vault for the KMS key | `bool` | `false` | no |
-| <a name="input_kms_enable_kms_connector_txsender_key"></a> [kms\_enable\_kms\_connector\_txsender\_key](#input\_kms\_enable\_kms\_connector\_txsender\_key) | Whether to enable the KMS key for the kms-connector txsender | `bool` | `false` | no |
 | <a name="input_kms_enabled_nitro_enclaves"></a> [kms\_enabled\_nitro\_enclaves](#input\_kms\_enabled\_nitro\_enclaves) | Whether to enable KMS for Nitro Enclaves | `bool` | n/a | yes |
 | <a name="input_kms_image_attestation_sha"></a> [kms\_image\_attestation\_sha](#input\_kms\_image\_attestation\_sha) | Attestation SHA for KMS image | `string` | n/a | yes |
 | <a name="input_kms_key_usage"></a> [kms\_key\_usage](#input\_kms\_key\_usage) | Key usage for KMS | `string` | `"ENCRYPT_DECRYPT"` | no |
@@ -452,6 +452,7 @@ The module can optionally create:
 | <a name="output_irsa_summary"></a> [irsa\_summary](#output\_irsa\_summary) | Summary of the IRSA role for MPC party |
 | <a name="output_k8s_configmap_summary"></a> [k8s\_configmap\_summary](#output\_k8s\_configmap\_summary) | Summary of the Kubernetes ConfigMap for MPC party |
 | <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
+| <a name="output_kms_connector_tx_sender"></a> [kms\_connector\_tx\_sender](#output\_kms\_connector\_tx\_sender) | KMS Connector Transaction Sender KMS Key |
 | <a name="output_nitro_enclaves_summary"></a> [nitro\_enclaves\_summary](#output\_nitro\_enclaves\_summary) | Summary of the Nitro Enclaves for MPC party |
 | <a name="output_node_group_tolerations"></a> [node\_group\_tolerations](#output\_node\_group\_tolerations) | Kubernetes tolerations derived from EKS node group taints |
 | <a name="output_nodegroup_auto_assign_security_group_summary"></a> [nodegroup\_auto\_assign\_security\_group\_summary](#output\_nodegroup\_auto\_assign\_security\_group\_summary) | Summary of the auto resolved security group |

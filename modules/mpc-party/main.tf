@@ -289,7 +289,7 @@ resource "kubernetes_service_account" "mpc_kms_connector_service_account" {
 locals {
   create_mpc_party_key              = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
   create_mpc_party_key_backup       = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
-  create_mpc_connector_txsender_key = var.kms_enable_kms_connector_txsender_key && !var.kms_use_cross_account_kms_key
+  create_mpc_connector_txsender_key = var.kms_connector_enable_txsender_key && !var.kms_use_cross_account_kms_key
 }
 
 resource "aws_kms_key" "mpc_party" {
@@ -550,7 +550,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX"               = ""
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"   = local.kms_key_id
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC" = var.kms_enabled_nitro_enclaves ? "symm" : null
-    "KMS_CONNECTOR__TX_SENDER_AWS_KMS_KEY_ID" = var.kms_enable_kms_connector_txsender_key ? aws_kms_external_key.mpc_connector_tx_sender[0].id : null
+    "KMS_CONNECTOR__TX_SENDER_AWS_KMS_KEY_ID"                   = var.kms_connector_enable_txsender_key ? aws_kms_external_key.mpc_connector_tx_sender[0].id : null
   }
 
   depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]

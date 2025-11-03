@@ -363,7 +363,7 @@ variable "kms_deletion_window_in_days" {
   default     = 30
 }
 
-variable "kms_enable_kms_connector_txsender_key" {
+variable "kms_connector_enable_txsender_key" {
   type        = bool
   description = "Whether to enable the KMS key for the kms-connector txsender"
   default     = false
