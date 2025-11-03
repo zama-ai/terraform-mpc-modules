@@ -363,6 +363,25 @@ variable "kms_deletion_window_in_days" {
   default     = 30
 }
 
+variable "kms_enable_kms_connector_txsender_key" {
+  type        = bool
+  description = "Whether to enable the KMS key for the kms-connector txsender"
+  default     = false
+}
+
+
+variable "kms_connector_txsender_key_usage" {
+  type        = string
+  description = "Key usage for KMS-Connector txsender"
+  default     = "SIGN_VERIFY"
+}
+
+variable "kms_connector_txsender_key_spec" {
+  description = "Specification for the KMS-Connector txsender (e.g., ECC_SECG_P256K1 for Ethereum key signing)"
+  type        = string
+  default     = "ECC_SECG_P256K1"
+}
+
 variable "kms_enable_backup_vault" {
   type        = bool
   description = "Whether to enable the backup vault for the KMS key"

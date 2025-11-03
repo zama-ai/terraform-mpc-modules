@@ -247,12 +247,49 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
   depends_on = [kubernetes_namespace.mpc_party_namespace, module.iam_assumable_role_mpc_party]
 }
 
+module "iam_assumable_role_kms_connector" {
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version                       = "5.48.0"
+  provider_url                  = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+  create_role                   = true
+  role_name                     = "mpc-${var.cluster_name}-${var.party_name}-connector"
+  oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}-connector"]
+  role_policy_arns              = []
+  depends_on                    = [kubernetes_namespace.mpc_party_namespace]
+}
+
+resource "kubernetes_service_account" "mpc_kms_connector_service_account" {
+  count = var.create_service_account ? 1 : 0
+
+  metadata {
+    name      = "${var.k8s_service_account_name}-connector"
+    namespace = var.k8s_namespace
+
+    labels = merge({
+      "app.kubernetes.io/name"       = "mpc-connector"
+      "app.kubernetes.io/component"  = "service-account"
+      "app.kubernetes.io/part-of"    = "mpc-cluster"
+      "app.kubernetes.io/managed-by" = "terraform"
+      "mpc.io/party-name"            = var.party_name
+    }, var.service_account_labels)
+
+    annotations = merge({
+      "terraform.io/module"        = "mpc-party"
+      "mpc.io/party-name"          = var.party_name
+      "eks.amazonaws.com/role-arn" = module.iam_assumable_role_kms_connector.iam_role_arn
+    }, var.service_account_annotations)
+  }
+  depends_on = [kubernetes_namespace.mpc_party_namespace, module.iam_assumable_role_kms_connector]
+}
+
+
 # ***************************************
 #  AWS KMS Key for MPC Party
 # ***************************************
 locals {
   create_mpc_party_key        = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
   create_mpc_party_key_backup = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
+  create_mpc_connector_txsender_key = var.kms_enable_kms_connector_txsender_key && !var.kms_use_cross_account_kms_key
 }
 
 resource "aws_kms_key" "mpc_party" {
@@ -405,6 +442,73 @@ resource "aws_kms_alias" "mpc_party_backup" {
 
   name          = "alias/mpc-${var.party_name}-backup"
   target_key_id = aws_kms_key.mpc_party_backup[0].key_id
+}
+
+# ***************************************
+#  KMS-Connector Ethereum TxSender Key
+# ***************************************
+resource "aws_kms_external_key" "mpc_connector_tx_sender" {
+  count = local.create_mpc_connector_txsender_key ? 1 : 0
+
+  description              = "KMS Connector tx sender key for MPC Party"
+  key_usage                = var.kms_connector_txsender_key_usage
+  key_spec                 = var.kms_connector_txsender_key_spec
+  deletion_window_in_days  = var.kms_deletion_window_in_days
+  tags                     = var.tags
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.iam_assumable_role_kms_connector.iam_role_name}"
+        },
+        Action = [
+          "kms:DescribeKey",
+          "kms:GetPublicKey",
+          "kms:Sign",
+          "kms:Verify"
+        ],
+        Resource = "*",
+      },
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:TagResource",
+          "kms:UntagResource",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion",
+          "kms:ImportKeyMaterial",
+          "kms:DeleteImportedKeyMaterial"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# ***************************************
+#  KMS Key Alias for KMS-Connector Ethereum TxSender Key
+# ***************************************
+resource "aws_kms_alias" "mpc_connector_tx_sender" {
+  count = local.create_mpc_connector_txsender_key ? 1 : 0
+
+  name          = "alias/mpc-${var.party_name}-connector-txsender"
+  target_key_id = aws_kms_external_key.mpc_connector_tx_sender[0].id
 }
 
 # ***************************************
