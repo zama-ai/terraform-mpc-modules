@@ -4,7 +4,7 @@
 
 # Deploy MPC Party infrastructure using the enhanced mpc-party module
 module "mpc_party" {
-  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.10"
+  source = "git::https://github.com/zama-ai/terraform-mpc-modules.git//modules/mpc-party?ref=v0.1.13"
 
   # Network environment configuration
   network_environment = var.network_environment
@@ -97,6 +97,9 @@ module "mpc_party" {
   rds_allowed_cidr_blocks     = var.rds_allowed_cidr_blocks
   rds_vpc_id                  = var.rds_vpc_id
   rds_deletion_protection     = var.rds_deletion_protection
+
+  # KMS-Connector Configuration
+  kms_connector_enable_txsender_key = true
 
   # Tagging
   common_tags = merge(var.additional_tags, {

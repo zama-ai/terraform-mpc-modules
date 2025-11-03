@@ -132,6 +132,11 @@ module "mpc_party" {
   rds_storage_encrypted           = true
   rds_manage_master_user_password = true
 
+  # KMS-Connector Configuration
+  kms_connector_enable_txsender_key = true
+  kms_connector_txsender_key_usage  = "SIGN_VERIFY"
+  kms_connector_txsender_key_spec   = "ECC_SECP256K1"
+
   # RDS Network Configuration
   rds_allowed_cidr_blocks = ["10.0.0.0/16"]
 
@@ -307,6 +312,7 @@ The module can optionally create:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_eks_managed_node_group"></a> [eks\_managed\_node\_group](#module\_eks\_managed\_node\_group) | terraform-aws-modules/eks/aws//modules/eks-managed-node-group | 21.0.6 |
+| <a name="module_iam_assumable_role_kms_connector"></a> [iam\_assumable\_role\_kms\_connector](#module\_iam\_assumable\_role\_kms\_connector) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_iam_assumable_role_mpc_party"></a> [iam\_assumable\_role\_mpc\_party](#module\_iam\_assumable\_role\_mpc\_party) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_rds_instance"></a> [rds\_instance](#module\_rds\_instance) | terraform-aws-modules/rds/aws | ~> 6.10 |
 | <a name="module_rds_security_group"></a> [rds\_security\_group](#module\_rds\_security\_group) | terraform-aws-modules/security-group/aws | ~> 5.3.0 |
@@ -316,8 +322,10 @@ The module can optionally create:
 | Name | Type |
 |------|------|
 | [aws_iam_policy.mpc_aws](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_kms_alias.mpc_connector_tx_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
+| [aws_kms_external_key.mpc_connector_tx_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_external_key) | resource |
 | [aws_kms_key.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_kms_key.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_s3_bucket.vault_private_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
@@ -334,6 +342,7 @@ The module can optionally create:
 | [kubernetes_daemon_set_v1.aws_nitro_enclaves_device_plugin](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/daemon_set_v1) | resource |
 | [kubernetes_namespace.mpc_party_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
 | [kubernetes_service.externalname](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
+| [kubernetes_service_account.mpc_kms_connector_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
 | [kubernetes_service_account.mpc_party_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
 | [null_resource.validate_auto_resolved_node_sg](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [random_id.mpc_party_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
@@ -365,6 +374,9 @@ The module can optionally create:
 | <a name="input_kms_backup_external_role_arn"></a> [kms\_backup\_external\_role\_arn](#input\_kms\_backup\_external\_role\_arn) | ARN of the backup vault for the KMS key | `string` | `null` | no |
 | <a name="input_kms_backup_vault_customer_master_key_spec"></a> [kms\_backup\_vault\_customer\_master\_key\_spec](#input\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"ASYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_backup_vault_key_usage"></a> [kms\_backup\_vault\_key\_usage](#input\_kms\_backup\_vault\_key\_usage) | Key usage for the backup vault | `string` | `"ENCRYPT_DECRYPT"` | no |
+| <a name="input_kms_connector_enable_txsender_key"></a> [kms\_connector\_enable\_txsender\_key](#input\_kms\_connector\_enable\_txsender\_key) | Whether to enable the KMS key for the kms-connector txsender | `bool` | `false` | no |
+| <a name="input_kms_connector_txsender_key_spec"></a> [kms\_connector\_txsender\_key\_spec](#input\_kms\_connector\_txsender\_key\_spec) | Specification for the KMS-Connector txsender (e.g., ECC\_SECG\_P256K1 for Ethereum key signing) | `string` | `"ECC_SECG_P256K1"` | no |
+| <a name="input_kms_connector_txsender_key_usage"></a> [kms\_connector\_txsender\_key\_usage](#input\_kms\_connector\_txsender\_key\_usage) | Key usage for KMS-Connector txsender | `string` | `"SIGN_VERIFY"` | no |
 | <a name="input_kms_cross_account_kms_key_id"></a> [kms\_cross\_account\_kms\_key\_id](#input\_kms\_cross\_account\_kms\_key\_id) | KMS key ID of KMS key created in a different AWS account | `string` | `""` | no |
 | <a name="input_kms_customer_master_key_spec"></a> [kms\_customer\_master\_key\_spec](#input\_kms\_customer\_master\_key\_spec) | Specification for the KMS customer master key (e.g., SYMMETRIC\_DEFAULT, RSA\_2048) | `string` | `"SYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_deletion_window_in_days"></a> [kms\_deletion\_window\_in\_days](#input\_kms\_deletion\_window\_in\_days) | Deletion window in days for KMS key | `number` | `30` | no |
@@ -445,6 +457,7 @@ The module can optionally create:
 | <a name="output_irsa_summary"></a> [irsa\_summary](#output\_irsa\_summary) | Summary of the IRSA role for MPC party |
 | <a name="output_k8s_configmap_summary"></a> [k8s\_configmap\_summary](#output\_k8s\_configmap\_summary) | Summary of the Kubernetes ConfigMap for MPC party |
 | <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
+| <a name="output_kms_connector_tx_sender"></a> [kms\_connector\_tx\_sender](#output\_kms\_connector\_tx\_sender) | KMS Connector Transaction Sender KMS Key |
 | <a name="output_nitro_enclaves_summary"></a> [nitro\_enclaves\_summary](#output\_nitro\_enclaves\_summary) | Summary of the Nitro Enclaves for MPC party |
 | <a name="output_node_group_tolerations"></a> [node\_group\_tolerations](#output\_node\_group\_tolerations) | Kubernetes tolerations derived from EKS node group taints |
 | <a name="output_nodegroup_auto_assign_security_group_summary"></a> [nodegroup\_auto\_assign\_security\_group\_summary](#output\_nodegroup\_auto\_assign\_security\_group\_summary) | Summary of the auto resolved security group |
