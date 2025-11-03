@@ -132,6 +132,11 @@ module "mpc_party" {
   rds_storage_encrypted           = true
   rds_manage_master_user_password = true
 
+  # KMS-Connector Configuration
+  kms_connector_enable_txsender_key = true
+  kms_connector_txsender_key_usage  = "SIGN_VERIFY"
+  kms_connector_txsender_key_spec   = "ECC_SECP256K1"
+
   # RDS Network Configuration
   rds_allowed_cidr_blocks = ["10.0.0.0/16"]
 
