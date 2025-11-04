@@ -48,7 +48,7 @@ No modules.
 | <a name="input_enable_region_validation"></a> [enable\_region\_validation](#input\_enable\_region\_validation) | Whether to enable region validation | `bool` | `true` | no |
 | <a name="input_kubernetes_nlb_extra_labels"></a> [kubernetes\_nlb\_extra\_labels](#input\_kubernetes\_nlb\_extra\_labels) | Extra labels to add to the Kubernetes NLB | `map(string)` | `{}` | no |
 | <a name="input_lb_additional_labels_selector"></a> [lb\_additional\_labels\_selector](#input\_lb\_additional\_labels\_selector) | Additional labels to add to the Kubernetes service load balancer | `map(string)` | `null` | no |
-| <a name="input_mainnet_supported_regions"></a> [mainnet\_supported\_regions](#input\_mainnet\_supported\_regions) | AWS regions supported by the VPC endpoint service for mainnet | `list(string)` | <pre>[<br/>  "eu-west-1"<br/>]</pre> | no |
+| <a name="input_mainnet_supported_regions"></a> [mainnet\_supported\_regions](#input\_mainnet\_supported\_regions) | AWS regions supported by the VPC endpoint service for mainnet | `list(string)` | <pre>[<br/>  "eu-central-1"<br/>]</pre> | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Kubernetes namespace where MPC services will be deployed | `string` | `"kms-decentralized"` | no |
 | <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
 | <a name="input_partner_name"></a> [partner\_name](#input\_partner\_name) | Partner name for the MPC service | `string` | n/a | yes |

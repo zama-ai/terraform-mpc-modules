@@ -18,7 +18,7 @@ variable "testnet_supported_regions" {
 variable "mainnet_supported_regions" {
   description = "AWS regions supported by the VPC endpoint service for mainnet"
   type        = list(string)
-  default     = ["eu-west-1"]
+  default     = ["eu-central-1"]
 }
 
 variable "enable_region_validation" {
