@@ -369,7 +369,6 @@ variable "kms_connector_enable_txsender_key" {
   default     = false
 }
 
-
 variable "kms_connector_txsender_key_usage" {
   type        = string
   description = "Key usage for KMS-Connector txsender"

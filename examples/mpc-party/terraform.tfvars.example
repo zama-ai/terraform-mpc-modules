@@ -1,13 +1,13 @@
 # Network Environment Configuration
-network_environment = "testnet" # or mainnet
+network_environment = "mainnet" # or testnet
 
 # AWS Configuration
-aws_region = "eu-west-1"
+aws_region = "eu-central-1"
 
 # MPC Party Configuration
 party_id    = 1
 party_name  = "mpc-party-2"
-environment = "dev"
+environment = "prod"
 
 # S3 Bucket Configuration
 bucket_prefix   = "zama-kms-decentralized-threshold-2"
@@ -42,7 +42,7 @@ rds_deletion_protection = false # Allow deletion of RDS instance
 
 # Node Group Configuration
 create_nodegroup                         = true
-nodegroup_instance_types                 = ["c7a.16xlarge"]
+nodegroup_instance_types                 = ["c7a.24xlarge"]
 nodegroup_min_size                       = 1
 nodegroup_max_size                       = 1
 nodegroup_desired_size                   = 1
@@ -62,5 +62,5 @@ nodegroup_enable_ssm_managed_instance   = true
 # Nitro Enclaves Configuration for MPC Party
 kms_enabled_nitro_enclaves   = true
 # This image attestation SHA must be updated for each KMS enclave release image.
-kms_image_attestation_sha   = "5292569b5945693afcde78e5a0045f4bf8c0a594d174baf1e6bccdf0e6338ebe46e89207054e0c48d0ec6deef80284ac"
+kms_image_attestation_sha   = "2e57f0e641efd3c0595f4ec03c77b2b4f96d16b420588122efd2067c1609ee77265bf4d46a06455398981363271d235d"
 kms_deletion_window_in_days = 7

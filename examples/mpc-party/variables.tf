@@ -239,7 +239,7 @@ variable "nodegroup_use_latest_ami_release_version" {
 variable "nodegroup_ami_id" {
   description = "AMI ID for the nodegroup"
   type        = string
-  default     = "ami-085d6a1add83c50f3"
+  default     = "ami-0efe6ddc452e87d71"
 }
 
 variable "nodegroup_ami_release_version" {
