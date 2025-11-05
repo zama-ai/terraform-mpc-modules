@@ -86,10 +86,8 @@ module "mpc_party" {
   cluster_name              = "production-eks-cluster"
 
   # Network Environment & Region Validation
-  network_environment        = "mainnet"  # or "testnet"
-  enable_region_validation   = true
-  mainnet_supported_regions  = ["eu-west-1", "us-east-1"]
-  testnet_supported_regions  = ["eu-west-1"]
+  network_environment      = "mainnet"  # or "testnet"
+  enable_region_validation = true
 
   # Kubernetes Configuration
   k8s_namespace            = "mpc-production"
