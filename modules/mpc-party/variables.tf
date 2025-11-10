@@ -33,7 +33,7 @@ variable "party_name" {
 variable "mpc_party_role_name" {
   type        = string
   description = "The name of the MPC party role"
-  default     = null
+  default     = ""
   nullable    = true
   validation {
     condition     = length(var.mpc_party_role_name) <= 64
@@ -44,7 +44,7 @@ variable "mpc_party_role_name" {
 variable "connector_role_name" {
   type        = string
   description = "The name of the connector role"
-  default     = null
+  default     = ""
   nullable    = true
   validation {
     condition     = length(var.connector_role_name) <= 64
