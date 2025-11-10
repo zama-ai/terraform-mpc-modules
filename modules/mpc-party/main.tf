@@ -217,7 +217,7 @@ module "iam_assumable_role_mpc_party" {
   version                       = "5.48.0"
   provider_url                  = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
   create_role                   = true
-  role_name                     = "${var.mpc_party_role_name} ? var.mpc_party_role_name : mpc-${var.cluster_name}-${var.party_name}"
+  role_name                     = "${var.mpc_party_role_name} != '' ? var.mpc_party_role_name : mpc-${var.cluster_name}-${var.party_name}"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
   role_policy_arns              = [aws_iam_policy.mpc_aws.arn]
   depends_on                    = [aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket, kubernetes_namespace.mpc_party_namespace]
@@ -252,7 +252,7 @@ module "iam_assumable_role_kms_connector" {
   version                       = "5.48.0"
   provider_url                  = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
   create_role                   = true
-  role_name                     = "${var.connector_role_name} ? var.connector_role_name : mpc-${var.cluster_name}-${var.party_name}-connector"
+  role_name                     = "${var.connector_role_name} != '' ? var.connector_role_name : mpc-${var.cluster_name}-${var.party_name}-connector"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}-connector"]
   role_policy_arns              = []
   depends_on                    = [kubernetes_namespace.mpc_party_namespace]
