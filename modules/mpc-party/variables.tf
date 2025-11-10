@@ -34,6 +34,7 @@ variable "mpc_party_role_name" {
   type        = string
   description = "The name of the MPC party role"
   default     = null
+  nullable    = true
   validation {
     condition     = length(var.mpc_party_role_name) <= 64
     error_message = "MPC party role name must be 64 characters or less."
@@ -44,6 +45,7 @@ variable "connector_role_name" {
   type        = string
   description = "The name of the connector role"
   default     = null
+  nullable    = true
   validation {
     condition     = length(var.connector_role_name) <= 64
     error_message = "Connector role name must be 64 characters or less."
