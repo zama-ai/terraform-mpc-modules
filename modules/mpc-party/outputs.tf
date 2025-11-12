@@ -93,7 +93,7 @@ output "rds_summary" {
 output "kms_connector_tx_sender" {
   description = "KMS Connector Transaction Sender KMS Key"
   value = var.kms_connector_enable_txsender_key ? {
-    key_id    = local.connector_key_id
+    key_id = local.connector_key_id
   } : null
 }
 
