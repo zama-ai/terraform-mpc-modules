@@ -215,7 +215,7 @@ resource "aws_iam_policy" "mpc_aws" {
 resource "aws_iam_policy" "mpc_core_kms_policy" {
   count = var.kms_use_cross_account_kms_key ? 1 : 0
 
-  name = "mpc-${var.cluster_name}-${var.party_name}"
+  name = "mpc-core-${var.cluster_name}-${var.party_name}"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -237,7 +237,7 @@ module "iam_assumable_role_mpc_party" {
   version                       = "5.48.0"
   provider_url                  = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
   create_role                   = true
-  role_name                     = var.mpc_party_role_name != "" ? var.mpc_party_role_name : "mpc-${var.cluster_name}-${var.party_name}"
+  role_name                     = var.mpc_party_role_name != "" ? var.mpc_party_role_name : aws_iam_policy.mpc_aws.name
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
   role_policy_arns              = var.kms_use_cross_account_kms_key ? [aws_iam_policy.mpc_aws.arn, aws_iam_policy.mpc_core_kms_policy[0].arn]: [aws_iam_policy.mpc_aws.arn]
   depends_on                    = [aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket, kubernetes_namespace.mpc_party_namespace]
@@ -270,7 +270,7 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
 resource "aws_iam_policy" "connector_kms_policy" {
   count = var.kms_use_cross_account_kms_key ? 1 : 0
 
-  name = "mpc-${var.cluster_name}-${var.party_name}"
+  name = "mpc-connector-${var.cluster_name}-${var.party_name}"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
