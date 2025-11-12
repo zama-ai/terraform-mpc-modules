@@ -247,6 +247,28 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
   depends_on = [kubernetes_namespace.mpc_party_namespace, module.iam_assumable_role_mpc_party]
 }
 
+resource "aws_iam_policy" "connector_aws" {
+  count = var.kms_use_cross_account_kms_key ? 1 : 0
+
+  name = "mpc-${var.cluster_name}-${var.party_name}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowKMSConnectorToUseKeyForEthereumTxSender"
+        Effect = "Allow",
+        Action = [
+          "kms:DescribeKey",
+          "kms:GetPublicKey",
+          "kms:Sign",
+          "kms:Verify"
+        ],
+        Resource = "${var.kms_cross_account_connector_txsender_key_id}",
+      },
+    ]
+  })
+}
+
 module "iam_assumable_role_kms_connector" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "5.48.0"
@@ -254,7 +276,7 @@ module "iam_assumable_role_kms_connector" {
   create_role                   = true
   role_name                     = var.connector_role_name != "" ? var.connector_role_name : "mpc-${var.cluster_name}-${var.party_name}-connector"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}-connector"]
-  role_policy_arns              = []
+  role_policy_arns              = var.kms_use_cross_account_kms_key ? [aws_iam_policy.connector_aws[0].arn] : []
   depends_on                    = [kubernetes_namespace.mpc_party_namespace]
 }
 
@@ -290,6 +312,11 @@ locals {
   create_mpc_party_key              = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
   create_mpc_party_key_backup       = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
   create_mpc_connector_txsender_key = var.kms_connector_enable_txsender_key && !var.kms_use_cross_account_kms_key
+
+  kms_key_id = var.kms_enabled_nitro_enclaves ? (
+    var.kms_use_cross_account_kms_key ? var.kms_cross_account_kms_key_id : aws_kms_key.mpc_party[0].key_id
+  ) : null
+  connector_key_id = var.kms_use_cross_account_kms_key ? var.kms_cross_account_connector_txsender_key_id : aws_kms_external_key.mpc_connector_tx_sender[0].id
 }
 
 resource "aws_kms_key" "mpc_party" {
@@ -508,17 +535,12 @@ resource "aws_kms_alias" "mpc_connector_tx_sender" {
   count = local.create_mpc_connector_txsender_key ? 1 : 0
 
   name          = "alias/mpc-${var.party_name}-connector-txsender"
-  target_key_id = aws_kms_external_key.mpc_connector_tx_sender[0].id
+  target_key_id = local.connector_key_id
 }
 
 # ***************************************
 #  ConfigMap for MPC Party
 # ***************************************
-locals {
-  kms_key_id = var.kms_enabled_nitro_enclaves ? (
-    var.kms_use_cross_account_kms_key ? var.kms_cross_account_kms_key_id : aws_kms_key.mpc_party[0].key_id
-  ) : null
-}
 
 resource "kubernetes_config_map" "mpc_party_config" {
   count = var.create_config_map ? 1 : 0
@@ -550,7 +572,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
     "KMS_CORE__PUBLIC_VAULT__STORAGE__S3__PREFIX"               = ""
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"   = local.kms_key_id
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC" = var.kms_enabled_nitro_enclaves ? "symm" : null
-    "KMS_CONNECTOR__TX_SENDER_AWS_KMS_KEY_ID"                   = var.kms_connector_enable_txsender_key ? aws_kms_external_key.mpc_connector_tx_sender[0].id : null
+    "KMS_CONNECTOR__TX_SENDER_AWS_KMS_KEY_ID"                   = var.kms_connector_enable_txsender_key ? local.connector_key_id : null
   }
 
   depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]
