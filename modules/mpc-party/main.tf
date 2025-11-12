@@ -212,6 +212,26 @@ resource "aws_iam_policy" "mpc_aws" {
   })
 }
 
+resource "aws_iam_policy" "mpc_core_kms_policy" {
+  count = var.kms_use_cross_account_kms_key ? 1 : 0
+
+  name = "mpc-${var.cluster_name}-${var.party_name}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowKMSCoreCrossAccountKeyAccess"
+        Effect = "Allow",
+        Action = [
+          "kms:GenerateDataKey",
+          "kms:Decrypt"
+        ],
+        Resource = "${var.kms_cross_account_kms_key_id}",
+      },
+    ]
+  })
+}
+
 module "iam_assumable_role_mpc_party" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   version                       = "5.48.0"
@@ -219,7 +239,7 @@ module "iam_assumable_role_mpc_party" {
   create_role                   = true
   role_name                     = var.mpc_party_role_name != "" ? var.mpc_party_role_name : "mpc-${var.cluster_name}-${var.party_name}"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}"]
-  role_policy_arns              = [aws_iam_policy.mpc_aws.arn]
+  role_policy_arns              = var.kms_use_cross_account_kms_key ? [aws_iam_policy.mpc_aws.arn, aws_iam_policy.mpc_core_kms_policy[0].arn]: [aws_iam_policy.mpc_aws.arn]
   depends_on                    = [aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket, kubernetes_namespace.mpc_party_namespace]
 }
 
@@ -247,7 +267,7 @@ resource "kubernetes_service_account" "mpc_party_service_account" {
   depends_on = [kubernetes_namespace.mpc_party_namespace, module.iam_assumable_role_mpc_party]
 }
 
-resource "aws_iam_policy" "connector_aws" {
+resource "aws_iam_policy" "connector_kms_policy" {
   count = var.kms_use_cross_account_kms_key ? 1 : 0
 
   name = "mpc-${var.cluster_name}-${var.party_name}"
@@ -276,7 +296,7 @@ module "iam_assumable_role_kms_connector" {
   create_role                   = true
   role_name                     = var.connector_role_name != "" ? var.connector_role_name : "mpc-${var.cluster_name}-${var.party_name}-connector"
   oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${var.k8s_service_account_name}-connector"]
-  role_policy_arns              = var.kms_use_cross_account_kms_key ? [aws_iam_policy.connector_aws[0].arn] : []
+  role_policy_arns              = var.kms_use_cross_account_kms_key ? [aws_iam_policy.connector_kms_policy[0].arn] : []
   depends_on                    = [kubernetes_namespace.mpc_party_namespace]
 }
 
