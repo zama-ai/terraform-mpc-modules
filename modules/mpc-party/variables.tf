@@ -360,6 +360,17 @@ variable "kms_cross_account_kms_key_id" {
   }
 }
 
+variable "kms_cross_account_connector_txsender_key_id" {
+  type        = string
+  description = "KMS key ID of Connector TxSender KMS key created in a different AWS account"
+  default     = ""
+
+  validation {
+    condition     = !var.kms_use_cross_account_kms_key || (var.kms_use_cross_account_kms_key && var.kms_cross_account_connector_txsender_key_id != "")
+    error_message = "kms_cross_account_connector_txsender_key_id must be provided when kms_use_cross_account_kms_key is true."
+  }
+}
+
 variable "kms_key_usage" {
   type        = string
   description = "Key usage for KMS"

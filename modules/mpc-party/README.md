@@ -319,7 +319,9 @@ The module can optionally create:
 
 | Name | Type |
 |------|------|
+| [aws_iam_policy.connector_kms_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.mpc_aws](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.mpc_core_kms_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_kms_alias.mpc_connector_tx_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
@@ -376,6 +378,7 @@ The module can optionally create:
 | <a name="input_kms_connector_enable_txsender_key"></a> [kms\_connector\_enable\_txsender\_key](#input\_kms\_connector\_enable\_txsender\_key) | Whether to enable the KMS key for the kms-connector txsender | `bool` | `false` | no |
 | <a name="input_kms_connector_txsender_key_spec"></a> [kms\_connector\_txsender\_key\_spec](#input\_kms\_connector\_txsender\_key\_spec) | Specification for the KMS-Connector txsender (e.g., ECC\_SECG\_P256K1 for Ethereum key signing) | `string` | `"ECC_SECG_P256K1"` | no |
 | <a name="input_kms_connector_txsender_key_usage"></a> [kms\_connector\_txsender\_key\_usage](#input\_kms\_connector\_txsender\_key\_usage) | Key usage for KMS-Connector txsender | `string` | `"SIGN_VERIFY"` | no |
+| <a name="input_kms_cross_account_connector_txsender_key_id"></a> [kms\_cross\_account\_connector\_txsender\_key\_id](#input\_kms\_cross\_account\_connector\_txsender\_key\_id) | KMS key ID of Connector TxSender KMS key created in a different AWS account | `string` | `""` | no |
 | <a name="input_kms_cross_account_kms_key_id"></a> [kms\_cross\_account\_kms\_key\_id](#input\_kms\_cross\_account\_kms\_key\_id) | KMS key ID of KMS key created in a different AWS account | `string` | `""` | no |
 | <a name="input_kms_customer_master_key_spec"></a> [kms\_customer\_master\_key\_spec](#input\_kms\_customer\_master\_key\_spec) | Specification for the KMS customer master key (e.g., SYMMETRIC\_DEFAULT, RSA\_2048) | `string` | `"SYMMETRIC_DEFAULT"` | no |
 | <a name="input_kms_deletion_window_in_days"></a> [kms\_deletion\_window\_in\_days](#input\_kms\_deletion\_window\_in\_days) | Deletion window in days for KMS key | `number` | `30` | no |
