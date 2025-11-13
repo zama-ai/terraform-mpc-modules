@@ -151,5 +151,5 @@ variable "kubernetes_nlb_extra_labels" {
 variable "enable_grpc_port" {
   description = "Whether to enable and expose the gRPC port in the load balancer service"
   type        = bool
-  default     = true
+  default     = false
 }

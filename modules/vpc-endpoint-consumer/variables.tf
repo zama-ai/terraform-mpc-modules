@@ -146,7 +146,7 @@ variable "create_namespace" {
 variable "enable_grpc_port" {
   description = "Whether to enable and expose the gRPC port in the load balancer service"
   type        = bool
-  default     = true
+  default     = false
 }
 
 # Default MPC Port Configurations
