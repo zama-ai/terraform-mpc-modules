@@ -142,6 +142,10 @@ module "mpc_party" {
   rds_parameter_group_family = "postgres17"
   rds_parameters = [
     {
+      name  = "rds.force_ssl"
+      value = "0"
+    },
+    {
       name  = "log_statement"
       value = "all"
     },
