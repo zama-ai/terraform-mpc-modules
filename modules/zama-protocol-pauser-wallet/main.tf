@@ -62,7 +62,7 @@ data "aws_iam_policy_document" "tx_sender_policy" {
 # ************
 
 resource "aws_kms_external_key" "tx_sender" {
-  count = var.kms_use_cross_account_kms_key ? 0 : 1
+  count                   = var.kms_use_cross_account_kms_key ? 0 : 1
   description             = "Application ${var.app_name} tx sender key for ${var.cluster_name}"
   key_usage               = var.kms_key_usage
   key_spec                = var.kms_key_spec
@@ -148,7 +148,7 @@ resource "kubernetes_config_map" "mpc_party_config" {
   }
 
   data = {
-    "AWS_KMS_KEY_ID"   = local.kms_key_id
+    "AWS_KMS_KEY_ID" = local.kms_key_id
   }
 
   depends_on = [kubernetes_namespace.zama_protocol_namespace]
