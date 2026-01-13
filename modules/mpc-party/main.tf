@@ -803,6 +803,8 @@ module "eks_managed_node_group" {
   } : {}
 
   # Tags
+  tag_specifications = ["instance", "volume", "network-interface"]
+
   tags = var.tags
 }
 
