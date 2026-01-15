@@ -44,6 +44,27 @@ resource "aws_s3_bucket_public_access_block" "backup_bucket" {
   restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "backup_bucket" {
+  bucket = aws_s3_bucket.backup_bucket.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowCrossAccountBackup"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${var.bucket_cross_account_id}:root"
+        }
+        Action = "s3:*"
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}",
+          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # ***************************************
 #  IAM Role & Policy for MPC Backup Vault
 # ***************************************

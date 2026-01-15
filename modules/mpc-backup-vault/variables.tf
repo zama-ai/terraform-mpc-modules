@@ -30,3 +30,8 @@ variable "trusted_principal_arns" {
   description = "List of ARNs (users, roles, or root accounts) that can assume the backup role."
   default     = []
 }
+
+variable "bucket_cross_account_id" {
+  type        = string
+  description = "ID of the AWS account that can access the backup bucket."
+}
