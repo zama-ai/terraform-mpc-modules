@@ -402,18 +402,35 @@ variable "kms_connector_txsender_key_spec" {
   default     = "ECC_SECG_P256K1"
 }
 
+#******************************************************
+# Backup Vault Configuration
+#******************************************************
 variable "kms_enable_backup_vault" {
   type        = bool
   description = "Whether to enable the backup vault for the KMS key"
   default     = false
 }
 
+variable "kms_backup_vault_bucket_name" {
+  type        = string
+  description = "Backup vault S3 bucket name"
+  default     = null
+}
+
+variable "kms_backup_vault_kms_key_arn" {
+  type        = string
+  description = "KMS key ARN for the backup vault"
+  default     = null
+}
+
+#******************************************************
+# We use backup terraform module from kms-stack to create the backup vault
+#******************************************************
 variable "kms_backup_external_role_arn" {
   type        = string
   description = "ARN of the backup vault for the KMS key"
   default     = null
 }
-
 variable "kms_backup_vault_key_usage" {
   type        = string
   description = "Key usage for the backup vault"
@@ -425,6 +442,7 @@ variable "kms_backup_vault_customer_master_key_spec" {
   description = "Key spec for the backup vault"
   default     = "ASYMMETRIC_DEFAULT"
 }
+#******************************************************
 
 variable "nodegroup_enable_ssm_managed_instance" {
   type        = bool

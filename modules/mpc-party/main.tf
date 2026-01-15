@@ -189,26 +189,46 @@ resource "aws_iam_policy" "mpc_aws" {
   name = "mpc-${var.cluster_name}-${var.party_name}"
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowObjectActions"
-        Effect = "Allow"
-        Action = "s3:*Object"
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}/*",
-          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*",
-        ]
-      },
-      {
-        Sid    = "AllowListBucket"
-        Effect = "Allow"
-        Action = "s3:ListBucket"
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
-        ]
-      }
-    ]
+    Statement = concat(
+      [
+        {
+          Sid    = "AllowObjectActions"
+          Effect = "Allow"
+          Action = "s3:*Object"
+          Resource = concat(
+            [
+              "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}/*",
+              "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}/*",
+            ],
+            var.kms_enable_backup_vault && var.kms_backup_vault_bucket_name != null ? [
+              "arn:aws:s3:::${var.kms_backup_vault_bucket_name}/*"
+            ] : []
+          )
+        },
+        {
+          Sid    = "AllowListBucket"
+          Effect = "Allow"
+          Action = "s3:ListBucket"
+          Resource = concat(
+            [
+              "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
+              "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
+            ],
+            var.kms_enable_backup_vault && var.kms_backup_vault_bucket_name != null ? [
+              "arn:aws:s3:::${var.kms_backup_vault_bucket_name}"
+            ] : []
+          )
+        }
+      ],
+      var.kms_enable_backup_vault && var.kms_backup_vault_kms_key_arn != null ? [
+        {
+          Sid      = "AllowCrossAccountKeyBackup"
+          Effect   = "Allow"
+          Action   = "kms:GetPublicKey"
+          Resource = var.kms_backup_vault_kms_key_arn
+        }
+      ] : []
+    )
   })
 }
 
