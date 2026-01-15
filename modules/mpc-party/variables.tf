@@ -424,7 +424,9 @@ variable "kms_backup_vault_kms_key_arn" {
 }
 
 #******************************************************
-# We use backup terraform module from kms-stack to create the backup vault
+# We use :
+# - kms-stack terraform module to create the kms backup key
+# - mpc-backup-vault terraform module to create the kms backup bucket
 #******************************************************
 variable "kms_backup_external_role_arn" {
   type        = string
