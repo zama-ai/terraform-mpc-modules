@@ -404,6 +404,9 @@ variable "kms_connector_txsender_key_spec" {
 
 #******************************************************
 # Backup Vault Configuration
+# We use :
+# - mpc-backup-key terraform module to create the kms backup key
+# - mpc-backup-vault terraform module to create the kms backup bucket
 #******************************************************
 variable "kms_enable_backup_vault" {
   type        = bool
@@ -421,28 +424,6 @@ variable "kms_backup_vault_kms_key_arn" {
   type        = string
   description = "KMS key ARN for the backup vault"
   default     = null
-}
-
-#******************************************************
-# We use :
-# - mpc-backup-key terraform module to create the kms backup key
-# - mpc-backup-vault terraform module to create the kms backup bucket
-#******************************************************
-variable "kms_backup_external_role_arn" {
-  type        = string
-  description = "ARN of the backup vault for the KMS key"
-  default     = null
-}
-variable "kms_backup_vault_key_usage" {
-  type        = string
-  description = "Key usage for the backup vault"
-  default     = "ENCRYPT_DECRYPT"
-}
-
-variable "kms_backup_vault_customer_master_key_spec" {
-  type        = string
-  description = "Key spec for the backup vault"
-  default     = "ASYMMETRIC_DEFAULT"
 }
 #******************************************************
 
