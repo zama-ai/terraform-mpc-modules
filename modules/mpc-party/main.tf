@@ -378,6 +378,8 @@ resource "aws_kms_key" "mpc_party" {
         },
         Action = [
           "kms:GetPublicKey",
+          "kms:DescribeKey",
+          "kms:GetKeyPolicy",
         ],
         Resource = "*",
       },
