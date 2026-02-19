@@ -54,5 +54,5 @@ variable "mpc_party_kms_backup_vault_key_usage" {
 variable "mpc_party_kms_backup_vault_customer_master_key_spec" {
   type        = string
   description = "Key spec for the backup vault"
-  default     = "ASYMMETRIC_DEFAULT"
+  default     = "RSA_4096"
 }

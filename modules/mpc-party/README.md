@@ -328,10 +328,8 @@ The module can optionally create:
 | [aws_iam_policy.mpc_core_kms_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_kms_alias.mpc_connector_tx_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
-| [aws_kms_alias.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_external_key.mpc_connector_tx_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_external_key) | resource |
 | [aws_kms_key.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
-| [aws_kms_key.mpc_party_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_s3_bucket.vault_private_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.vault_public_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_cors_configuration.vault_public_bucket_cors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_cors_configuration) | resource |
@@ -376,10 +374,7 @@ The module can optionally create:
 | <a name="input_enable_rds"></a> [enable\_rds](#input\_enable\_rds) | Whether to create the RDS instance | `bool` | `true` | no |
 | <a name="input_k8s_namespace"></a> [k8s\_namespace](#input\_k8s\_namespace) | The Kubernetes namespace for MPC party resources | `string` | `"kms-decentralized"` | no |
 | <a name="input_k8s_service_account_name"></a> [k8s\_service\_account\_name](#input\_k8s\_service\_account\_name) | The name of the Kubernetes service account for MPC party | `string` | n/a | yes |
-| <a name="input_kms_backup_external_role_arn"></a> [kms\_backup\_external\_role\_arn](#input\_kms\_backup\_external\_role\_arn) | ARN of the backup vault for the KMS key | `string` | `null` | no |
 | <a name="input_kms_backup_vault_bucket_name"></a> [kms\_backup\_vault\_bucket\_name](#input\_kms\_backup\_vault\_bucket\_name) | Backup vault S3 bucket name | `string` | `null` | no |
-| <a name="input_kms_backup_vault_customer_master_key_spec"></a> [kms\_backup\_vault\_customer\_master\_key\_spec](#input\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"ASYMMETRIC_DEFAULT"` | no |
-| <a name="input_kms_backup_vault_key_usage"></a> [kms\_backup\_vault\_key\_usage](#input\_kms\_backup\_vault\_key\_usage) | Key usage for the backup vault | `string` | `"ENCRYPT_DECRYPT"` | no |
 | <a name="input_kms_backup_vault_kms_key_arn"></a> [kms\_backup\_vault\_kms\_key\_arn](#input\_kms\_backup\_vault\_kms\_key\_arn) | KMS key ARN for the backup vault | `string` | `null` | no |
 | <a name="input_kms_connector_enable_txsender_key"></a> [kms\_connector\_enable\_txsender\_key](#input\_kms\_connector\_enable\_txsender\_key) | Whether to enable the KMS key for the kms-connector txsender | `bool` | `false` | no |
 | <a name="input_kms_connector_txsender_key_spec"></a> [kms\_connector\_txsender\_key\_spec](#input\_kms\_connector\_txsender\_key\_spec) | Specification for the KMS-Connector txsender (e.g., ECC\_SECG\_P256K1 for Ethereum key signing) | `string` | `"ECC_SECG_P256K1"` | no |

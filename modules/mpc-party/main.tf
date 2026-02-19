@@ -350,7 +350,6 @@ resource "kubernetes_service_account" "mpc_kms_connector_service_account" {
 # ***************************************
 locals {
   create_mpc_party_key              = var.kms_enabled_nitro_enclaves && !var.kms_use_cross_account_kms_key
-  create_mpc_party_key_backup       = var.kms_enabled_nitro_enclaves && var.kms_enable_backup_vault && !var.kms_use_cross_account_kms_key
   create_mpc_connector_txsender_key = var.kms_connector_enable_txsender_key && !var.kms_use_cross_account_kms_key
 
   kms_key_id = var.kms_enabled_nitro_enclaves ? (
@@ -430,85 +429,6 @@ resource "aws_kms_alias" "mpc_party" {
 
   name          = "alias/mpc-${var.party_name}"
   target_key_id = aws_kms_key.mpc_party[0].key_id
-}
-
-# ***************************************
-#  ASYMMETRIC KMS Key Backup for MPC Party
-# ***************************************
-resource "aws_kms_key" "mpc_party_backup" {
-  count = local.create_mpc_party_key_backup ? 1 : 0
-
-  description              = "Asymmetric KMS key backup for MPC Party"
-  key_usage                = var.kms_backup_vault_key_usage
-  customer_master_key_spec = var.kms_backup_vault_customer_master_key_spec
-  enable_key_rotation      = false
-  deletion_window_in_days  = var.kms_deletion_window_in_days
-  tags                     = var.tags
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          AWS = var.kms_backup_external_role_arn
-        },
-        Action = [
-          "kms:GetPublicKey",
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.iam_assumable_role_mpc_party.iam_role_name}"
-        },
-        Action = [
-          "kms:Decrypt",
-          "kms:GenerateDataKey",
-        ],
-        Resource = "*",
-        Condition = {
-          StringEqualsIgnoreCase = {
-            "kms:RecipientAttestation:ImageSha384" : var.kms_image_attestation_sha
-          }
-        }
-      },
-      {
-        Effect = "Allow",
-        Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
-        },
-        Action = [
-          "kms:Create*",
-          "kms:Describe*",
-          "kms:Enable*",
-          "kms:List*",
-          "kms:Put*",
-          "kms:Update*",
-          "kms:Revoke*",
-          "kms:Disable*",
-          "kms:Get*",
-          "kms:Delete*",
-          "kms:TagResource",
-          "kms:UntagResource",
-          "kms:ScheduleKeyDeletion",
-          "kms:CancelKeyDeletion"
-        ],
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-# ***************************************
-#  KMS Key Alias for MPC Party Backup
-# ***************************************
-resource "aws_kms_alias" "mpc_party_backup" {
-  count = local.create_mpc_party_key_backup ? 1 : 0
-
-  name          = "alias/mpc-${var.party_name}-backup"
-  target_key_id = aws_kms_key.mpc_party_backup[0].key_id
 }
 
 # ***************************************
