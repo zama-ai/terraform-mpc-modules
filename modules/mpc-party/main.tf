@@ -379,6 +379,8 @@ resource "aws_kms_key" "mpc_party" {
         },
         Action = [
           "kms:GetPublicKey",
+          "kms:DescribeKey",
+          "kms:GetKeyPolicy",
         ],
         Resource = "*",
       },
@@ -455,6 +457,8 @@ resource "aws_kms_key" "mpc_party_backup" {
         },
         Action = [
           "kms:GetPublicKey",
+          "kms:DescribeKey",
+          "kms:GetKeyPolicy",
         ],
         Resource = "*"
       },
