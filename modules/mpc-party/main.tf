@@ -224,7 +224,7 @@ resource "aws_iam_policy" "mpc_aws" {
         {
           Sid      = "AllowCrossAccountKeyBackup"
           Effect   = "Allow"
-          Action   = "kms:GetPublicKey"
+          Action   = ["kms:GetPublicKey", "kms:DescribeKey", "kms:GenerateDataKey", "kms:Decrypt"]
           Resource = var.kms_backup_vault_kms_key_arn
         }
       ] : []
@@ -535,6 +535,10 @@ resource "kubernetes_config_map" "mpc_party_config" {
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"   = local.kms_key_id
     "KMS_CORE__PRIVATE_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC" = var.kms_enabled_nitro_enclaves ? "symm" : null
     "KMS_CONNECTOR__TX_SENDER_AWS_KMS_KEY_ID"                   = var.kms_connector_enable_txsender_key ? local.connector_key_id : null
+    "KMS_CORE__BACKUP_VAULT__STORAGE__S3__BUCKET"               = var.kms_enable_backup_vault && var.kms_backup_vault_bucket_name != null ? var.kms_backup_vault_bucket_name : null
+    "KMS_CORE__BACKUP_VAULT__STORAGE__S3__PREFIX"               = "backup"
+    "KMS_CORE__BACKUP_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_ID"    = var.kms_enable_backup_vault && var.kms_backup_vault_kms_key_arn != null ? var.kms_backup_vault_kms_key_arn : null
+    "KMS_CORE__BACKUP_VAULT__KEYCHAIN__AWS_KMS__ROOT_KEY_SPEC"  = var.kms_enable_backup_vault && var.kms_backup_vault_kms_key_arn != null ? "asymm" : null
   }
 
   depends_on = [kubernetes_namespace.mpc_party_namespace, aws_s3_bucket.vault_private_bucket, aws_s3_bucket.vault_public_bucket]

@@ -48,6 +48,7 @@ resource "aws_kms_key" "this_backup" {
         },
         Action = [
           "kms:GetPublicKey",
+          "kms:DescribeKey",
         ],
         Resource = "*"
       },
