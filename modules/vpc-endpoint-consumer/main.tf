@@ -260,7 +260,7 @@ resource "null_resource" "sync_s3_bucket" {
     interpreter = ["bash", "-c"]
     command     = <<-EOT
     set -e
-    aws s3 sync --region ${data.aws_region.current.region} ${each.value.public_bucket_url}/PUB-p${each.value.party_id}/CACert ${local.public_vault_s3_bucket_name}/PUB-p${each.value.party_id}/CACert
+    aws s3 cp --recursive --region ${data.aws_region.current.region} ${each.value.public_bucket_url}/PUB-p${each.value.party_id}/CACert/ ${local.public_vault_s3_bucket_name}/PUB-p${each.value.party_id}/CACert/
     EOT
     when        = create
     quiet       = true
