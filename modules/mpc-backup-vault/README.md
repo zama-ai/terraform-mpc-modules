@@ -44,6 +44,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region where module resources are deployed. If null, the default provider region is used.<br/><br/>Preferred regions by operator:<br/>- eu-central-1: LayerZero<br/>- eu-west-1: Zama 1<br/>- ca-central-1: OpenZeppelin<br/>- us-west-2: StakeCapital<br/>- us-east-1: Omakase<br/>- eu-west-2: Figment<br/>- eu-north-1: Fireblocks<br/>- eu-west-3: Unit410 (Zama for the moment)<br/>- eu-south-1: Infstones<br/>- ap-southeast-2: Dfns<br/>- ap-northeast-1: Luganodes<br/>- ap-southeast-1: Etherscan - p2p<br/>- ap-northeast-3: Conduit | `string` | `null` | no |
 | <a name="input_bucket_cross_account_id"></a> [bucket\_cross\_account\_id](#input\_bucket\_cross\_account\_id) | ID of the AWS account that can access the backup bucket. | `string` | n/a | yes |
 | <a name="input_bucket_prefix"></a> [bucket\_prefix](#input\_bucket\_prefix) | The prefix for the S3 bucket names | `string` | `"mpc-backup-vault"` | no |
 | <a name="input_party_name"></a> [party\_name](#input\_party\_name) | The name of the MPC party (used for resource naming and tagging) | `string` | n/a | yes |
