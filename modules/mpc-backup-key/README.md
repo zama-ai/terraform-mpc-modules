@@ -29,6 +29,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region where module resources are deployed. If null, the default provider region is used.<br/><br/>Preferred regions by operator:<br/>- eu-central-1: LayerZero<br/>- eu-west-1: Zama 1<br/>- ca-central-1: OpenZeppelin<br/>- us-west-2: StakeCapital<br/>- us-east-1: Omakase<br/>- eu-west-2: Figment<br/>- eu-north-1: Fireblocks<br/>- eu-west-3: Unit410 (Zama for the moment)<br/>- eu-south-1: Infstones<br/>- ap-southeast-2: Dfns<br/>- ap-northeast-1: Luganodes<br/>- ap-southeast-1: Etherscan - p2p<br/>- ap-northeast-3: Conduit | `string` | `null` | no |
 | <a name="input_mpc_party_cross_account_iam_role_arn"></a> [mpc\_party\_cross\_account\_iam\_role\_arn](#input\_mpc\_party\_cross\_account\_iam\_role\_arn) | ARN of cross-account IAM role allowed for usage of KMS key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_alias"></a> [mpc\_party\_kms\_alias](#input\_mpc\_party\_kms\_alias) | Alias for the KMS key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_backup_description"></a> [mpc\_party\_kms\_backup\_description](#input\_mpc\_party\_kms\_backup\_description) | Description of KMS Key | `string` | `"Asymmetric KMS key backup for MPC Party"` | no |
