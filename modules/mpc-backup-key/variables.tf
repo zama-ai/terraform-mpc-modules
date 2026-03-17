@@ -56,3 +56,9 @@ variable "mpc_party_kms_backup_vault_customer_master_key_spec" {
   description = "Key spec for the backup vault"
   default     = "RSA_4096"
 }
+
+variable "mpc_party_kms_backup_replica_region" {
+  type        = string
+  description = "AWS region for the optional multi-Region KMS replica key"
+  default     = null
+}

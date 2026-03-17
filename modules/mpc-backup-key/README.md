@@ -12,6 +12,7 @@
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
+| <a name="provider_aws.replica"></a> [aws.replica](#provider\_aws.replica) | >= 6.0 |
 
 ## Modules
 
@@ -22,8 +23,11 @@ No modules.
 | Name | Type |
 |------|------|
 | [aws_kms_alias.this_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
+| [aws_kms_alias.this_backup_replica](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_key.this_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
+| [aws_kms_replica_key.this_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_replica_key) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ## Inputs
 
@@ -32,6 +36,7 @@ No modules.
 | <a name="input_mpc_party_cross_account_iam_role_arn"></a> [mpc\_party\_cross\_account\_iam\_role\_arn](#input\_mpc\_party\_cross\_account\_iam\_role\_arn) | ARN of cross-account IAM role allowed for usage of KMS key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_alias"></a> [mpc\_party\_kms\_alias](#input\_mpc\_party\_kms\_alias) | Alias for the KMS key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_backup_description"></a> [mpc\_party\_kms\_backup\_description](#input\_mpc\_party\_kms\_backup\_description) | Description of KMS Key | `string` | `"Asymmetric KMS key backup for MPC Party"` | no |
+| <a name="input_mpc_party_kms_backup_replica_region"></a> [mpc\_party\_kms\_backup\_replica\_region](#input\_mpc\_party\_kms\_backup\_replica\_region) | AWS region for the optional multi-Region KMS replica key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_backup_vault_customer_master_key_spec"></a> [mpc\_party\_kms\_backup\_vault\_customer\_master\_key\_spec](#input\_mpc\_party\_kms\_backup\_vault\_customer\_master\_key\_spec) | Key spec for the backup vault | `string` | `"RSA_4096"` | no |
 | <a name="input_mpc_party_kms_backup_vault_key_usage"></a> [mpc\_party\_kms\_backup\_vault\_key\_usage](#input\_mpc\_party\_kms\_backup\_vault\_key\_usage) | Key usage for the backup vault | `string` | `"ENCRYPT_DECRYPT"` | no |
 | <a name="input_mpc_party_kms_deletion_window_in_days"></a> [mpc\_party\_kms\_deletion\_window\_in\_days](#input\_mpc\_party\_kms\_deletion\_window\_in\_days) | Deletion window in days for KMS key | `number` | `30` | no |
@@ -43,4 +48,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_kms_key_arn"></a> [kms\_key\_arn](#output\_kms\_key\_arn) | The ARN of the KMS key |
+| <a name="output_kms_replica_key_arn"></a> [kms\_replica\_key\_arn](#output\_kms\_replica\_key\_arn) | The ARN of the replica KMS key, if configured |
 <!-- END_TF_DOCS -->
