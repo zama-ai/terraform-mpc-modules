@@ -244,7 +244,8 @@ resource "aws_iam_policy" "mpc_core_kms_policy" {
         Effect = "Allow",
         Action = [
           "kms:GenerateDataKey",
-          "kms:Decrypt"
+          "kms:Decrypt",
+          "kms:DescribeKey"
         ],
         Resource = var.kms_cross_account_kms_key_id
       },
@@ -355,7 +356,9 @@ locals {
   kms_key_id = var.kms_enabled_nitro_enclaves ? (
     var.kms_use_cross_account_kms_key ? var.kms_cross_account_kms_key_id : aws_kms_key.mpc_party[0].key_id
   ) : null
-  connector_key_id = var.kms_use_cross_account_kms_key ? var.kms_cross_account_connector_txsender_key_id : aws_kms_external_key.mpc_connector_tx_sender[0].id
+  connector_key_id = var.kms_connector_enable_txsender_key ? (
+    var.kms_use_cross_account_kms_key ? var.kms_cross_account_connector_txsender_key_id : aws_kms_external_key.mpc_connector_tx_sender[0].id
+  ) : null
 }
 
 resource "aws_kms_key" "mpc_party" {

@@ -10,6 +10,7 @@ resource "aws_kms_key" "this_backup" {
   description              = var.mpc_party_kms_backup_description
   key_usage                = var.mpc_party_kms_backup_vault_key_usage
   customer_master_key_spec = var.mpc_party_kms_backup_vault_customer_master_key_spec
+  multi_region             = true
   enable_key_rotation      = false
   deletion_window_in_days  = var.mpc_party_kms_deletion_window_in_days
   tags                     = var.tags
