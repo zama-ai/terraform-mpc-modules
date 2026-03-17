@@ -1,10 +1,6 @@
 # ***************************************
 #  Local variables
 # ***************************************
-provider "aws" {
-  region = var.aws_region
-}
-
 resource "random_id" "mpc_party_suffix" {
   byte_length = 4
 }
