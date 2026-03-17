@@ -35,26 +35,3 @@ variable "bucket_cross_account_id" {
   type        = string
   description = "ID of the AWS account that can access the backup bucket."
 }
-
-variable "aws_region" {
-  type        = string
-  description = <<-EOT
-  AWS region where module resources are deployed. If null, the default provider region is used.
-
-  Preferred regions by operator:
-  - eu-central-1: LayerZero
-  - eu-west-1: Zama 1
-  - ca-central-1: OpenZeppelin
-  - us-west-2: StakeCapital
-  - us-east-1: Omakase
-  - eu-west-2: Figment
-  - eu-north-1: Fireblocks
-  - eu-west-3: Unit410 (Zama for the moment)
-  - eu-south-1: Infstones
-  - ap-southeast-2: Dfns
-  - ap-northeast-1: Luganodes
-  - ap-southeast-1: Etherscan - p2p
-  - ap-northeast-3: Conduit
-  EOT
-  default     = null
-}
