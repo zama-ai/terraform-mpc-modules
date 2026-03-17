@@ -33,7 +33,8 @@ locals {
           "kms:TagResource",
           "kms:UntagResource",
           "kms:ScheduleKeyDeletion",
-          "kms:CancelKeyDeletion"
+          "kms:CancelKeyDeletion",
+          "kms:ReplicateKey"
         ],
         Resource = "*"
       },
