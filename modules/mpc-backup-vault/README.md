@@ -2,7 +2,7 @@
 
 This module creates an S3 bucket for MPC key backup storage, with optional cross-region replication for disaster recovery.
 
-The KMS keys are handled by the kms-stack terraform module in the infra repo.
+The KMS backup keys are handled by the mpc-backup-key module.
 
 ## Usage
 
