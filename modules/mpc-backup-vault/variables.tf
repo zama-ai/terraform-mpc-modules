@@ -35,3 +35,22 @@ variable "bucket_cross_account_id" {
   type        = string
   description = "ID of the AWS account that can access the backup bucket."
 }
+
+# Replication Configuration
+variable "enable_replication" {
+  type        = bool
+  description = "Enable cross-region replication for the backup bucket."
+  default     = false
+}
+
+variable "replica_region" {
+  type        = string
+  description = "AWS region for the replica bucket. Required when enable_replication is true."
+  default     = null
+}
+
+variable "replica_bucket_prefix" {
+  type        = string
+  description = "The prefix for the replica S3 bucket name."
+  default     = "mpc-backup-vault-replica"
+}
