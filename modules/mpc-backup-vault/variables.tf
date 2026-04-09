@@ -54,3 +54,15 @@ variable "replica_bucket_prefix" {
   description = "The prefix for the replica S3 bucket name."
   default     = "mpc-backup-vault-replica"
 }
+
+variable "mpc_backup_role_name" {
+  type        = string
+  description = "The name of the MPC backup role."
+  default     = null
+}
+
+variable "mpc_backup_replication_role_name" {
+  type        = string
+  description = "The name of the MPC backup replication role."
+  default     = null
+}
