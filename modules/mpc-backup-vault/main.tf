@@ -18,8 +18,10 @@ locals {
 #  S3 Buckets for Vault Private Storage
 # ***************************************
 resource "aws_s3_bucket" "backup_bucket" {
-  force_destroy = true
-  bucket        = local.backup_bucket_name
+  bucket = local.backup_bucket_name
+  lifecycle {
+    prevent_destroy = true
+  }
   tags = merge(var.tags, {
     "Name"    = local.backup_bucket_name
     "Type"    = "backup-vault"
@@ -72,15 +74,69 @@ resource "aws_s3_bucket_policy" "backup_bucket" {
 }
 
 # ***************************************
+#  IAM Role & Policy for MPC Backup Vault
+# ***************************************
+
+# Trust policy: Allow trusted principals to assume this role
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    effect  = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = var.trusted_principal_arns
+    }
+  }
+}
+
+resource "aws_iam_role" "mpc_backup_role" {
+  name               = var.mpc_backup_role_name != null ? var.mpc_backup_role_name : "mpc-backup-${var.party_name}"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+  tags               = var.tags
+}
+
+# Policy allowing access to the bucket
+resource "aws_iam_policy" "mpc_aws" {
+  name = var.mpc_backup_role_name != null ? var.mpc_backup_role_name : "mpc-backup-${var.party_name}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowObjectActions"
+        Effect = "Allow"
+        Action = "s3:*Object"
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}/*"
+        ]
+      },
+      {
+        Sid    = "AllowListBucket"
+        Effect = "Allow"
+        Action = "s3:ListBucket"
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}"
+        ]
+      }
+    ]
+  })
+}
+
+# Attach policy to the role
+resource "aws_iam_role_policy_attachment" "mpc_backup_attach" {
+  role       = aws_iam_role.mpc_backup_role.name
+  policy_arn = aws_iam_policy.mpc_aws.arn
+}
+
+# ***************************************
 #  S3 Replica Bucket (Cross-Region)
 # ***************************************
 resource "aws_s3_bucket" "replica_bucket" {
-  count         = var.enable_replication ? 1 : 0
-  provider      = aws.replica
-  force_destroy = true
-  bucket        = local.replica_bucket_name
+  count    = var.enable_replication ? 1 : 0
+  provider = aws.replica
+  bucket   = local.replica_bucket_name
 
   lifecycle {
+    prevent_destroy = true
     precondition {
       condition     = var.replica_region != null
       error_message = "replica_region must be set when enable_replication is true."
@@ -131,14 +187,14 @@ data "aws_iam_policy_document" "replication_assume_role" {
 
 resource "aws_iam_role" "replication_role" {
   count              = var.enable_replication ? 1 : 0
-  name               = "mpc-backup-replication-${var.party_name}"
+  name               = var.mpc_backup_replication_role_name != null ? var.mpc_backup_replication_role_name : "mpc-backup-replication-${var.party_name}"
   assume_role_policy = data.aws_iam_policy_document.replication_assume_role[0].json
   tags               = var.tags
 }
 
 resource "aws_iam_policy" "replication_policy" {
   count = var.enable_replication ? 1 : 0
-  name  = "mpc-backup-replication-${var.party_name}"
+  name  = var.mpc_backup_replication_role_name != null ? var.mpc_backup_replication_role_name : "mpc-backup-replication-${var.party_name}"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -203,58 +259,4 @@ resource "aws_s3_bucket_replication_configuration" "backup_bucket" {
     aws_s3_bucket_versioning.backup_bucket,
     aws_s3_bucket_versioning.replica_bucket
   ]
-}
-
-# ***************************************
-#  IAM Role & Policy for MPC Backup Vault
-# ***************************************
-
-# Trust policy: Allow trusted principals to assume this role
-data "aws_iam_policy_document" "assume_role" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    effect  = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = var.trusted_principal_arns
-    }
-  }
-}
-
-resource "aws_iam_role" "mpc_backup_role" {
-  name               = "mpc-backup-${var.party_name}"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
-  tags               = var.tags
-}
-
-# Policy allowing access to the bucket
-resource "aws_iam_policy" "mpc_aws" {
-  name = "mpc-backup-${var.party_name}"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowObjectActions"
-        Effect = "Allow"
-        Action = "s3:*Object"
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}/*"
-        ]
-      },
-      {
-        Sid    = "AllowListBucket"
-        Effect = "Allow"
-        Action = "s3:ListBucket"
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}"
-        ]
-      }
-    ]
-  })
-}
-
-# Attach policy to the role
-resource "aws_iam_role_policy_attachment" "mpc_backup_attach" {
-  role       = aws_iam_role.mpc_backup_role.name
-  policy_arn = aws_iam_policy.mpc_aws.arn
 }
