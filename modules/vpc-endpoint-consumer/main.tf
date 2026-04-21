@@ -260,10 +260,7 @@ resource "null_resource" "sync_s3_bucket" {
     interpreter = ["bash", "-c"]
     command     = <<-EOT
     set -e
-    TEMP_DIR=$(mktemp -d)
-    trap "rm -rf $TEMP_DIR" EXIT
-    aws s3 sync --region ${data.aws_region.current.region} ${each.value.public_bucket_url}/PUB-p${each.value.party_id} "$TEMP_DIR"
-    aws s3 sync --region ${data.aws_region.current.region} "$TEMP_DIR" ${local.public_vault_s3_bucket_name}/PUB-p${each.value.party_id}
+    aws s3 cp --recursive --region ${data.aws_region.current.region} ${each.value.public_bucket_url}/PUB-p${each.value.party_id}/CACert/ ${local.public_vault_s3_bucket_name}/PUB-p${each.value.party_id}/CACert/
     EOT
     when        = create
     quiet       = true
