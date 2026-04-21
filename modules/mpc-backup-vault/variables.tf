@@ -31,11 +31,6 @@ variable "trusted_principal_arns" {
   default     = []
 }
 
-variable "bucket_cross_account_id" {
-  type        = string
-  description = "ID of the AWS account that can access the backup bucket."
-}
-
 # Replication Configuration
 variable "enable_replication" {
   type        = bool

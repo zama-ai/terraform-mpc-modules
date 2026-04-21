@@ -82,7 +82,6 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bucket_cross_account_id"></a> [bucket\_cross\_account\_id](#input\_bucket\_cross\_account\_id) | ID of the AWS account that can access the backup bucket. | `string` | n/a | yes |
 | <a name="input_bucket_prefix"></a> [bucket\_prefix](#input\_bucket\_prefix) | The prefix for the S3 bucket names | `string` | `"mpc-backup-vault"` | no |
 | <a name="input_enable_replication"></a> [enable\_replication](#input\_enable\_replication) | Enable cross-region replication for the backup bucket. | `bool` | `false` | no |
 | <a name="input_mpc_backup_replication_role_name"></a> [mpc\_backup\_replication\_role\_name](#input\_mpc\_backup\_replication\_role\_name) | The name of the MPC backup replication role. | `string` | `null` | no |

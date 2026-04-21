@@ -61,9 +61,13 @@ resource "aws_s3_bucket_policy" "backup_bucket" {
         Sid    = "AllowCrossAccountBackup"
         Effect = "Allow"
         Principal = {
-          AWS = "arn:aws:iam::${var.bucket_cross_account_id}:root"
+          AWS = var.trusted_principal_arns
         }
-        Action = "s3:*"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket"
+        ]
         Resource = [
           "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}",
           "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}/*"
