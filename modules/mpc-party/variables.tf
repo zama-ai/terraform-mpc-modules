@@ -170,7 +170,7 @@ variable "nodegroup_ami_release_version" {
   description = "AMI release version for the node group"
   default     = null
   validation {
-    condition     = var.nodegroup_ami_release_version != null ? contains(["1.32.3-20250620"], var.nodegroup_ami_release_version) : true
+    condition     = var.nodegroup_ami_release_version != null ? contains(["1.32.3-20250620", "1.33.8-20260304"], var.nodegroup_ami_release_version) : true
     error_message = "This AMI release version is not supported. Please use the recommended version in the list."
   }
 }
