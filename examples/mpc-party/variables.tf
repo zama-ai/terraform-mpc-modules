@@ -245,7 +245,7 @@ variable "nodegroup_ami_id" {
 variable "nodegroup_ami_release_version" {
   description = "AMI release version for the nodegroup"
   type        = string
-  default     = "1.32.3-20250620"
+  default     = "1.33.8-20260304"
 }
 
 # kms configuration (need to be updated if upgrade to new zama-kms image)
