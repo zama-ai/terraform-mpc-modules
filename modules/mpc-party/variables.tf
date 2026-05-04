@@ -284,7 +284,7 @@ variable "nodegroup_nitro_enclaves_image_repo" {
 variable "nodegroup_nitro_enclaves_image_tag" {
   type        = string
   description = "Image tag for Nitro Enclaves"
-  default     = "v0.3"
+  default     = "0.4.1"
 }
 
 variable "nodegroup_nitro_enclaves_daemonset_additional_envs" {
