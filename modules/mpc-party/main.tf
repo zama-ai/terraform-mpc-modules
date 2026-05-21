@@ -5,12 +5,6 @@ data "aws_caller_identity" "current" {}
 
 data "aws_eks_cluster" "cluster" {
   name = var.cluster_name
-  lifecycle {
-    postcondition {
-      condition     = var.nodegroup_ami_release_version != null ? strcontains(var.nodegroup_ami_release_version, self.version) : true
-      error_message = "The EKS cluster version is not supported. Please use the recommended version that will be supported by the enclavenode group."
-    }
-  }
 }
 
 data "aws_subnet" "cluster_subnets" {
