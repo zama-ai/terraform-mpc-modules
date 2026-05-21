@@ -2,7 +2,7 @@
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 3.1 |
@@ -10,7 +10,7 @@
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
 | <a name="provider_aws.replica"></a> [aws.replica](#provider\_aws.replica) | >= 6.0 |
 
@@ -21,7 +21,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_kms_alias.this_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.this_backup_replica](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_key.this_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
@@ -32,7 +32,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_mpc_party_cross_account_iam_role_arn"></a> [mpc\_party\_cross\_account\_iam\_role\_arn](#input\_mpc\_party\_cross\_account\_iam\_role\_arn) | ARN of cross-account IAM role allowed for usage of KMS key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_alias"></a> [mpc\_party\_kms\_alias](#input\_mpc\_party\_kms\_alias) | Alias for the KMS key | `string` | `null` | no |
 | <a name="input_mpc_party_kms_backup_description"></a> [mpc\_party\_kms\_backup\_description](#input\_mpc\_party\_kms\_backup\_description) | Description of KMS Key | `string` | `"Asymmetric KMS key backup for MPC Party"` | no |
@@ -46,7 +46,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_kms_key_arn"></a> [kms\_key\_arn](#output\_kms\_key\_arn) | The ARN of the KMS key |
 | <a name="output_kms_replica_key_arn"></a> [kms\_replica\_key\_arn](#output\_kms\_replica\_key\_arn) | The ARN of the replica KMS key, if configured |
 <!-- END_TF_DOCS -->

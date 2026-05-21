@@ -85,7 +85,7 @@ The ports used for ingress rules are automatically derived from `default_mpc_por
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.10 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | >= 2.23 |
@@ -94,7 +94,7 @@ The ports used for ingress rules are automatically derived from `default_mpc_por
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.0 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | >= 2.23 |
 | <a name="provider_null"></a> [null](#provider\_null) | >= 3.0 |
@@ -106,7 +106,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_route53_record.partner_dns](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_security_group.vpc_endpoint](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_vpc_endpoint.party_interface_endpoints](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_endpoint) | resource |
@@ -123,7 +123,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the EKS cluster to lookup VPC, subnet, and security group details (Mode 1). If provided, vpc\_id, subnet\_ids, and security\_group\_ids will be ignored. | `string` | `null` | no |
 | <a name="input_create_custom_dns_records"></a> [create\_custom\_dns\_records](#input\_create\_custom\_dns\_records) | Whether to create custom DNS records for the VPC interface endpoints | `bool` | `false` | no |
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Whether to create the namespace if it doesn't exist | `bool` | `false` | no |
@@ -152,7 +152,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_connection_summary"></a> [connection\_summary](#output\_connection\_summary) | Summary of partner connections for easy reference |
 | <a name="output_custom_dns_records"></a> [custom\_dns\_records](#output\_custom\_dns\_records) | Custom DNS records created for the VPC interface endpoints (if enabled) |
 | <a name="output_kubernetes_service_external_names"></a> [kubernetes\_service\_external\_names](#output\_kubernetes\_service\_external\_names) | External names (VPC interface endpoint DNS) used by the Kubernetes services |
