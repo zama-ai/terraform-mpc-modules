@@ -36,7 +36,7 @@ output "configuration_for_consumer" {
   description = "Configuration for the consumer to use the VPC endpoint service"
   value = [{
     party_id                  = var.party_id
-    name                      = "mpc-node-${var.party_id}"
+    name                      = "mpc-node-${local.party_name}"
     partner_name              = var.partner_name
     region                    = data.aws_region.current.region
     vpc_endpoint_service_name = aws_vpc_endpoint_service.mpc_nlb_service.service_name
