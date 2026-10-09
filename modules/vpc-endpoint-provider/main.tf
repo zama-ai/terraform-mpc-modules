@@ -31,6 +31,7 @@ data "kubernetes_config_map_v1" "mpc_party_config" {
 }
 
 locals {
+  party_name                  = coalesce(var.party_name, var.party_id)
   public_vault_s3_bucket_name = var.sync_public_bucket.enabled ? "s3://${data.kubernetes_config_map_v1.mpc_party_config[0].data["KMS_CORE__PUBLIC_VAULT__STORAGE__S3__BUCKET"]}" : null
 }
 
@@ -40,7 +41,7 @@ locals {
 resource "kubernetes_service" "mpc_nlb" {
   wait_for_load_balancer = true
   metadata {
-    name      = "mpc-node-${var.party_id}"
+    name      = "mpc-node-${local.party_name}"
     namespace = var.create_namespace ? kubernetes_namespace.mpc_namespace[0].metadata[0].name : var.namespace
 
     annotations = {
@@ -57,8 +58,8 @@ resource "kubernetes_service" "mpc_nlb" {
     }
 
     labels = merge({
-      "app.kubernetes.io/name"      = "mpc-node-${var.party_id}"
-      "app.kubernetes.io/instance"  = "mpc-node-${var.party_id}"
+      "app.kubernetes.io/name"      = "mpc-node-${local.party_name}"
+      "app.kubernetes.io/instance"  = "mpc-node-${local.party_name}"
       "app.kubernetes.io/component" = "mpc-node"
       "app.kubernetes.io/part-of"   = "mpc-cluster"
     }, var.kubernetes_nlb_extra_labels)
@@ -129,7 +130,7 @@ locals {
     dns_name     = data.aws_lb.kubernetes_nlb.dns_name
     zone_id      = data.aws_lb.kubernetes_nlb.zone_id
     vpc_id       = data.aws_lb.kubernetes_nlb.vpc_id
-    display_name = "mpc-node-${var.party_id}"
+    display_name = "mpc-node-${local.party_name}"
   }
 }
 

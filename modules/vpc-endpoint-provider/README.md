@@ -53,6 +53,7 @@ No modules.
 | <a name="input_network_environment"></a> [network\_environment](#input\_network\_environment) | MPC network environment that determines region constraints | `string` | `"testnet"` | no |
 | <a name="input_partner_name"></a> [partner\_name](#input\_partner\_name) | Partner name for the MPC service | `string` | n/a | yes |
 | <a name="input_party_id"></a> [party\_id](#input\_party\_id) | Party ID for the MPC service | `string` | n/a | yes |
+| <a name="input_party_name"></a> [party\_name](#input\_party\_name) | Name used in the Kubernetes service mpc-node-<party\_name>. Defaults to party\_id, so existing services stay mpc-node-<party\_id>. | `string` | `null` | no |
 | <a name="input_service_create_timeout"></a> [service\_create\_timeout](#input\_service\_create\_timeout) | Timeout for creating Kubernetes services | `string` | `"10m"` | no |
 | <a name="input_supported_regions"></a> [supported\_regions](#input\_supported\_regions) | List of AWS regions supported by the VPC endpoint service | `list(string)` | `[]` | no |
 | <a name="input_sync_public_bucket"></a> [sync\_public\_bucket](#input\_sync\_public\_bucket) | Sync public bucket between partners | <pre>object({<br/>    enabled        = optional(bool, true)<br/>    configmap_name = optional(string, "mpc-party")<br/>  })</pre> | <pre>{<br/>  "configmap_name": "mpc-party",<br/>  "enabled": true<br/>}</pre> | no |

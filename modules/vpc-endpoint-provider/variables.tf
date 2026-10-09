@@ -68,6 +68,17 @@ variable "party_id" {
   type        = string
 }
 
+variable "party_name" {
+  description = "Name used in the Kubernetes service mpc-node-<party_name>. Defaults to party_id, so existing services stay mpc-node-<party_id>."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.party_name == null || can(regex("^[a-z0-9]([-a-z0-9]{0,52}[a-z0-9])?$", var.party_name))
+    error_message = "party_name must be a lowercase DNS label of at most 54 characters, so mpc-node-<party_name> is a valid Service name."
+  }
+}
+
 variable "lb_additional_labels_selector" {
   description = "Additional labels to add to the Kubernetes service load balancer"
   type        = map(string)
