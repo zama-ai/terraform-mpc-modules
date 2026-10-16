@@ -50,6 +50,16 @@ variable "connector_role_name" {
   }
 }
 
+variable "check_role_name" {
+  type        = string
+  description = "The name of the mpc-operator-check role"
+  default     = ""
+  validation {
+    condition     = length(var.check_role_name) <= 64
+    error_message = "Check role name must be 64 characters or less."
+  }
+}
+
 # EKS Cluster Configuration
 variable "cluster_name" {
   type        = string
@@ -103,6 +113,12 @@ variable "service_account_annotations" {
   type        = map(string)
   description = "Additional annotations to apply to the service account (excluding IRSA annotations which are handled automatically)"
   default     = {}
+}
+
+variable "create_check_service_account" {
+  type        = bool
+  description = "Whether to create the least privilege check service account (k8s_service_account_name with a -check suffix), its IRSA role and RBAC, used by the mpc-operator-check chart"
+  default     = true
 }
 
 # IRSA Configuration
