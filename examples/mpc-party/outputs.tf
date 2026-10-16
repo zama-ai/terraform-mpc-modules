@@ -36,12 +36,6 @@ output "k8s_service_account_summary" {
   value       = module.mpc_party.k8s_service_account_summary
 }
 
-# Kubernetes MPC Operator Check Service Account Information
-output "k8s_check_service_account_summary" {
-  description = "Summary of the least privilege Kubernetes service account used by the mpc-operator-check chart"
-  value       = module.mpc_party.k8s_check_service_account_summary
-}
-
 # Kubernetes ConfigMap Information
 output "k8s_configmap_summary" {
   description = "Summary of the Kubernetes ConfigMap for MPC party"
