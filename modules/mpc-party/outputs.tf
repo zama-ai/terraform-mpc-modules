@@ -47,6 +47,17 @@ output "k8s_service_account_summary" {
   }
 }
 
+# Kubernetes MPC Operator Check Service Account Information
+output "k8s_check_service_account_summary" {
+  description = "Summary of the least privilege Kubernetes service account used by the mpc-operator-check chart"
+  value = var.create_check_service_account ? {
+    service_account_name      = local.check_service_account_name
+    service_account_namespace = var.k8s_namespace
+    service_account_role_arn  = module.iam_assumable_role_mpc_party_check[0].iam_role_arn
+    cluster_rbac_name         = local.check_cluster_rbac_name
+  } : null
+}
+
 # Kubernetes ConfigMap Information
 output "k8s_configmap_summary" {
   description = "Summary of the Kubernetes ConfigMap for MPC party"

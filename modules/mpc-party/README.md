@@ -289,6 +289,32 @@ The module can optionally create:
 - **ExternalName Service**: Maps database endpoint to a Kubernetes service name
 - **ConfigMap Integration**: Database configuration available via environment variables
 
+## MPC Operator Check Service Account
+
+When `create_check_service_account = true` (default), the module creates a dedicated `<k8s_service_account_name>-check` service account (for example `mpc-party-check`) for the [mpc-operator-check](https://github.com/zama-ai/mpc-operator/tree/main/charts/mpc-operator-check) chart, so the checks no longer run with the `mpc-party` and `mpc-party-connector` service accounts. It only grants what the checks need:
+
+| Scope | Permissions |
+| ----- | ----------- |
+| Namespace `k8s_namespace` (Role `<k8s_service_account_name>-check`) | `get`, `list` on `pods`, `services`, `deployments`, `statefulsets`; `get` on `pods/log` |
+| Cluster (ClusterRole `<k8s_service_account_name>-check-<k8s_namespace>`) | `get`, `list` on `nodes` |
+| AWS (IRSA role) | `s3:ListBucket` on the public and private vault buckets; `kms:GetPublicKey` on the kms-connector tx sender key (when `kms_connector_enable_txsender_key = true`) |
+
+It has no access to Secrets, ConfigMaps or resources in other namespaces.
+
+> **Cross-account KMS keys**
+>
+> When `kms_use_cross_account_kms_key = true`, the key policy of the kms-connector tx sender key in the other AWS account must also allow `kms:GetPublicKey` for the check role (`k8s_check_service_account_summary.service_account_role_arn`), otherwise the KMS keys check of the chart fails.
+
+Verify the permissions:
+
+```bash
+SA=system:serviceaccount:<namespace>:<k8s_service_account_name>-check
+kubectl auth can-i get secrets -n <namespace> --as=$SA                  # no
+kubectl auth can-i list pods -n kube-system --as=$SA                    # no
+kubectl auth can-i list nodes --as=$SA                                  # yes
+kubectl auth can-i get pods --subresource=log -n <namespace> --as=$SA   # yes
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -316,6 +342,7 @@ The module can optionally create:
 | <a name="module_eks_managed_node_group"></a> [eks\_managed\_node\_group](#module\_eks\_managed\_node\_group) | terraform-aws-modules/eks/aws//modules/eks-managed-node-group | 21.0.6 |
 | <a name="module_iam_assumable_role_kms_connector"></a> [iam\_assumable\_role\_kms\_connector](#module\_iam\_assumable\_role\_kms\_connector) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_iam_assumable_role_mpc_party"></a> [iam\_assumable\_role\_mpc\_party](#module\_iam\_assumable\_role\_mpc\_party) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
+| <a name="module_iam_assumable_role_mpc_party_check"></a> [iam\_assumable\_role\_mpc\_party\_check](#module\_iam\_assumable\_role\_mpc\_party\_check) | terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc | 5.48.0 |
 | <a name="module_rds_instance"></a> [rds\_instance](#module\_rds\_instance) | terraform-aws-modules/rds/aws | ~> 6.10 |
 | <a name="module_rds_security_group"></a> [rds\_security\_group](#module\_rds\_security\_group) | terraform-aws-modules/security-group/aws | ~> 5.3.0 |
 
@@ -325,6 +352,7 @@ The module can optionally create:
 | ---- | ---- |
 | [aws_iam_policy.connector_kms_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.mpc_aws](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.mpc_check](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.mpc_core_kms_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_kms_alias.mpc_connector_tx_sender](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
 | [aws_kms_alias.mpc_party](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) | resource |
@@ -340,12 +368,17 @@ The module can optionally create:
 | [aws_s3_bucket_public_access_block.vault_public_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
 | [aws_s3_bucket_versioning.vault_private_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning) | resource |
 | [aws_s3_bucket_versioning.vault_public_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning) | resource |
+| [kubernetes_cluster_role_binding_v1.mpc_party_check](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/cluster_role_binding_v1) | resource |
+| [kubernetes_cluster_role_v1.mpc_party_check](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/cluster_role_v1) | resource |
 | [kubernetes_config_map.mpc_party_config](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/config_map) | resource |
 | [kubernetes_daemon_set_v1.aws_nitro_enclaves_device_plugin](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/daemon_set_v1) | resource |
 | [kubernetes_namespace.mpc_party_namespace](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/namespace) | resource |
+| [kubernetes_role_binding_v1.mpc_party_check](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/role_binding_v1) | resource |
+| [kubernetes_role_v1.mpc_party_check](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/role_v1) | resource |
 | [kubernetes_service.externalname](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service) | resource |
 | [kubernetes_service_account.mpc_kms_connector_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
 | [kubernetes_service_account.mpc_party_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account) | resource |
+| [kubernetes_service_account_v1.mpc_party_check_service_account](https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/service_account_v1) | resource |
 | [null_resource.validate_auto_resolved_node_sg](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [random_id.mpc_party_suffix](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
@@ -362,10 +395,12 @@ The module can optionally create:
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_bucket_prefix"></a> [bucket\_prefix](#input\_bucket\_prefix) | The prefix for the S3 bucket names | `string` | `"mpc-vault"` | no |
+| <a name="input_check_role_name"></a> [check\_role\_name](#input\_check\_role\_name) | The name of the mpc-operator-check role | `string` | `""` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the EKS cluster for IRSA configuration | `string` | n/a | yes |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Deprecated common tags to apply to all AWS resources | `map(string)` | <pre>{<br/>  "module": "mpc-party",<br/>  "terraform": "true"<br/>}</pre> | no |
 | <a name="input_config_map_name"></a> [config\_map\_name](#input\_config\_map\_name) | Name of the ConfigMap | `string` | `"mpc-party"` | no |
 | <a name="input_connector_role_name"></a> [connector\_role\_name](#input\_connector\_role\_name) | The name of the connector role | `string` | `""` | no |
+| <a name="input_create_check_service_account"></a> [create\_check\_service\_account](#input\_create\_check\_service\_account) | Whether to create the least privilege check service account (k8s\_service\_account\_name with a -check suffix), its IRSA role and RBAC, used by the mpc-operator-check chart | `bool` | `true` | no |
 | <a name="input_create_config_map"></a> [create\_config\_map](#input\_create\_config\_map) | Whether to create a ConfigMap with S3 bucket environment variables | `bool` | `true` | no |
 | <a name="input_create_irsa"></a> [create\_irsa](#input\_create\_irsa) | Whether to create IRSA (IAM Roles for Service Accounts) role for secure AWS access | `bool` | `true` | no |
 | <a name="input_create_namespace"></a> [create\_namespace](#input\_create\_namespace) | Whether to create the Kubernetes namespace | `bool` | `true` | no |
@@ -459,6 +494,7 @@ The module can optionally create:
 | <a name="output_cluster_name"></a> [cluster\_name](#output\_cluster\_name) | Name of the EKS cluster |
 | <a name="output_eks_managed_node_group_summary"></a> [eks\_managed\_node\_group\_summary](#output\_eks\_managed\_node\_group\_summary) | Summary of the EKS managed node group for MPC party |
 | <a name="output_irsa_summary"></a> [irsa\_summary](#output\_irsa\_summary) | Summary of the IRSA role for MPC party |
+| <a name="output_k8s_check_service_account_summary"></a> [k8s\_check\_service\_account\_summary](#output\_k8s\_check\_service\_account\_summary) | Summary of the least privilege Kubernetes service account used by the mpc-operator-check chart |
 | <a name="output_k8s_configmap_summary"></a> [k8s\_configmap\_summary](#output\_k8s\_configmap\_summary) | Summary of the Kubernetes ConfigMap for MPC party |
 | <a name="output_k8s_service_account_summary"></a> [k8s\_service\_account\_summary](#output\_k8s\_service\_account\_summary) | Summary of the Kubernetes service account for MPC party |
 | <a name="output_kms_connector_tx_sender"></a> [kms\_connector\_tx\_sender](#output\_kms\_connector\_tx\_sender) | KMS Connector Transaction Sender KMS Key |

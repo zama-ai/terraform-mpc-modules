@@ -339,6 +339,173 @@ resource "kubernetes_service_account" "mpc_kms_connector_service_account" {
   depends_on = [kubernetes_namespace.mpc_party_namespace, module.iam_assumable_role_kms_connector]
 }
 
+# ***************************************
+#  MPC Operator Check (least privilege)
+# ***************************************
+locals {
+  check_service_account_name = "${var.k8s_service_account_name}-check"
+  # Cluster scoped RBAC names include the namespace to stay unique across parties sharing a cluster
+  check_cluster_rbac_name = "${local.check_service_account_name}-${var.k8s_namespace}"
+  check_rbac_labels = {
+    "app.kubernetes.io/name"       = "mpc-party-check"
+    "app.kubernetes.io/component"  = "rbac"
+    "app.kubernetes.io/part-of"    = "mpc-cluster"
+    "app.kubernetes.io/managed-by" = "terraform"
+    "mpc.io/party-name"            = var.party_name
+  }
+}
+
+resource "aws_iam_policy" "mpc_check" {
+  count = var.create_check_service_account ? 1 : 0
+
+  name = "mpc-check-${var.cluster_name}-${var.party_name}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = concat(
+      [
+        {
+          Sid    = "AllowListVaultBuckets"
+          Effect = "Allow"
+          Action = "s3:ListBucket"
+          Resource = [
+            "arn:aws:s3:::${aws_s3_bucket.vault_private_bucket.id}",
+            "arn:aws:s3:::${aws_s3_bucket.vault_public_bucket.id}",
+          ]
+        }
+      ],
+      var.kms_connector_enable_txsender_key ? [
+        {
+          Sid      = "AllowGetConnectorTxSenderPublicKey"
+          Effect   = "Allow"
+          Action   = "kms:GetPublicKey"
+          Resource = local.connector_key_arn
+        }
+      ] : []
+    )
+  })
+}
+
+module "iam_assumable_role_mpc_party_check" {
+  count = var.create_check_service_account ? 1 : 0
+
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version                       = "5.48.0"
+  provider_url                  = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+  create_role                   = true
+  role_name                     = var.check_role_name != "" ? var.check_role_name : "mpc-${var.cluster_name}-${var.party_name}-check"
+  oidc_fully_qualified_subjects = ["system:serviceaccount:${var.k8s_namespace}:${local.check_service_account_name}"]
+  role_policy_arns              = [aws_iam_policy.mpc_check[0].arn]
+  depends_on                    = [kubernetes_namespace.mpc_party_namespace]
+}
+
+resource "kubernetes_service_account_v1" "mpc_party_check_service_account" {
+  count = var.create_check_service_account ? 1 : 0
+
+  metadata {
+    name      = local.check_service_account_name
+    namespace = var.k8s_namespace
+
+    labels = merge({
+      "app.kubernetes.io/name"       = "mpc-party-check"
+      "app.kubernetes.io/component"  = "service-account"
+      "app.kubernetes.io/part-of"    = "mpc-cluster"
+      "app.kubernetes.io/managed-by" = "terraform"
+      "mpc.io/party-name"            = var.party_name
+    }, var.service_account_labels)
+
+    annotations = merge({
+      "terraform.io/module"        = "mpc-party"
+      "mpc.io/party-name"          = var.party_name
+      "eks.amazonaws.com/role-arn" = module.iam_assumable_role_mpc_party_check[0].iam_role_arn
+    }, var.service_account_annotations)
+  }
+  depends_on = [kubernetes_namespace.mpc_party_namespace, module.iam_assumable_role_mpc_party_check]
+}
+
+# Namespaced read access to the workloads, services and logs inspected by the checks (no secrets, no configmaps)
+resource "kubernetes_role_v1" "mpc_party_check" {
+  count = var.create_check_service_account ? 1 : 0
+
+  metadata {
+    name      = local.check_service_account_name
+    namespace = var.k8s_namespace
+    labels    = local.check_rbac_labels
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods", "services"]
+    verbs      = ["get", "list"]
+  }
+  rule {
+    api_groups = [""]
+    resources  = ["pods/log"]
+    verbs      = ["get"]
+  }
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments", "statefulsets"]
+    verbs      = ["get", "list"]
+  }
+  depends_on = [kubernetes_namespace.mpc_party_namespace]
+}
+
+resource "kubernetes_role_binding_v1" "mpc_party_check" {
+  count = var.create_check_service_account ? 1 : 0
+
+  metadata {
+    name      = local.check_service_account_name
+    namespace = var.k8s_namespace
+    labels    = local.check_rbac_labels
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role_v1.mpc_party_check[0].metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account_v1.mpc_party_check_service_account[0].metadata[0].name
+    namespace = var.k8s_namespace
+  }
+}
+
+# Cluster wide access limited to reading nodes (enclave node group check)
+resource "kubernetes_cluster_role_v1" "mpc_party_check" {
+  count = var.create_check_service_account ? 1 : 0
+
+  metadata {
+    name   = local.check_cluster_rbac_name
+    labels = local.check_rbac_labels
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["nodes"]
+    verbs      = ["get", "list"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding_v1" "mpc_party_check" {
+  count = var.create_check_service_account ? 1 : 0
+
+  metadata {
+    name   = local.check_cluster_rbac_name
+    labels = local.check_rbac_labels
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role_v1.mpc_party_check[0].metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account_v1.mpc_party_check_service_account[0].metadata[0].name
+    namespace = var.k8s_namespace
+  }
+}
 
 # ***************************************
 #  AWS KMS Key for MPC Party
@@ -352,6 +519,9 @@ locals {
   ) : null
   connector_key_id = var.kms_connector_enable_txsender_key ? (
     var.kms_use_cross_account_kms_key ? var.kms_cross_account_connector_txsender_key_id : aws_kms_external_key.mpc_connector_tx_sender[0].id
+  ) : null
+  connector_key_arn = var.kms_connector_enable_txsender_key ? (
+    var.kms_use_cross_account_kms_key ? var.kms_cross_account_connector_txsender_key_id : aws_kms_external_key.mpc_connector_tx_sender[0].arn
   ) : null
 }
 
