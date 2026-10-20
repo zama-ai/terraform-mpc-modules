@@ -18,19 +18,34 @@ variable "tags" {
 variable "mpc_party_cross_account_iam_role_arn" {
   type        = string
   description = "ARN of cross-account IAM role allowed for usage of KMS key"
-  default     = null
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^arn:aws[a-z-]*:iam::[0-9]{12}:role/.+$", var.mpc_party_cross_account_iam_role_arn))
+    error_message = "mpc_party_cross_account_iam_role_arn must be an IAM role ARN."
+  }
 }
 
 variable "mpc_party_kms_image_attestation_sha" {
   type        = string
   description = "Attestation SHA for KMS image"
-  default     = null
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^[0-9a-fA-F]{96}$", var.mpc_party_kms_image_attestation_sha))
+    error_message = "mpc_party_kms_image_attestation_sha must be a SHA-384 digest (96 hex characters)."
+  }
 }
 
 variable "mpc_party_kms_alias" {
   type        = string
-  description = "Alias for the KMS key"
-  default     = null
+  description = "Alias for the KMS key, suffixed with -backup"
+  nullable    = false
+
+  validation {
+    condition     = startswith(var.mpc_party_kms_alias, "alias/") && !startswith(var.mpc_party_kms_alias, "alias/aws/")
+    error_message = "mpc_party_kms_alias must start with alias/ and must not start with alias/aws/."
+  }
 }
 
 variable "mpc_party_kms_deletion_window_in_days" {
