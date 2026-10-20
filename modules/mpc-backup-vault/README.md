@@ -31,6 +31,9 @@ module "mpc_backup_vault" {
   enable_replication    = true
   replica_region        = "eu-west-1"
   replica_bucket_prefix = "mpc-backup-vault-replica"
+
+  # mpc-operator-check role. List only: not trusted_principal_arns.
+  read_only_principal_arns = ["arn:aws:iam::123456789012:role/mpc-testnet-my-party-check"]
 }
 ```
 
@@ -69,6 +72,7 @@ No modules.
 | [aws_s3_bucket.replica_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_ownership_controls.backup_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
 | [aws_s3_bucket_policy.backup_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
+| [aws_s3_bucket_policy.replica_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.backup_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
 | [aws_s3_bucket_public_access_block.replica_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
 | [aws_s3_bucket_replication_configuration.backup_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_replication_configuration) | resource |
@@ -87,6 +91,7 @@ No modules.
 | <a name="input_mpc_backup_replication_role_name"></a> [mpc\_backup\_replication\_role\_name](#input\_mpc\_backup\_replication\_role\_name) | The name of the MPC backup replication role. | `string` | `null` | no |
 | <a name="input_mpc_backup_role_name"></a> [mpc\_backup\_role\_name](#input\_mpc\_backup\_role\_name) | The name of the MPC backup role. | `string` | `null` | no |
 | <a name="input_party_name"></a> [party\_name](#input\_party\_name) | The name of the MPC party (used for resource naming and tagging) | `string` | n/a | yes |
+| <a name="input_read_only_principal_arns"></a> [read\_only\_principal\_arns](#input\_read\_only\_principal\_arns) | IAM principal ARNs allowed to list the backup bucket, read its replication configuration, and list the replica bucket. Intended for the mpc-operator-check role. These principals cannot read or write objects. | `list(string)` | `[]` | no |
 | <a name="input_replica_bucket_prefix"></a> [replica\_bucket\_prefix](#input\_replica\_bucket\_prefix) | The prefix for the replica S3 bucket name. | `string` | `"mpc-backup-vault-replica"` | no |
 | <a name="input_replica_region"></a> [replica\_region](#input\_replica\_region) | AWS region for the replica bucket. Required when enable\_replication is true. | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to assign to the resource | `map(string)` | <pre>{<br/>  "module": "mpc-party",<br/>  "terraform": "true"<br/>}</pre> | no |

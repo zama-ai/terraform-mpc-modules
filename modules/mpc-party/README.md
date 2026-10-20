@@ -297,9 +297,9 @@ When `create_check_service_account = true` (default), the module creates a dedic
 | ----- | ----------- |
 | Namespace `k8s_namespace` (Role `<k8s_service_account_name>-check`) | `get`, `list` on `pods`, `services`, `deployments`, `statefulsets`; `get` on `pods/log` |
 | Cluster (ClusterRole `<k8s_service_account_name>-check-<k8s_namespace>`) | `get`, `list` on `nodes` |
-| AWS (IRSA role) | `s3:ListBucket` on the public and private vault buckets; `kms:GetPublicKey` on the kms-connector tx sender key (when `kms_connector_enable_txsender_key = true`) |
+| AWS (IRSA role) | `s3:ListBucket` on the public and private vault buckets; `kms:GetPublicKey` on the kms-connector tx sender key (when `kms_connector_enable_txsender_key = true`); when `kms_enable_backup_vault = true`, `s3:ListBucket` and `s3:GetReplicationConfiguration` on `kms_backup_vault_bucket_name`, and `s3:ListBucket` on `kms_backup_vault_replica_bucket_name` when that name is set |
 
-It has no access to Secrets, ConfigMaps or resources in other namespaces.
+It has no access to Secrets, ConfigMaps or resources in other namespaces. The backup bucket lives in the backup account, so its bucket policy must also allow this role. Set `read_only_principal_arns` on `mpc-backup-vault` to `k8s_check_service_account_summary.service_account_role_arn`. Do not add the check role to `trusted_principal_arns`.
 
 > **Cross-account KMS keys**
 >
@@ -411,6 +411,7 @@ kubectl auth can-i get pods --subresource=log -n <namespace> --as=$SA   # yes
 | <a name="input_k8s_service_account_name"></a> [k8s\_service\_account\_name](#input\_k8s\_service\_account\_name) | The name of the Kubernetes service account for MPC party | `string` | n/a | yes |
 | <a name="input_kms_backup_vault_bucket_name"></a> [kms\_backup\_vault\_bucket\_name](#input\_kms\_backup\_vault\_bucket\_name) | Backup vault S3 bucket name | `string` | `null` | no |
 | <a name="input_kms_backup_vault_kms_key_arn"></a> [kms\_backup\_vault\_kms\_key\_arn](#input\_kms\_backup\_vault\_kms\_key\_arn) | KMS key ARN for the backup vault | `string` | `null` | no |
+| <a name="input_kms_backup_vault_replica_bucket_name"></a> [kms\_backup\_vault\_replica\_bucket\_name](#input\_kms\_backup\_vault\_replica\_bucket\_name) | Replica backup vault S3 bucket name. When set, the check role is granted s3:ListBucket on this bucket. | `string` | `null` | no |
 | <a name="input_kms_connector_enable_txsender_key"></a> [kms\_connector\_enable\_txsender\_key](#input\_kms\_connector\_enable\_txsender\_key) | Whether to enable the KMS key for the kms-connector txsender | `bool` | `false` | no |
 | <a name="input_kms_connector_txsender_key_spec"></a> [kms\_connector\_txsender\_key\_spec](#input\_kms\_connector\_txsender\_key\_spec) | Specification for the KMS-Connector txsender (e.g., ECC\_SECG\_P256K1 for Ethereum key signing) | `string` | `"ECC_SECG_P256K1"` | no |
 | <a name="input_kms_connector_txsender_key_usage"></a> [kms\_connector\_txsender\_key\_usage](#input\_kms\_connector\_txsender\_key\_usage) | Key usage for KMS-Connector txsender | `string` | `"SIGN_VERIFY"` | no |

@@ -56,24 +56,40 @@ resource "aws_s3_bucket_policy" "backup_bucket" {
   bucket = aws_s3_bucket.backup_bucket.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "AllowCrossAccountBackup"
-        Effect = "Allow"
-        Principal = {
-          AWS = var.trusted_principal_arns
+    Statement = concat(
+      [
+        {
+          Sid    = "AllowCrossAccountBackup"
+          Effect = "Allow"
+          Principal = {
+            AWS = var.trusted_principal_arns
+          }
+          Action = [
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:ListBucket"
+          ]
+          Resource = [
+            "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}",
+            "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}/*"
+          ]
         }
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}",
-          "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}/*"
-        ]
-      }
-    ]
+      ],
+      length(var.read_only_principal_arns) > 0 ? [
+        {
+          Sid    = "AllowReadOnlyListAndReplicationConfig"
+          Effect = "Allow"
+          Principal = {
+            AWS = var.read_only_principal_arns
+          }
+          Action = [
+            "s3:ListBucket",
+            "s3:GetReplicationConfiguration"
+          ]
+          Resource = "arn:aws:s3:::${aws_s3_bucket.backup_bucket.id}"
+        }
+      ] : []
+    )
   })
 }
 
@@ -172,6 +188,27 @@ resource "aws_s3_bucket_public_access_block" "replica_bucket" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_policy" "replica_bucket" {
+  count    = var.enable_replication && length(var.read_only_principal_arns) > 0 ? 1 : 0
+  provider = aws.replica
+  bucket   = aws_s3_bucket.replica_bucket[0].id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowReadOnlyListReplica"
+        Effect = "Allow"
+        Principal = {
+          AWS = var.read_only_principal_arns
+        }
+        Action   = "s3:ListBucket"
+        Resource = aws_s3_bucket.replica_bucket[0].arn
+      }
+    ]
+  })
+  depends_on = [aws_s3_bucket_public_access_block.replica_bucket]
 }
 
 # ***************************************

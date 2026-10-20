@@ -31,6 +31,12 @@ variable "trusted_principal_arns" {
   default     = []
 }
 
+variable "read_only_principal_arns" {
+  type        = list(string)
+  description = "IAM principal ARNs allowed to list the backup bucket, read its replication configuration, and list the replica bucket. Intended for the mpc-operator-check role. These principals cannot read or write objects."
+  default     = []
+}
+
 # Replication Configuration
 variable "enable_replication" {
   type        = bool
