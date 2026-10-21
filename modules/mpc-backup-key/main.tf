@@ -4,11 +4,6 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-provider "aws" {
-  alias  = "replica"
-  region = coalesce(var.mpc_party_kms_backup_replica_region, data.aws_region.current.name)
-}
-
 locals {
   kms_backup_policy = jsonencode({
     Version = "2012-10-17"
@@ -39,6 +34,7 @@ locals {
         Resource = "*"
       },
       {
+        Sid    = "Allow MPC party to read the backup public key",
         Effect = "Allow",
         Principal = {
           AWS = var.mpc_party_cross_account_iam_role_arn
@@ -50,13 +46,15 @@ locals {
         Resource = "*"
       },
       {
+        # GenerateDataKey is not granted: it is not supported on asymmetric keys, and backups are
+        # encrypted locally under the public key.
+        Sid    = "Allow attested MPC party enclave to decrypt backups",
         Effect = "Allow",
         Principal = {
           AWS = var.mpc_party_cross_account_iam_role_arn
         },
         Action = [
           "kms:Decrypt",
-          "kms:GenerateDataKey",
         ],
         Resource = "*",
         Condition = {
@@ -89,21 +87,30 @@ resource "aws_kms_alias" "this_backup" {
   target_key_id = aws_kms_key.this_backup.key_id
 }
 
+# The replica uses the caller's provider with a per-resource region (AWS provider >= 6.0), so it
+# is created with the same credentials and in the same account as the primary key.
 resource "aws_kms_replica_key" "this_backup" {
   count = var.mpc_party_kms_backup_replica_region == null ? 0 : 1
 
-  provider                = aws.replica
+  region                  = var.mpc_party_kms_backup_replica_region
   description             = "${var.mpc_party_kms_backup_description} (replica)"
   deletion_window_in_days = var.mpc_party_kms_deletion_window_in_days
   primary_key_arn         = aws_kms_key.this_backup.arn
   policy                  = local.kms_backup_policy
   tags                    = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = var.mpc_party_kms_backup_replica_region != data.aws_region.current.region
+      error_message = "mpc_party_kms_backup_replica_region must differ from the primary key region."
+    }
+  }
 }
 
 resource "aws_kms_alias" "this_backup_replica" {
   count = var.mpc_party_kms_backup_replica_region == null ? 0 : 1
 
-  provider      = aws.replica
+  region        = var.mpc_party_kms_backup_replica_region
   name          = "${var.mpc_party_kms_alias}-backup"
   target_key_id = aws_kms_replica_key.this_backup[0].key_id
 }
