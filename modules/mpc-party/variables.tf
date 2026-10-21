@@ -437,6 +437,12 @@ variable "kms_backup_vault_kms_key_arn" {
   description = "KMS key ARN for the backup vault"
   default     = null
 }
+
+variable "kms_backup_vault_replica_bucket_name" {
+  type        = string
+  description = "Replica backup vault S3 bucket name. When set, the check role is granted s3:ListBucket on this bucket."
+  default     = null
+}
 #******************************************************
 
 variable "nodegroup_enable_ssm_managed_instance" {

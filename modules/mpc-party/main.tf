@@ -380,6 +380,25 @@ resource "aws_iam_policy" "mpc_check" {
           Action   = "kms:GetPublicKey"
           Resource = local.connector_key_arn
         }
+      ] : [],
+      var.kms_enable_backup_vault && var.kms_backup_vault_bucket_name != null ? [
+        {
+          Sid    = "AllowListBackupBucket"
+          Effect = "Allow"
+          Action = [
+            "s3:ListBucket",
+            "s3:GetReplicationConfiguration",
+          ]
+          Resource = "arn:aws:s3:::${var.kms_backup_vault_bucket_name}"
+        }
+      ] : [],
+      var.kms_enable_backup_vault && var.kms_backup_vault_replica_bucket_name != null ? [
+        {
+          Sid      = "AllowListBackupReplicaBucket"
+          Effect   = "Allow"
+          Action   = "s3:ListBucket"
+          Resource = "arn:aws:s3:::${var.kms_backup_vault_replica_bucket_name}"
+        }
       ] : []
     )
   })
